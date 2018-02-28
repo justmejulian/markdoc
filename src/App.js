@@ -3,7 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 
 // Import other files
-import Hello from './Hello';
+import Hello from './models/Hello';
 
 class App extends Component {
   render() {
