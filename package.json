@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "electron-reload": "^1.2.2",
+    "marked": "^0.3.17",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-scripts": "1.0.10"

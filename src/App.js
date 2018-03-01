@@ -5,19 +5,36 @@ import './App.css';
 // Import other files
 import Hello from './models/Hello';
 
-class App extends Component {
+var marked = require('marked');
+
+class App extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      text: ""
+    }
+    this.createMarkup = this.createMarkup.bind(this);
+  }
+
+  update(e) {
+    this.setState({
+      text: marked(e.target.value)
+    });
+  }
+
+  createMarkup() {
+    return {
+      __html: this.state.text
+    };
+  }
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title"><Hello name="World" /></h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+      <div>
+        <textarea id="editor" onChange={this.update.bind(this)} />
+        <p id="preview" dangerouslySetInnerHTML={this.createMarkup()}></p>
       </div>
-    );
+    )
   }
 }
 
