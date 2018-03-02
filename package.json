@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "electron": "^1.8.2",
     "electron-reload": "^1.2.2",
     "marked": "^0.3.17",
     "react": "^15.6.1",
