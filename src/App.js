@@ -2,37 +2,38 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-// Import other files
-import Hello from './models/Hello';
+import Editor from './models/Editor';
+import Preview from './models/Preview';
 
 var marked = require('marked');
 
 class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      text: ""
+    constructor() {
+      super();
+      this.state = {
+        value: ""
+      }
+      this.createMarkup = this.createMarkup.bind(this);
     }
-    this.createMarkup = this.createMarkup.bind(this);
-  }
 
-  update(e) {
-    this.setState({
-      text: marked(e.target.value)
-    });
-  }
+    handleChange (event) {
+      this.setState({
+        value: marked(event.target.value)
+      });
+    }
 
-  createMarkup() {
-    return {
-      __html: this.state.text
-    };
-  }
+    // ToDo: Move this to the Preview or some other class
+    createMarkup() {
+      return {
+        __html: this.state.value
+      };
+    }
 
   render() {
     return (
       <div>
-        <textarea id="editor" onChange={this.update.bind(this)} />
-        <p id="preview" dangerouslySetInnerHTML={this.createMarkup()}></p>
+        <Editor handleChange={this.handleChange.bind(this)} />
+        <Preview _html={this.createMarkup()} />
       </div>
     )
   }
