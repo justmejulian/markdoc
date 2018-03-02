@@ -16,6 +16,7 @@ $ cd markdoc
 
 # Install dependencies
 $ npm install
+$ npm install -g electron
 
 # Run the react app
 $ npm start
