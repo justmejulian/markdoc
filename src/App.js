@@ -16,9 +16,9 @@ class App extends React.Component {
       this.createMarkup = this.createMarkup.bind(this);
     }
 
-    handleChange (event) {
+    handleChange (value) {
       this.setState({
-        value: marked(event.target.value)
+        value: marked(value)
       });
     }
 
