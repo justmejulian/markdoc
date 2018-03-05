@@ -25,6 +25,10 @@ yarn-error.log*
 *.aux
 *.log
 *.toc
+*.bib
+*.lof
+*.lot
+*.run.xml
 
 # PDF output - usually a bad idea to keep this in Git
 *.pdf
