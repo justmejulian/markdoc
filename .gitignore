@@ -48,3 +48,6 @@ yarn-error.log*
 # BibTeX
 *.bbl
 *.blg
+package-lock.json
+package.json
+package.json
