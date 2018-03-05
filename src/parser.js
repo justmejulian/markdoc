@@ -1,4 +1,4 @@
-function parse(src) {
+function parser(src) {
     var parsed = src;
     // Headers
     parsed = parsed.replace(/^# (.*?)$/gm, "<h1>$1</h1>");
@@ -17,4 +17,4 @@ function parse(src) {
     return parsed;
 }
 
-export default parse
+export default parser

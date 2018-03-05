@@ -4,8 +4,10 @@ import './App.css';
 
 import Editor from './models/Editor';
 import Preview from './models/Preview';
+import parser from './parser.js';
 
-var marked = require('marked');
+// Old
+//var marked = require('marked');
 
 class App extends React.Component {
     constructor() {
@@ -18,7 +20,7 @@ class App extends React.Component {
 
     handleChange (value) {
       this.setState({
-        value: marked(value)
+        value: parser(value)
       });
     }
 
