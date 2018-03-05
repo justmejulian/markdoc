@@ -9,6 +9,7 @@ body {
 }
 
 #preview{
+    overflow: auto;
     margin: 0;
     display:inline-block;
     float: left;

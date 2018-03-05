@@ -1,0 +1,77 @@
+\documentclass[a4paper, 12pt]{article}
+% Packages
+\usepackage[margin=1.1in]{geometry} % Layout
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+\bibliography{source} % add sources to source.bib file
+\usepackage[backend=bibtex,style=verbose-trad2]{biblatex} % or ieee
+% https://www.latex-tutorial.com/tutorials/bibtex/
+
+\usepackage{titling} % Damit man  theauthor nutzen kann
+
+%Bild
+\graphicspath{{img/}}
+\usepackage{float} % Allows putting an [H] (wenn gross H dann bild genau dort)
+
+\usepackage{fancyhdr} % Header & Footer
+
+% Für Deutsch
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+
+\usepackage{siunitx} % Required for alignment
+\sisetup{
+	round-mode          = places, % Rounds numbers
+	round-precision     = 2, % to 2 places
+}
+\usepackage{booktabs} % For prettier tables 
+
+% Document information
+\title{PSIT 4 - Markdoc}
+\author{Julian Visser}
+
+% Header & Footer
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{PSIT4}
+\chead{Markdoc}
+\rhead{\theauthor}
+\cfoot{\thepage}
+
+\begin{document}
+	
+	\pagenumbering{gobble}
+	\begin{titlepage}
+		\maketitle
+	\end{titlepage}
+
+
+	%Index
+	\newpage
+	\pagenumbering{roman}
+	\tableofcontents
+	
+	% New page
+	\newpage
+	\pagenumbering{arabic}
+	
+	\section{Überschrift 1}
+	% Start writing here
+	
+	%No Praktisch zum footnotes mache zum zitiere
+	%\autocite[1]{DUMMY:1}
+	
+	% New page
+	\newpage
+	
+	\section{Anhang}
+	
+	\listoffigures
+	\listoftables
+	\printbibliography  % Uses source.bib to make ref table
+	
+\end{document}
