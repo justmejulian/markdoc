@@ -163,8 +163,4 @@ class HtmlTOC extends HtmlComponent {
 // ).toHtml());
 
 
-export default {
-    HtmlComponent, HtmlDOM,
-    HtmlText,
-    HtmlHeader, HtmlTextLine, HtmlTOC
-}
+export default HtmlDOM;
