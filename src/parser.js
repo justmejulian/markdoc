@@ -7,14 +7,14 @@ class HtmlComponent { // done
         this.parent = null;
         this.children = [];
     }
-    
+
     addChild(component) {
         component.parent = this;
         this.children.push(component);
     }
     removeChild(component) {
-        if (children.includes(component)) {
-            this.children.splice(children.indexOf(component));
+        if (this.children.includes(component)) {
+            this.children.splice(this.children.indexOf(component));
             component.parent = null;
         }
     }
