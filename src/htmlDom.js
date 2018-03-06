@@ -23,13 +23,16 @@ class HtmlComponent { // done
 class HtmlDOM extends HtmlComponent {
     static fromSource(source) {
         var dom = new HtmlDOM();
+        var toc = null;
         for (const line of source.split(/\r?\n/g)) {
             if (HtmlHeader.test(line)) {
                 dom.addChild(HtmlHeader.parse(line));
                 continue;
             }
-            if (HtmlTOC.test(line)) {
-                dom.addChild(HtmlTOC.parse(line));
+            if (!toc && HtmlTOC.test(line)) {
+                toc = HtmlTOC.parse(line);
+                dom.addChild(toc);
+                continue;
             }
             //TODO: insert lists, quotes, codeblocks etc.
             if (HtmlTextLine.test(line)) {
@@ -37,6 +40,7 @@ class HtmlDOM extends HtmlComponent {
                 continue;
             }
         }
+        toc && toc.compile();
         return dom;
     }
     toHtml() { // done
@@ -59,6 +63,7 @@ class HtmlText extends HtmlComponent { // done
         return true;
     }
 
+    // TODO: Make a more sophisticated parser for text elements
     static parse(line) { // NOTE: Does not account for unbalanced parenthesis
         line = line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
         line = line.replace(/__(.+?)__/g, "<strong>$1</strong>");
@@ -102,6 +107,7 @@ class HtmlHeader extends HtmlComponent {
     constructor(value, level) {
         super();
         this.level = level;
+        this.id = null;
         this.addChild(HtmlText.parse(value));
     }
 
@@ -116,7 +122,7 @@ class HtmlHeader extends HtmlComponent {
     }
 
     toHtml() {
-        var pretag = "<h" + this.level + ">";
+        var pretag = "<h" + this.level + (this.id ? " id=\"" + this.id + "\">" : ">");
         var posttag = "</h" + this.level + ">";
         var tags = [pretag];
         for (var component of this.children) {
@@ -130,14 +136,14 @@ class HtmlHeader extends HtmlComponent {
 class HtmlTOC extends HtmlComponent {
 
     static test(line) {
-        return /^@TOC$/gm.test(line);
+        return /^\[TOC\]$/gm.test(line);
     }
 
     static parse(line) {
         return new HtmlTOC();
     }
 
-    toHtml() {
+    toHtml() { //TODO: Decide on a proper HTML tag
         var tags = ["<div id=\"toc\" class=\"toc\">"];
         for (var component of this.children) {
             tags.push(component.toHtml());
@@ -148,23 +154,51 @@ class HtmlTOC extends HtmlComponent {
 
     compile() {
         this.children = [];
+        var headercount = 0;
+        var list = new HtmlNumberedList();
         for (var component of this.parent.children) {
             if (component instanceof HtmlHeader) {
-                //TODO: Decide on how to make the TOC
+                headercount++;
+                component.id = "header" + headercount;
+                list.addChild(new HtmlText(
+                    "<li><a href=\"#" + component.id + "\">" + 
+                    component.toHtml() + 
+                    "</a></li>"
+                ));
             }
         }
+        this.addChild(list);
     }
 }
 
-// For testing:
-// console.log(HtmlDOM.fromSource(
-//     "## t_~~e~~**st**_\n" +
-//     "Hi **there**!"
-// ).toHtml());
+class HtmlNumberedList extends HtmlComponent {
+    
+    test(line) {
+        return /^\d+?\. .*?$/gm.test(line);
+    }
 
-
-export default {
-    HtmlComponent, HtmlDOM,
-    HtmlText,
-    HtmlHeader, HtmlTextLine, HtmlTOC
+    toHtml() {
+        var tags = ["<ol>"];
+        for (var component of this.children) {
+            tags.push(component.toHtml());
+        }
+        tags.push("</ol>");
+        return tags.join("");
+    }
 }
+
+
+
+// For testing:
+console.log(HtmlDOM.fromSource(
+    "## t_~~e~~**st**_\n" +
+    "Hi **there**!\n" +
+    "[TOC]"
+).toHtml());
+
+
+// export default {
+//     HtmlComponent, HtmlDOM,
+//     HtmlText,
+//     HtmlHeader, HtmlTextLine, HtmlTOC
+// }
