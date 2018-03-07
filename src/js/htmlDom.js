@@ -161,8 +161,8 @@ class HtmlTOC extends HtmlComponent {
                 headercount++;
                 component.id = "header" + headercount;
                 list.addChild(new HtmlText(
-                    "<li><a href=\"#" + component.id + "\">" + 
-                    component.toHtml() + 
+                    "<li><a href=\"#" + component.id + "\">" +
+                    component.toHtml() +
                     "</a></li>"
                 ));
             }
@@ -172,7 +172,7 @@ class HtmlTOC extends HtmlComponent {
 }
 
 class HtmlNumberedList extends HtmlComponent {
-    
+
     test(line) {
         return /^\d+?\. .*?$/gm.test(line);
     }
@@ -196,7 +196,7 @@ console.log(HtmlDOM.fromSource(
     "[TOC]"
 ).toHtml());
 
-
+export default HtmlDOM;
 // export default {
 //     HtmlComponent, HtmlDOM,
 //     HtmlText,

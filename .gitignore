@@ -1,13 +1,14 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
-
-# dependencies
+# NPM packages
 /node_modules
 
-# testing
-/coverage
-
-# production
+# Webpack build directory
 /build
+
+# Packaged app
+/bin
+
+#sass
+.sass-cache
 
 # misc
 .DS_Store
@@ -15,10 +16,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
-
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 #--------------------- Latex ---------------------
 # LaTeX temporary files

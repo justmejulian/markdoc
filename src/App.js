@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import './styles/App.scss';
 
 import Editor from './models/Editor';
 import Preview from './models/Preview';
-import HtmlDOM from './htmlDom.js';
+import HtmlDOM from './js/htmlDom.js';
 
 // Old
 //var marked = require('marked');

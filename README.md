@@ -16,11 +16,13 @@ $ cd markdoc
 
 # Install dependencies
 $ npm install
-$ npm install electron -g
 
-# Run the react app
+# Run
 $ npm start
 
-# In a separate window, we launch electron by running. (after navigating back into the folder)
-$ electron .
+# To develop on localhost:8080
+$ npm run web
+
+# to create a create darwin app for Mac OSX
+$ npm run bin
 ```
