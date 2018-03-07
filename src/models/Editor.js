@@ -15,7 +15,7 @@ class Editor extends React.Component {
     handleKeyUp(e) {
         // Enter pressed
         if(e.keyCode === 13){
-                console.log("Enter Pressed");
+                //console.log("Enter Pressed");
                 this.checkIfList();
         }
     }

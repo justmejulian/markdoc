@@ -4,7 +4,7 @@ import './App.css';
 
 import Editor from './models/Editor';
 import Preview from './models/Preview';
-import HtmlDOM from './parser.js';
+import HtmlDOM from './htmlDom.js';
 
 // Old
 //var marked = require('marked');
