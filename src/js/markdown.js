@@ -108,169 +108,19 @@ class MDText extends MDComponent { // done
 
     // TODO: Make a more sophisticated parser for text elements
     parse(line) { // NOTE: Does not account for unbalanced parenthesis
-        var daddy = this;
-        var formatStack = [daddy];
-        var current = null;
-        var asterisks = 0;
-        var underscores = 0;
-        var tilde = 0;
-        var slantedApostrophs = 0;
-        var dollars = 0;
-        for (var i = 0; i < line.length; i++) {
-            var char = line.charAt(i);
-            //TODO: Parse text
-            switch (char) {
-                case '\*':
-                    asterisks++;
-                    underscores = 0;
-                    tilde = 0;
-                    slantedApostrophs = 0;
-                    dollars = 0;
-                    break;
-                case '_':
-                    asterisks = 0;
-                    underscores++;
-                    tilde = 0;
-                    slantedApostrophs = 0;
-                    dollars = 0;
-                    break;
-                case '~':
-                    asterisks = 0;
-                    underscores = 0;
-                    tilde++;
-                    slantedApostrophs = 0;
-                    dollars = 0;
-                    break;
-                case '`':
-                    asterisks = 0;
-                    underscores = 0;
-                    tilde = 0;
-                    slantedApostrophs++;
-                    dollars = 0;
-                    break;
-                case '$':
-                    asterisks = 0;
-                    underscores = 0;
-                    tilde = 0;
-                    slantedApostrophs = 0;
-                    dollars++;
-                    break;
-                default:
-                    if (asterisks == 2 || underscores == 2) { // Bold
-                        console.log("*BOLD*");
-                        if (current == null) {
-                            current = new MDTextBold();
-                            daddy.addChild(current);
-                            formatStack.push(current);
-                        }
-                        if (current instanceof MDTextBold) { // End of Bold block
-                            formatStack.pop();
-                            current = formatStack[formatStack.length];
-                        } else { // Start of Bold block
-                            var newObj = new MDTextBold();
-                            formatStack.push(newObj);
-                            current.addChild(newObj);
-                        }
-                    }
-                    if (asterisks == 1) { // Italics
-                        if (current == null) {
-                            current = new MDTextItalics();
-                            daddy.addChild(current);
-                            formatStack.push(current);
-                        }
-                        if (current instanceof MDTextItalics) { // End of Italics block
-                            formatStack.pop();
-                            current = formatStack[formatStack.length];
-                        } else { // Start of Italics block
-                            var newObj = new MDTextItalics();
-                            formatStack.push(newObj);
-                            current.addChild(newObj);
-                        }
-                    }
-                    if (underscores == 1) { // Underscore
-                        if (current == null) {
-                            current = new MDTextUnderscore();
-                            daddy.addChild(current);
-                            formatStack.push(current);
-                        }
-                        if (current instanceof MDTextUnderscore) { // End of Underscore block
-                            formatStack.pop();
-                            current = formatStack[formatStack.length];
-                        } else { // Start of Underscore block
-                            var newObj = new MDTextUnderscore();
-                            formatStack.push(newObj);
-                            current.addChild(newObj);
-                        }
-                    }
-                    if (tilde == 2) { // Strikethrough
-                        if (current == null) {
-                            current = new MDTextStrikeThrough();
-                            daddy.addChild(current);
-                            formatStack.push(current);
-                        }
-                        if (current instanceof MDTextStrikeThrough) { // End of Strikethrough block
-                            formatStack.pop();
-                            current = formatStack[formatStack.length];
-                        } else { // Start of Strikethrough block
-                            var newObj = new MDTextStrikeThrough();
-                            formatStack.push(newObj);
-                            current.addChild(newObj);
-                        }
-                    }
-                    if (slantedApostrophs == 2) { // Code
-                        if (current == null) {
-                            current = new MDTextCode();
-                            daddy.addChild(current);
-                            formatStack.push(current);
-                        }
-                        if (current instanceof MDTextCode) { // End of Code block
-                            formatStack.pop();
-                            current = formatStack[formatStack.length];
-                        } else { // Start of Code block
-                            var newObj = new MDTextCode();
-                            formatStack.push(newObj);
-                            current.addChild(newObj);
-                        }
-                    }
-                    if (slantedApostrophs == 2) { // Math
-                        if (current == null) {
-                            current = new MDTextMath();
-                            daddy.addChild(current);
-                            formatStack.push(current);
-                        }
-                        if (current instanceof MDTextMath) { // End of Math block
-                            formatStack.pop();
-                            current = formatStack[formatStack.length];
-                        } else { // Start of Math block
-                            var newObj = new MDTextMath();
-                            formatStack.push(newObj);
-                            current.addChild(newObj);
-                        }
-                    }
-                    if (current == null) {
-                        current = new MDTextPlain();
-                        daddy.addChild(current);
-                        formatStack.push(current);
-                    }
-                    console.log(current.value);
-                    current.value += char;
-                    asterisks = 0;
-                    underscores = 0;
-                    tilde = 0;
-                    slantedApostrophs = 0;
-                    dollars = 0;
-                    break;
-            }
-        }
-        return this;
+        var result = new MDText();
+        result.value = line;
+        return result;
     }
 
     toHtml() {
-        var tags = [];
-        for (var component of this.children) {
-            tags.push(component.toHtml());
-        }
-        return tags.join("");
+        var text = this.value;
+        text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        text = text.replace(/__(.+?)__/g, "<strong>$1</strong>");
+        text = text.replace(/\*(.+?)\*/g, "<em>$1</em>");
+        text = text.replace(/_(.+?)_/g, "<em>$1</em>");
+        text = text.replace(/~~(.+?)~~/g, "<s>$1</s>");
+        return text;
     }
 }
 
