@@ -23,6 +23,11 @@ $ npm start
 # To develop on localhost:8080
 $ npm run web
 
-# to create a create darwin app for Mac OSX
-$ npm run bin
+# Create app
+# for Mac OSX
+$ npm run package-mac
+# for Windows
+$ npm run package-win
+# for Linux
+$ npm run package-linux
 ```
