@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import './styles/App.scss';
+import './styles/App.sass';
+import './styles/Preview.scss';
 
 import Editor from './models/Editor';
 import Preview from './models/Preview';
