@@ -26,6 +26,8 @@
     "start": "webpack --config webpack.config.electron.js electron && electron .",
     "web": "webpack-dev-server --config webpack.config.web.js --hot --inline",
     "//": "IMPORTANT! make sure to ignore the target directory when packing!",
-    "bin": "webpack  --config webpack.config.electron.js electron -p && electron-packager ./ electronWebpack2ReactSass --out ./bin --platform darwin --arch x64 --version=1.7.2 --overwrite --ignore=\"ignore|bin|node_modules\""
+    "package-mac": "webpack  --config webpack.config.electron.js electron -p && electron-packager ./ Markdoc --out ./bin --platform darwin --arch x64  --overwrite --ignore=\"ignore|bin|node_modules\"",
+    "package-win": "webpack  --config webpack.config.electron.js electron -p && electron-packager . Markdoc --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --ignore=\"ignore|bin|node_modules\"",
+    "package-linux": "webpack  --config webpack.config.electron.js electron -p && electron-packager . Markdoc --overwrite --asar=true --platform=linux --arch=x64  --prune=true --out=release-builds --ignore=\"ignore|bin|node_modules\""
   }
 }
