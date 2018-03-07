@@ -4,7 +4,7 @@ import './styles/Preview.scss';
 
 import Editor from './models/Editor';
 import Preview from './models/Preview';
-import HtmlDOM from './js/htmlDom.js';
+import {MDDOM} from './js/markdown.js';
 
 // Old
 //var marked = require('marked');
@@ -20,7 +20,7 @@ class App extends React.Component {
 
   handleChange (value) {
     this.setState({
-      value: HtmlDOM.fromSource(value).toHtml()
+      value: MDDOM.parse(value).toHtml()
     });
   }
 
