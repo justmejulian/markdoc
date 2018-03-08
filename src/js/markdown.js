@@ -305,13 +305,13 @@ class MDCodeBlock extends MDComponent {
 //     "Hi **there**!\n" +
 //     "[TOC]"
 // ).toHtml());
-console.log(MDDOM.parse(
-    "this is a **Test**!"
-).toHtml());
+// console.log(MDDOM.parse(
+//     "this is a **Test**!"
+// ).toHtml());
 
-// export {
-//     MDComponent,
-//     MDDOM,
-//     MDText, MDTextPlain, MDTextBold, MDTextItalics, MDTextUnderscore, MDTextStrikeThrough, MDTextMath, MDTextCode,
-//     MDTextLine, MDHeader, MDTOC, MDNumberedList, MDCodeBlock
-// }
+export {
+    MDComponent,
+    MDDOM,
+    MDText, MDTextPlain, MDTextBold, MDTextItalics, MDTextUnderscore, MDTextStrikeThrough, MDTextMath, MDTextCode,
+    MDTextLine, MDHeader, MDTOC, MDNumberedList, MDCodeBlock
+}
