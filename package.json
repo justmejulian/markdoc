@@ -13,6 +13,7 @@
     "electron": "^1.8.2",
     "electron-packager": "^7.0.0",
     "extract-text-webpack-plugin": "^2.1.0",
+    "jasmine": "^3.1.0",
     "node-sass": "^3.4.2",
     "react": "^0.14.0",
     "react-dom": "^0.14.0",
@@ -25,6 +26,7 @@
   "scripts": {
     "start": "webpack --config webpack.config.electron.js electron && electron .",
     "web": "webpack-dev-server --config webpack.config.web.js --hot --inline",
+    "test": "jasmine",
     "//": "IMPORTANT! make sure to ignore the target directory when packing!",
     "package-mac": "webpack  --config webpack.config.electron.js electron -p && electron-packager ./ Markdoc --out ./bin --platform darwin --arch x64  --overwrite --ignore=\"ignore|bin|node_modules\"",
     "package-win": "webpack  --config webpack.config.electron.js electron -p && electron-packager . Markdoc --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --ignore=\"ignore|bin|node_modules\"",

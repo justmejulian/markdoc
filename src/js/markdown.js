@@ -1,3 +1,4 @@
+'use strict';
 // New parser approach using the component pattern
 // TODO: complete existing classes and add missing ones
 // TODO: Solve problem of multiline encompassing elements(lists, quotes, code) - WIP, using state pattern(parser classes)
@@ -93,13 +94,26 @@ class CodeBlockParser extends Parser {
     }
 }
 
+class NumberedListParser extends Parser {
+    constructor(dom, nList) {
+        super(dom);
+        this.nList = nList;
+    }
+    parse(line) {
+        if (this.nList.parse(line)) { // End of code block reached
+            return this;
+        }
+        return new NormalParser();
+    }
+}
+
 
 // text components:
 
 class MDText extends MDComponent { // done
-    constructor() {
+    constructor(value = "") {
         super();
-        this.value = "";
+        this.value = value;
     }
 
     static test(line) {
@@ -121,6 +135,9 @@ class MDText extends MDComponent { // done
         text = text.replace(/_(.+?)_/g, "<em>$1</em>");
         text = text.replace(/~~(.+?)~~/g, "<s>$1</s>");
         return text;
+    }
+    toString() {
+        return this.value;
     }
 }
 
@@ -185,6 +202,13 @@ class MDTextLine extends MDComponent {
         tags.push("</p>");
         return tags.join("");
     }
+    toString() {
+        var tags = [];
+        for (var component of this.children) {
+            tags.push(component.toString());
+        }
+        return tags.join("");
+    }
 }
 
 class MDHeader extends MDComponent {
@@ -215,6 +239,13 @@ class MDHeader extends MDComponent {
         tags.push(posttag);
         return tags.join("");
     }
+    toString() {
+        var tags = [];
+        for (var component of this.children) {
+            tags.push(component.toString());
+        }
+        return `H${this.level}: ${tags.join("")}`;
+    }
 }
 
 class MDTOC extends MDComponent {
@@ -227,15 +258,6 @@ class MDTOC extends MDComponent {
         return new MDTOC();
     }
 
-    toHtml() { //TODO: Decide on a proper HTML tag
-        var tags = ["<div id=\"toc\" class=\"toc\">"];
-        for (var component of this.children) {
-            tags.push(component.toHtml());
-        }
-        tags.push("</div>");
-        return tags.join("");
-    }
-
     compile() {
         this.children = [];
         var headercount = 0;
@@ -246,19 +268,56 @@ class MDTOC extends MDComponent {
                 component.id = "header" + headercount;
                 list.addChild(new MDText(
                     "<li><a href=\"#" + component.id + "\">" +
-                    component.toHtml() +
+                    component.toString() +
                     "</a></li>"
                 ));
             }
         }
         this.addChild(list);
     }
+
+    toHtml() { //TODO: Decide on a proper HTML tag
+        var tags = ["<div id=\"toc\" class=\"toc\">"];
+        for (var component of this.children) {
+            tags.push(component.toHtml());
+        }
+        tags.push("</div>");
+        return tags.join("");
+    }
+    toString() {
+        var tags = [];
+        for (var component of this.children) {
+            tags.push(component.toString());
+        }
+        return `TOC: ${tags.join(", ")}`;
+    }
 }
 
 class MDNumberedList extends MDComponent {
-
+    constructor() {
+        super();
+        this.headread = false;
+        this.addChild(new MDTextLine(""));
+    }
     static test(line) {
         return /^\d+?\. .*?$/gm.test(line);
+    }
+    parse(line) {
+        if (!this.headread && /^\d+?\. .*?$/gm.test(line)) { // Beginning of code block
+            var number = line.replace(/^(\d+?)\. (.*?)$/g, "$1");
+            var content = line.replace(/^(\d+?)\. (.*?)$/g, "$2");
+            this.headread = true;
+            return true;
+        }
+        if (/^\d+?\. .*?$/gm.test(line)) { // New number
+            
+        }
+        if (/^$/gm.test(line)) { // End of code block detected
+            return false;
+        }
+        // new line of code block content
+        this.children[0].value += line + '\n';
+        return true;
     }
 
     toHtml() {
@@ -269,6 +328,13 @@ class MDNumberedList extends MDComponent {
         tags.push("</ol>");
         return tags.join("");
     }
+    toString() {
+        var tags = [];
+        for (var component of this.children) {
+            tags.push(component.toString());
+        }
+        return `NList: ${tags.join(", ")}`;
+    }
 }
 
 class MDCodeBlock extends MDComponent {
@@ -277,7 +343,6 @@ class MDCodeBlock extends MDComponent {
         this.language = null;
         this.headread = false;
         this.addChild(new MDTextLine(""));
-        this.children[0].value = "";
     }
     static test(line) {
         return /^```.*?$/gm.test(line);
@@ -295,6 +360,9 @@ class MDCodeBlock extends MDComponent {
         this.children[0].value += line + '\n';
         return true;
     }
+    toString() {
+        return `Math: ${this.value}`;
+    }
 }
 
 
@@ -305,11 +373,16 @@ class MDCodeBlock extends MDComponent {
 //     "Hi **there**!\n" +
 //     "[TOC]"
 // ).toHtml());
-console.log(MDDOM.parse(
-    "this is a **Test**!"
-).toHtml());
+// console.log(MDDOM.parse(
+//     "this is a **Test**!"
+// ).toHtml());
 
-// export {
+//exports.MDComponent = MDComponent;
+module.exports = {
+    MDComponent: MDComponent,
+    MDDOM: MDDOM
+}
+// {
 //     MDComponent,
 //     MDDOM,
 //     MDText, MDTextPlain, MDTextBold, MDTextItalics, MDTextUnderscore, MDTextStrikeThrough, MDTextMath, MDTextCode,
