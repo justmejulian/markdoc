@@ -377,7 +377,6 @@ class MDCodeBlock extends MDComponent {
 //     "this is a **Test**!"
 // ).toHtml());
 
-<<<<<<< HEAD
 //exports.MDComponent = MDComponent;
 module.exports = {
     MDComponent: MDComponent,
@@ -389,11 +388,3 @@ module.exports = {
 //     MDText, MDTextPlain, MDTextBold, MDTextItalics, MDTextUnderscore, MDTextStrikeThrough, MDTextMath, MDTextCode,
 //     MDTextLine, MDHeader, MDTOC, MDNumberedList, MDCodeBlock
 // }
-=======
-export {
-    MDComponent,
-    MDDOM,
-    MDText, MDTextPlain, MDTextBold, MDTextItalics, MDTextUnderscore, MDTextStrikeThrough, MDTextMath, MDTextCode,
-    MDTextLine, MDHeader, MDTOC, MDNumberedList, MDCodeBlock
-}
->>>>>>> 338e735993f38bde80e92a354bf9b50b8139f862
