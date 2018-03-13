@@ -5,8 +5,8 @@
   "main": "main.js",
   "scripts": {
     "dev": "webpack",
-    "serve": "electron .",
-    "start": "npm-run-all --parallel dev serve"
+    "electron": "electron .",
+    "start": "npm-run-all --parallel dev electron"
   },
   "author": "PSIT Gruppe ",
   "repository": "https://github.engineering.zhaw.ch/vissejul/markdoc.git",
@@ -22,6 +22,7 @@
     "file-loader": "^ 1.1.11",
     "node-sass": "^4.7.2",
     "npm-run-all": "^4.1.2",
+    "react-height": "^3.0.0",
     "sass-loader": "^6.0.7",
     "style-loader": "^0.20.3",
     "webpack": "^2.2.1"
