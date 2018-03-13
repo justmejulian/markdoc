@@ -9,7 +9,7 @@
     "start": "npm-run-all --parallel dev serve"
   },
   "author": "PSIT Gruppe ",
-  "repository": "github.engineering.zhaw.ch/vissejul",
+  "repository": "https://github.engineering.zhaw.ch/vissejul/markdoc.git",
   "devDependencies": {
     "babel-core": "^6.23.1",
     "babel-loader": "^7.1.4",

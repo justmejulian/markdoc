@@ -33,20 +33,12 @@ $ git clone https://github.engineering.zhaw.ch/vissejul/markdoc.git
 # Go into the repository
 $ cd markdoc
 
+# Check node version(v8.10. or later)
+$ node -v
+
 # Install dependencies
 $ npm install
 
 # Run
 $ npm start
-
-# To develop on localhost:8080
-$ npm run web
-
-# Create app
-# for Mac OSX
-$ npm run package-mac
-# for Windows
-$ npm run package-win
-# for Linux
-$ npm run package-linux
 ```
