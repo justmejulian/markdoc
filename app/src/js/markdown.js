@@ -61,7 +61,14 @@ class MDText extends MDComponent {
 
 class MDTextBold extends MDText {
     toHtml() {
-        return `<strong>"${super.toHtml()}</strong>`;
+        return `<strong>${super.toHtml()}</strong>`;
+    }
+    toString() {
+        var tags = [];
+        for (var component of this.children) {
+            tags.push(component.toString());
+        }
+        return tags.join("");
     }
     toMarkDown() {
         var tags = [];
@@ -73,19 +80,14 @@ class MDTextBold extends MDText {
 }
 class MDTextItalics extends MDText {
     toHtml() {
-        return `<em>"${super.toHtml()}</em>`;
+        return `<em>${super.toHtml()}</em>`;
     }
-    toMarkDown() {
+    toString() {
         var tags = [];
         for (var component of this.children) {
-            tags.push(component.toMarkDown());
+            tags.push(component.toString());
         }
-        return `__${tags.join("")}__`;
-    }
-}
-class MDTextUnderscore extends MDText {
-    toHtml() {
-        return `<u>"${super.toHtml()}</u>`;
+        return tags.join("");
     }
     toMarkDown() {
         var tags = [];
@@ -95,33 +97,27 @@ class MDTextUnderscore extends MDText {
         return `_${tags.join("")}_`;
     }
 }
-class MDTextStrikeThrough extends MDText {
-    toHtml() {
-        return `<s>"${super.toHtml()}</s>`;
-    }
-    toMarkDown() {
-        var tags = [];
-        for (var component of this.children) {
-            tags.push(component.toMarkDown());
-        }
-        return `~~${tags.join("")}~~`;
-    }
-}
 class MDTextCode extends MDText {
     toHtml() {
-        return `<code>"${super.toHtml()}</code>`;
+        return `<code>${this.value}</code>`;
+    }
+    toString() {
+        return this.value;
     }
     toMarkDown() {
-        var tags = [];
-        for (var component of this.children) {
-            tags.push(component.toMarkDown());
-        }
-        return `\`${tags.join("")}\``;
+        return `\`${this.value}\``;
     }
 }
 class MDTextMath extends MDText {
     toHtml() {
-        return `<span>"${super.toHtml()}</span>`;
+        return `<span>${super.toHtml()}</span>`;
+    }
+    toString() {
+        var tags = [];
+        for (var component of this.children) {
+            tags.push(component.toString());
+        }
+        return tags.join("");
     }
     toMarkDown() {
         var tags = [];
@@ -129,106 +125,6 @@ class MDTextMath extends MDText {
             tags.push(component.toMarkDown());
         }
         return `\$${tags.join("")}\$`;
-    }
-}
-
-
-// per line components:
-
-class MDParagraph extends MDComponent {
-    toHtml() {
-        return `<p>${super.toHtml()}</p>`;
-    }
-}
-
-class MDHeader extends MDComponent {
-    toHtml() {
-        return `<h${this.level}>${super.toHtml()}</h${this.level}>`;
-    }
-    toMarkDown() {
-        return `${"#".repeat(this.level)} ${super.toMarkDown()}`;
-    }
-}
-
-class MDTOC extends MDComponent {
-    compile(candidates) {
-        this.children = [];
-        var headercount = 0;
-        var list = new MDOrderedList();
-        for (var component of candidates) {
-            if (component instanceof MDHeader) {
-                headercount++;
-                component.id = "header" + headercount;
-                var item = new MDItem();
-                var text = new MDText();
-                text.value = component.toString();
-                var link = new MDLink();
-                link.title = text.value;
-                link.destination = `#${component.id}`;
-                link.addChild(text);
-                item.addChild(link);
-                list.addChild(item);
-            }
-        }
-        this.addChild(list);
-    }
-    toHtml() { //TODO: Decide on a proper HTML tag
-        return `<div id="toc" class="toc">${super.toHtml()}</div>`;
-    }
-    toString() {
-        return this.children[0].toString();
-    }
-    toMarkDown() {
-        return "[TOC]";
-    }
-}
-
-class MDOrderedList extends MDComponent {
-    toHtml() {
-        if (this.start) {
-            return `<ol start="${this.start}">${super.toHtml()}</ol>`
-        }
-        return `<ol>${super.toHtml()}</ol>`;
-    }
-    toString() {
-        var tags = [];
-        for (var component of this.children) {
-            tags.push(component.toString());
-        }
-        return tags.join("\n");
-    }
-    toMarkDown() {
-        var tags = [];
-        for (var component of this.children) {
-            tags.push(component.toMarkDown());
-        }
-        return tags.join("\n");
-    }
-}
-
-class MDBulletList extends MDComponent {
-    toHtml() {
-        return `<ul>${super.toHtml()}</ul>`;
-    }
-    toString() {
-        var tags = [];
-        for (var component of this.children) {
-            tags.push(component.toString());
-        }
-        return tags.join("\n");
-    }
-    toMarkDown() {
-        var tags = [];
-        for (var component of this.children) {
-            tags.push(component.toMarkDown());
-        }
-        return tags.join("\n");
-    }
-}
-
-class MDItem extends MDComponent {
-    toHtml() {
-        return `<li>${super.toHtml()}</li>`;
     }
 }
 
@@ -267,16 +163,139 @@ class MDSoftBreak extends MDComponent {
     }
 }
 
+
+// per line components:
+
+class MDParagraph extends MDComponent {
+    toHtml() {
+        return `<p>${super.toHtml()}</p>`;
+    }
+    toString() {
+        return super.toString();
+    }
+    toMarkDown() {
+        return super.toMarkDown();
+    }
+}
+
+class MDHeader extends MDComponent {
+    toHtml() {
+        return `<h${this.level}>${super.toHtml()}</h${this.level}>`;
+    }
+    toMarkDown() {
+        return `${"#".repeat(this.level)} ${super.toMarkDown()}`;
+    }
+}
+
+class MDTOC extends MDComponent {
+    compile(candidates) {
+        this.children = [];
+        var headercount = 0;
+        var list = new MDOrderedList();
+        for (var component of candidates) {
+            if (component instanceof MDHeader) {
+                headercount++;
+                component.id = "header" + headercount;
+                var item = new MDItem();
+                var text = new MDText();
+                text.value = component.toString();
+                var link = new MDLink();
+                link.title = text.value;
+                link.destination = `#${component.id}`;
+                link.addChild(text);
+                item.addChild(link);
+                list.addChild(item);
+            }
+        }
+        this.addChild(list);
+    }
+    toHtml() { //TODO: Decide on a proper HTML tag
+        return `<div id="toc" class="toc">${super.toHtml()}</div>`;
+    }
+    toString() {
+        return "\n";
+    }
+    toMarkDown() {
+        return "[TOC]\n";
+    }
+}
+
+class MDListBase extends MDComponent {
+    scoutNestedLevel() {
+        this.level = 0;
+        var parent;
+        while (parent = this.parent) {
+            this.level += parent instanceof MDListBase ? 1 : 0;
+        }
+    }
+}
+
+class MDOrderedList extends MDComponent {
+    toHtml() {
+        if (this.start != 1) {
+            return `<ol start="${this.start}">${super.toHtml()}</ol>`
+        }
+        return `<ol>${super.toHtml()}</ol>`;
+    }
+    toString() {
+        var index = this.start || 1;
+        var tags = [];
+        for (var component of this.children) {
+            tags.push("\t".repeat(this.level) + component.toString());
+            index++;
+        }
+        return tags.join("\n") + "\n";
+    }
+    toMarkDown() {
+        var index = this.start || 1;
+        var tags = [];
+        for (var component of this.children) {
+            tags.push("\t".repeat(this.level) + index + ". " + component.toMarkDown());
+            index++;
+        }
+        return tags.join("\n") + "\n";
+    }
+}
+
+class MDBulletList extends MDComponent {
+    toHtml() {
+        return `<ul>${super.toHtml()}</ul>`;
+    }
+    toString() {
+        var tags = [];
+        for (var component of this.children) {
+            tags.push("\t".repeat(this.level) + component.toString());
+        }
+        return tags.join("\n") + "\n";
+    }
+    toMarkDown() {
+        var tags = [];
+        for (var component of this.children) {
+            tags.push("\t".repeat(this.level) + component.toMarkDown());
+        }
+        return tags.join("\n") + "\n";
+    }
+}
+
+class MDItem extends MDComponent {
+    toHtml() {
+        return `<li>${super.toHtml()}</li>`;
+    }
+}
+
 class MDBlockQuote extends MDComponent {
     toHtml() {
         return `<blockquote>${super.toHtml()}</blockquote>`;
+    }
+    toString() {
+        return super.toString() + "\n";
     }
     toMarkDown() {
         var tags = [];
         for (var component of this.children) {
             tags.push(component.toMarkDown());
         }
-        return "> " + tags.join("\n> ");
+        return "> " + tags.join("\n> ") + "\n";
     }
 }
 
@@ -290,7 +309,19 @@ class MDCodeBlock extends MDComponent {
         return `Math: ${this.value}`;
     }
     toMarkDown() {
-        return "```" + this.language + "\n" + this.value + "```";
+        return "```" + this.language + "\n" + this.value + "```\n";
+    }
+}
+
+class MDThematicBreak extends MDComponent {
+    toHtml() {
+        return "<hr/>";
+    }
+    toString() {
+        return "";
+    }
+    toMarkDown() {
+        return "---";
     }
 }
 
@@ -317,12 +348,14 @@ class MDDOM extends MDComponent {
             }
             if (component instanceof MDParagraph) {
                 if (/^\[TOC\]$/gm.test(component.toString())) {
-                    //TODO: Make a TOC out of it
                     var toc = new MDTOC();
                     toc.parent = dom;
                     toc.compile(dom.children);
                     dom.children[index] = toc;
                 }
+            }
+            if (component instanceof MDListBase) {
+                component.scoutNestedLevel();
             }
             //TODO: Add compile call for glossary, literature, list of figures etc.
         }
@@ -355,6 +388,9 @@ class MDDOM extends MDComponent {
                 break;
             case "softbreak":
                 translated = new MDSoftBreak();
+                break;
+            case "thematic_break":
+                translated = new MDThematicBreak();
                 break;
             case "paragraph":
                 translated = new MDParagraph();
@@ -413,35 +449,29 @@ class MDDOM extends MDComponent {
         for (var component of this.children) {
             lines.push(component.toString());
         }
-        return lines.join('\n');
+        return lines.join('\n').replace(/\n$/g, "");
     }
     toMarkDown() {
         var lines = [];
         for (var component of this.children) {
             lines.push(component.toMarkDown());
         }
-        return lines.join('\n');
+        return lines.join('\n').replace(/\n$/g, "");
     }
 }
-// var dom = MDDOM.parse("# Test**header**\n" +
-// "[TOC]\n\n" +
-// "Hi there!");
-// console.log("@@@@@ toString() =>");
-// console.log(dom.toString());
-// console.log("@@@@@ toMarkDown() =>");
-// console.log(dom.toMarkDown());
-// console.log("@@@@@ toHtml() =>");
-// console.log(dom.toHtml());
+var dom = MDDOM.parse(
+    "1. item one\n" +
+    "2. item two\n" +
+    "   - sublist\n" +
+    "   - sublist"
+);
 
-//exports.MDComponent = MDComponent;
 module.exports = {
     MDComponent: MDComponent,
     MDDOM: MDDOM,
     MDText: MDText,
     MDTextBold: MDTextBold,
     MDTextItalics: MDTextItalics,
-    MDTextStrikeThrough: MDTextStrikeThrough,
-    MDTextUnderscore: MDTextUnderscore,
     MDTextCode: MDTextCode,
     MDTextMath: MDTextMath,
     MDParagraph: MDParagraph,
