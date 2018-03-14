@@ -24,12 +24,19 @@ describe("Markdown parser", () => {
         var dom = MDDOM.parse(
             "1. first\n" +
             "3. second!\n" +
-            "1. third though!\n" +
+            "2. third though!\n" +
             "\n" +
             "5. fourth\n" +
             "6. fifth"
         );
         expect(dom.toString()).toEqual(
+            "first\n" +
+            "second!\n" +
+            "third though!\n" +
+            "fourth\n" +
+            "fifth"
+        );
+        expect(dom.toMarkDown()).toEqual(
             "1. first\n" +
             "2. second!\n" +
             "3. third though!\n" +
@@ -49,14 +56,14 @@ describe("Markdown parser", () => {
         var dom = MDDOM.parse(
             "1. item one\n" +
             "2. item two\n" +
-            "   - sublist\n" +
-            "   - sublist"
+            "	- sublist\n" +
+            "	- sublist"
         );
         expect(dom.toMarkDown()).toEqual(
             "1. item one\n" +
             "2. item two\n" +
-            "   - sublist\n" +
-            "   - sublist"
+            "	- sublist\n" +
+            "	- sublist"
         );
     });
     it("should output Html code correctly", () => {
@@ -86,8 +93,8 @@ describe("Markdown parser", () => {
             "Second test header\n" +
             "\n" +
             "\n" +
-            "1. first\n" +
-            "2. second"
+            "first\n" +
+            "second"
         );
     });
 });

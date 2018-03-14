@@ -223,14 +223,15 @@ class MDTOC extends MDComponent {
 class MDListBase extends MDComponent {
     scoutNestedLevel() {
         this.level = 0;
-        var parent;
-        while (parent = this.parent) {
+        var parent = this.parent;
+        this.level += parent instanceof MDListBase ? 1 : 0;
+        while (parent = parent.parent) {
             this.level += parent instanceof MDListBase ? 1 : 0;
         }
     }
 }
 
-class MDOrderedList extends MDComponent {
+class MDOrderedList extends MDListBase {
     toHtml() {
         if (this.start != 1) {
             return `<ol start="${this.start}">${super.toHtml()}</ol>`
@@ -240,15 +241,19 @@ class MDOrderedList extends MDComponent {
     toString() {
         var index = this.start || 1;
         var tags = [];
+        if (this.level != 0)
+            tags.push("");
         for (var component of this.children) {
             tags.push("\t".repeat(this.level) + component.toString());
             index++;
         }
-        return tags.join("\n") + "\n";
+        return tags.join("\n");
     }
     toMarkDown() {
         var index = this.start || 1;
         var tags = [];
+        if (this.level != 0)
+            tags.push("");
         for (var component of this.children) {
             tags.push("\t".repeat(this.level) + index + ". " + component.toMarkDown());
             index++;
@@ -257,21 +262,25 @@ class MDOrderedList extends MDComponent {
     }
 }
 
-class MDBulletList extends MDComponent {
+class MDBulletList extends MDListBase {
     toHtml() {
         return `<ul>${super.toHtml()}</ul>`;
     }
     toString() {
         var tags = [];
+        if (this.level != 0)
+            tags.push("");
         for (var component of this.children) {
             tags.push("\t".repeat(this.level) + component.toString());
         }
-        return tags.join("\n") + "\n";
+        return tags.join("\n");
     }
     toMarkDown() {
         var tags = [];
+        if (this.level != 0)
+            tags.push("");
         for (var component of this.children) {
-            tags.push("\t".repeat(this.level) + component.toMarkDown());
+            tags.push("\t".repeat(this.level) + "- " + component.toMarkDown());
         }
         return tags.join("\n") + "\n";
     }
@@ -288,7 +297,7 @@ class MDBlockQuote extends MDComponent {
         return `<blockquote>${super.toHtml()}</blockquote>`;
     }
     toString() {
-        return super.toString() + "\n";
+        return super.toString();
     }
     toMarkDown() {
         var tags = [];
@@ -340,26 +349,38 @@ class MDDOM extends MDComponent {
                 dom.addChild(dom._translateNode(child));
             }
         }
-
-        for (let index = 0; index < dom.children.length; index++) {
-            const component = dom.children[index];
-            if (component instanceof MDTOC) {
+        dom._aftermath();
+        return dom;
+    }
+    _aftermath() {
+        for (let index = 0; index < this.children.length; index++) {
+            const component = this.children[index];
+            if (component instanceof MDTOC) { // Compile the toc
                 component.compile();
             }
-            if (component instanceof MDParagraph) {
-                if (/^\[TOC\]$/gm.test(component.toString())) {
+            if (component instanceof MDParagraph) { // Sort out paragraphs for further parsing
+                if (/^\[TOC\]$/gm.test(component.toString())) { // Parse toc
                     var toc = new MDTOC();
-                    toc.parent = dom;
-                    toc.compile(dom.children);
-                    dom.children[index] = toc;
+                    toc.parent = this;
+                    toc.compile(this.children);
+                    this.children[index] = toc;
                 }
             }
-            if (component instanceof MDListBase) {
-                component.scoutNestedLevel();
+            if (component instanceof MDListBase) { // Prepare lists
+                this._scoutNestedLevels(component, 0);
             }
             //TODO: Add compile call for glossary, literature, list of figures etc.
         }
-        return dom;
+    }
+    _scoutNestedLevels(list, level) {
+        list.level = level;
+        for (const item of list.children) {
+            for (const subItem of item.children) {
+                if (subItem instanceof MDListBase) {
+                    this._scoutNestedLevels(subItem, level + 1);
+                }
+            }
+        }
     }
     _translateNode(node) {
         var translated;
@@ -442,29 +463,24 @@ class MDDOM extends MDComponent {
         for (var component of this.children) {
             lines.push(component.toHtml());
         }
-        return lines.join('\n');
+        return lines.join('\n').trim();
     }
     toString() {
         var lines = [];
         for (var component of this.children) {
             lines.push(component.toString());
         }
-        return lines.join('\n').replace(/\n$/g, "");
+        return lines.join('\n').trim();
     }
     toMarkDown() {
         var lines = [];
         for (var component of this.children) {
             lines.push(component.toMarkDown());
         }
-        return lines.join('\n').replace(/\n$/g, "");
+        return lines.join('\n').trim();
     }
 }
-var dom = MDDOM.parse(
-    "1. item one\n" +
-    "2. item two\n" +
-    "   - sublist\n" +
-    "   - sublist"
-);
+
 
 module.exports = {
     MDComponent: MDComponent,
