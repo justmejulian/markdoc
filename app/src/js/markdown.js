@@ -355,9 +355,6 @@ class MDDOM extends MDComponent {
     _aftermath() {
         for (let index = 0; index < this.children.length; index++) {
             const component = this.children[index];
-            if (component instanceof MDTOC) { // Compile the toc
-                component.compile();
-            }
             if (component instanceof MDParagraph) { // Sort out paragraphs for further parsing
                 if (/^\[TOC\]$/gm.test(component.toString())) { // Parse toc
                     var toc = new MDTOC();
