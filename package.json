@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "webpack",
     "electron": "electron .",
+    "test": "jasmine",
     "start": "npm-run-all --parallel dev electron"
   },
   "author": "PSIT Gruppe ",
@@ -20,6 +21,7 @@
     "electron-reload": "^1.1.0",
     "extract-text-webpack-plugin": "^2.0.0-rc.3",
     "file-loader": "^ 1.1.11",
+    "jasmine": "^3.1.0",
     "node-sass": "^4.7.2",
     "npm-run-all": "^4.1.2",
     "react-height": "^3.0.0",
