@@ -13,13 +13,13 @@ class Pages extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log("Got the props");
+        //console.log("Got the props");
 
         var copyArray = [{"key":0, "html":"", "height" : 0}];
         var html = nextProps.html;
         var words = html.split(" ");
 
-        console.log(words);
+        //console.log(words);
 
         copyArray[0].html = words[0];
 
@@ -32,24 +32,24 @@ class Pages extends React.Component {
     }
 
     handleHeight(height, id){
-        console.log("Height changed new height :" + height + " of Page" + id);
+        //console.log("Height changed new height :" + height + " of Page" + id);
         var copyArray = this.state.pages.slice();
         copyArray[id].height = height;
         this.setState({pages: copyArray});
-        console.log("The pages height is now :" +this.state.pages[id].height);
+        //console.log("The pages height is now :" +this.state.pages[id].height);
     }
 
     nextWord(){
-        console.log("Change");
+        //console.log("Change");
         var copyArray = this.state.pages;
         var currentWord = this.state.currentWord;
         var currentPage = this.state.currentPage;
-        console.log("currentWord: " + currentWord + " and words.length: " +this.state.words.length);
+        //console.log("currentWord: " + currentWord + " and words.length: " +this.state.words.length);
         if (currentWord < this.state.words.length-1) {
             if (copyArray[currentPage].height < 400) {
                 currentWord = currentWord + 1;
-                console.log("Current Word: " + currentWord);
-                console.log("The word: " + this.state.words[currentWord]);
+                //console.log("Current Word: " + currentWord);
+                //console.log("The word: " + this.state.words[currentWord]);
                 copyArray[currentPage].html = copyArray[currentPage].html +" "+ this.state.words[currentWord];
                 this.setState({
                     pages: copyArray,
@@ -62,11 +62,11 @@ class Pages extends React.Component {
                     pages: copyArray,
                     currentPage: currentPage
                 }, this.nextWord)
-                console.log("Page to big");
-                console.log(this.state.pages);
+                //console.log("Page to big");
+                //console.log(this.state.pages);
             }
         }
-        console.log(this.state.pages);
+        //console.log(this.state.pages);
     }
 
 

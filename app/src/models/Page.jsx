@@ -18,7 +18,7 @@ class Page extends React.Component {
 
 
     componentWillReceiveProps(nextProps) {
-        console.log("Got the props in page " + nextProps.id);
+        //console.log("Got the props in page " + nextProps.id);
         this.setState({
             _html: this.createMarkup(nextProps.html),
             id: nextProps.id

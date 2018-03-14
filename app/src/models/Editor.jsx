@@ -21,8 +21,9 @@ class Editor extends React.Component {
     }
 
     // Checks on enter if first char is - and if so adds - to new line
+    // Todo : fix for when text under what writing
     checkIfList(){
-        //console.log("checking if -");
+        console.log("checking if -");
         var lines = this.state.value.split('\n');
         var length = lines.length;
         var lastLine = lines[length-2];
