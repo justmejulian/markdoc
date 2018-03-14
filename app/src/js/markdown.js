@@ -153,7 +153,7 @@ class MDImage extends MDComponent {
 
 class MDSoftBreak extends MDComponent {
     toHtml() {
-        return `<br/>`;
+        return ` <br/> `;
     }
     toString() {
         return "\n";
