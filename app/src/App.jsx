@@ -15,7 +15,6 @@ class App extends React.Component {
     this.state = {
       value: ""
     }
-    this.createMarkup = this.createMarkup.bind(this);
   }
 
   handleChange (value) {
@@ -35,7 +34,7 @@ class App extends React.Component {
     return (
       <div>
         <Editor handleChange={this.handleChange.bind(this)} />
-        <Preview _html={this.createMarkup()} />
+        <Preview html={this.state.value} />
       </div>
     )
   }

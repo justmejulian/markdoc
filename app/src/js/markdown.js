@@ -180,7 +180,7 @@ class MDImage extends MDComponent {
 
 class MDSoftBreak extends MDComponent {
     toHtml() {
-        return `<br/>`;
+        return ` <br/> `;
     }
 }
 
@@ -206,7 +206,7 @@ class MDCodeBlock extends MDComponent {
 class MDDOM extends MDComponent {
     static parse(source) {
         var dom = new MDDOM();
-        
+
         var reader = new commonmark.Parser();
         var parsed = reader.parse(source);
         var child = parsed.firstChild;

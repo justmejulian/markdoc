@@ -5,7 +5,7 @@ class Preview extends React.Component {
   render() {
     return (
         <div id="preview" >
-            <Pages _html={this.props._html}/>
+            <Pages html={this.props.html}/>
         </div>
     )
   }
