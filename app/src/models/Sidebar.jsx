@@ -43,8 +43,8 @@ export default class Sidebar extends Component {
 	}
 	let expandOrCollapse = this.state.isCollapsed ? '>>' : '<<';
 	return (
-      <div>
-		<button onClick={this.handleExpandOrCollapse}>{expandOrCollapse}</button>
+      <div id='sidebar'>
+		<button onClick={this.handleExpandOrCollapse} id='sidebar-expand-button'>{expandOrCollapse}</button>
 		{content}
 	  </div>
     )

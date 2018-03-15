@@ -34,9 +34,9 @@ class App extends React.Component {
   render() {
     return (
       <div>
+		<Sidebar />
         <Editor handleChange={this.handleChange.bind(this)} />
         <Preview html={this.state.value} />
-		<Sidebar />
 	  </div>
     )
   }
