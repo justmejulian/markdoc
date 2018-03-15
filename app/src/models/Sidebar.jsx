@@ -1,11 +1,20 @@
 import React, { Component } from 'react';
+import DatePicker from 'react-date-picker';
 
 export default class Sidebar extends Component {
 	//🐘
+	
 	constructor() {
 		super();
-		
+		this.handleDateChange = (date) => this._handleDateChange(date);
 		this.handleFieldChange = () => this._handleFieldChange();
+		this.state = {
+			date: new Date(),
+		}
+	}
+	
+	_handleDateChange(date) {
+		this.setState({ date });
 	}
 	
 	_handleFieldChange() {
@@ -15,7 +24,9 @@ export default class Sidebar extends Component {
   render() {
     return (
       <div>
-        <input onChange={this.handleFieldChange} />
+	  <p>Title:</p><input type='text' onChange={this.handleFieldChange} />
+	  <p>Author:</p><input type='text' onChange={this.handleFieldChange} />
+	  <p>Date:</p><DatePicker onChange={this.handleDateChange} value={this.state.date} />
       </div>
     )
   }
