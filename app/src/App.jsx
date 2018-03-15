@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './styles/App.sass';
 //import './styles/Preview.scss';
 
+import Sidebar from './models/Sidebar.jsx';
 import Editor from './models/Editor.jsx';
 import Preview from './models/Preview.jsx';
 import {MDDOM} from './js/markdown.js';
@@ -35,7 +36,8 @@ class App extends React.Component {
       <div>
         <Editor handleChange={this.handleChange.bind(this)} />
         <Preview html={this.state.value} />
-      </div>
+		<Sidebar />
+	  </div>
     )
   }
 }
