@@ -28,15 +28,31 @@ body
   background-color: #292c34
   color: white  
   
-#sidebar-expand-button
+#sidebar
+  width: 45vw
+  position: absolute
   border: none
   overflow: auto
-  outline: none
   resize: none
   text-align: left
   background-color: #292c34
   color: white
-  width: 2vw
+
+#sidebar p:first-child, #sidebar p:nth-child(3), #sidebar p:nth-child(5)
+  display: inline
+  
+#sidebar input[type="text"]
+  width: 25%
+  position: relative
+  left: 1vw
+  margin-right: 3vw
+  
+#sidebar .react-date-picker
+  position: relative
+  left: 1vw
+  
+#sidebar .react-date-picker *
+  background: white  
   
 .page
     position: relative
