@@ -27,6 +27,8 @@ export default class Sidebar extends Component {
 	  <p>Title:</p><input type='text' onChange={this.handleFieldChange} />
 	  <p>Author:</p><input type='text' onChange={this.handleFieldChange} />
 	  <p>Date:</p><DatePicker onChange={this.handleDateChange} value={this.state.date} />
+	  <p>Header:</p><input type='text' onChange={this.handleFieldChange} /><input type='text' onChange={this.handleFieldChange} /><input type='text' onChange={this.handleFieldChange} />
+	  <p>Footer:</p><input type='text' onChange={this.handleFieldChange} /><input type='text' onChange={this.handleFieldChange} /><input type='text' onChange={this.handleFieldChange} />
       </div>
     )
   }
