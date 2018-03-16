@@ -1,6 +1,8 @@
 // Basic init
 const electron = require('electron')
-const {app, BrowserWindow, Menu} = electron
+const fs = require('fs')
+const {app, dialog, ipcMain, BrowserWindow, Menu} = electron
+
 
 // Let electron reloads by itself when webpack watches changes in ./app/
 require('electron-reload')(__dirname)
@@ -25,6 +27,35 @@ function newMainWindow() {
   newMainWindow.loadURL(`file://${__dirname}/app/index.html`)
 }
 
+function openFileDialog() {
+  dialog.showOpenDialog(
+    {
+      properties: [ 'openFile'],
+      filters: [
+        { name: 'Text', extensions: ['txt', 'md', 'mdoc'] }
+      ]
+    }
+  );
+}
+
+function saveFileDialog() {
+  dialog.showSaveDialog((fileName) => {
+      if (fileName === undefined){
+          console.log("You didn't save the file");
+          return;
+      }
+
+      // fileName is a string that contains the path and filename created in the save file dialog.
+      fs.writeFile(fileName, content, (err) => {
+          if(err){
+              alert("An error ocurred creating the file "+ err.message)
+          }
+
+          alert("The file has been succesfully saved");
+      });
+  });
+}
+
 // Create menu template
 const mainMenuTemplate = [
   {
@@ -43,6 +74,7 @@ const mainMenuTemplate = [
         accelerator: process.platform === 'darwin' ? 'Command+O' : 'Ctrl+O',
         click() {
           console.log('Open...');
+          openFileDialog();
         }
       },
       {
@@ -50,6 +82,7 @@ const mainMenuTemplate = [
         accelerator: process.platform === 'darwin' ? 'Command+S' : 'Ctrl+S',
         click() {
           console.log('Save');
+          saveFileDialog()
         }
       },
       {type: 'separator'},
