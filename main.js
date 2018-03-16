@@ -10,7 +10,7 @@ let mainWindow
 
 app.on('ready', () => {
 
-    let mainWindow = new BrowserWindow({width: 1400, height: 1000})
+    let mainWindow = new BrowserWindow({width: 1400, height: 1000, titleBarStyle: 'hiddenInset'})
 
     mainWindow.loadURL(`file://${__dirname}/app/index.html`)
 
@@ -21,7 +21,7 @@ app.on('ready', () => {
 });
 
 function newMainWindow() {
-  let newMainWindow = new BrowserWindow({width: 1400, height: 1000})
+  let newMainWindow = new BrowserWindow({width: 1400, height: 1000, titleBarStyle: 'hiddenInset'})
   newMainWindow.loadURL(`file://${__dirname}/app/index.html`)
 }
 
