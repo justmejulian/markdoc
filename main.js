@@ -58,7 +58,6 @@ const mainMenuTemplate = [
         accelerator: process.platform === 'darwin' ? 'Command+E' : 'Ctrl+E',
         click() {
           console.log('Export as...');
-          createExportWindow();
         }
       }
     ]
