@@ -8,25 +8,30 @@ export default class Sidebar extends Component {
 	constructor() {
 		super();
 		this.handleDateChange = (date) => this._handleDateChange(date);
-		this.handleFieldChange = () => this._handleFieldChange();
+		this.handleFieldChange = (index, evt) => this._handleFieldChange(index, evt);
 		this.handleExpandOrCollapse = () => this._handleExpandOrCollapse();
 		this.state = {
 			date: new Date(),
 			isCollapsed: true,
+			values: ["", "", "", "", "", "", "",]
 		};
 	}
 	
 	_handleDateChange(date) {
-		this.setState({ date });
+		this.setState({date});
 	}
 	
 	_handleExpandOrCollapse(){
 		this.setState({isCollapsed: !this.state.isCollapsed});
 	}
 	
-	_handleFieldChange() {
+	_handleFieldChange(index, evt) {
 		//TODO: Probably split this function into multiple to distinguish which field was changed.
 		//Also TODO: Actually send the changed value someplace.
+		var value = evt.target.value;
+		var newValues = this.state.values.slice();
+		newValues[index] = value;
+		this.setState({values: newValues});
 	}
 
   render() {
@@ -36,11 +41,11 @@ export default class Sidebar extends Component {
 		content = (
 			<div>
 				<h1>Sidebar of sidebariness!</h1> {/* Note: This provides necessary space for the datepicker to display. Do not remove without replacement! */}
-				<p>Title:</p><input type='text' onChange={this.handleFieldChange} />
-				<p><br></br>Author:</p><input type='text' onChange={this.handleFieldChange} />
+				<p>Title:</p><input type='text' onChange={evt => this.handleFieldChange(0, evt)} />
+				<p><br></br>Author:</p><input type='text' onChange={evt => this.handleFieldChange(1, evt)} />
 				<p><br></br>Date:</p><DatePicker onChange={this.handleDateChange} value={this.state.date} />
-				<p>Header:</p><input type='text' onChange={this.handleFieldChange} /><input type='text' onChange={this.handleFieldChange} /><input type='text' onChange={this.handleFieldChange} />
-				<p>Footer:</p><input type='text' onChange={this.handleFieldChange} /><input type='text' onChange={this.handleFieldChange} /><input type='text' onChange	={this.handleFieldChange} />
+				<p>Header:</p><input type='text' onChange={evt => this.handleFieldChange(2, evt)} /><input type='text' onChange={evt => this.handleFieldChange(3, evt)} /><input type='text' onChange={evt => this.handleFieldChange(4, evt)} />
+				<p>Footer:</p><input type='text' onChange={evt => this.handleFieldChange(5, evt)} /><input type='text' onChange={evt => this.handleFieldChange(6, evt)} /><input type='text' onChange={evt => this.handleFieldChange(7, evt)} />
 			</div>
 			);
 	}
