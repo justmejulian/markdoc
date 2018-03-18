@@ -10,11 +10,11 @@ require('electron-reload')(__dirname)
 // To avoid being garbage collected
 let mainWindow
 
+// TODO: save and reload application state (opened windows/documents, window size etc.)
+// maybe use https://github.com/sindresorhus/electron-store to store application state?
 app.on('ready', () => {
 
-    let mainWindow = new BrowserWindow({width: 1400, height: 1000, titleBarStyle: 'hiddenInset'})
-
-    mainWindow.loadURL(`file://${__dirname}/app/index.html`)
+    createWindow()
 
     // Build Menu from mainMenuTemplate
     const menu = Menu.buildFromTemplate(mainMenuTemplate)
@@ -22,11 +22,33 @@ app.on('ready', () => {
 
 });
 
-function newMainWindow() {
-  let newMainWindow = new BrowserWindow({width: 1400, height: 1000, titleBarStyle: 'hiddenInset'})
-  newMainWindow.loadURL(`file://${__dirname}/app/index.html`)
+// TODO: save opened windows in array, dereference windows if closed
+function createWindow() {
+  mainWindow = new BrowserWindow({width: 1400, height: 1000, titleBarStyle: 'hiddenInset'})
+
+  mainWindow.loadURL(`file://${__dirname}/app/index.html`)
+
+  // Don't show until we are ready and loaded
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
+  // Emitted when the window is closed.
+  mainWindow.on('closed', function() {
+    // Dereference the window object
+    mainWindow = null;
+  });
 }
 
+// TODO: Refactor once save application state is implemented.
+// save opened windows to array, remove duplicated code from above
+function newWindow() {
+  let newWindow = new BrowserWindow({width: 1400, height: 1000, titleBarStyle: 'hiddenInset'})
+  newWindow.loadURL(`file://${__dirname}/app/index.html`)
+}
+
+// only brings up open dialog, does nothing so far...
+// TODO: IPC to render process in react part of the app
 function openFileDialog() {
   dialog.showOpenDialog(
     {
@@ -38,6 +60,9 @@ function openFileDialog() {
   );
 }
 
+// only brings up save dialog, does nothing so far...
+// TODO: IPC to render process in react part of the app
+// TODO: attach save dialog to app window (=> macOS only)
 function saveFileDialog() {
   dialog.showSaveDialog((fileName) => {
       if (fileName === undefined){
@@ -56,7 +81,25 @@ function saveFileDialog() {
   });
 }
 
-// Create menu template
+// Quit when all windows are closed => non-macOS only
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+// Recreate mainWindow if app is not closed but no window exists
+// => macOS only
+// TODO: only do so if no window is open (right now opens a new window if mainWindow is closed
+// but any additional window is still open -> check if saved window array is empty
+// -> see todo for "createWindow" function )
+app.on('activate', () => {
+  if (mainWindow === null) {
+    createWindow();
+  }
+});
+
+// Markdoc Menubar Template
 const mainMenuTemplate = [
   {
     label: 'File',
@@ -66,7 +109,7 @@ const mainMenuTemplate = [
         accelerator: process.platform === 'darwin' ? 'Command+N' : 'Ctrl+N',
         click() {
           console.log('New');
-          newMainWindow()
+          newWindow()
         }
       },
       {

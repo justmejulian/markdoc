@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { ipcRenderer } from 'electron';
 import './styles/App.sass';
 //import './styles/Preview.scss';
 
