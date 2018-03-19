@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import DatePicker from 'react-date-picker';
+import ReportingInput from './ReportingInput.jsx';
 
 export default class Sidebar extends Component {
 	//🐘
@@ -36,16 +37,17 @@ export default class Sidebar extends Component {
 
   render() {
     let content;
+	var boundHandleFieldChange = this.handleFieldChange.bind(this);
 	
 	if(!this.state.isCollapsed){
 		content = (
 			<div>
 				<h1>Sidebar of sidebariness!</h1> {/* Note: This provides necessary space for the datepicker to display. Do not remove without replacement! */}
-				<p>Title:</p><input type='text' onChange={evt => this.handleFieldChange(0, evt)} />
-				<p><br></br>Author:</p><input type='text' onChange={evt => this.handleFieldChange(1, evt)} />
+				<p>Title:</p><ReportingInput handleChange = {boundHandleFieldChange} index = {0} />
+				<p><br></br>Author:</p><ReportingInput handleChange = {boundHandleFieldChange} index = {1} />
 				<p><br></br>Date:</p><DatePicker onChange={this.handleDateChange} value={this.state.date} />
-				<p>Header:</p><input type='text' onChange={evt => this.handleFieldChange(2, evt)} /><input type='text' onChange={evt => this.handleFieldChange(3, evt)} /><input type='text' onChange={evt => this.handleFieldChange(4, evt)} />
-				<p>Footer:</p><input type='text' onChange={evt => this.handleFieldChange(5, evt)} /><input type='text' onChange={evt => this.handleFieldChange(6, evt)} /><input type='text' onChange={evt => this.handleFieldChange(7, evt)} />
+				<p>Header:</p><ReportingInput handleChange = {boundHandleFieldChange} index = {2} /><ReportingInput handleChange = {boundHandleFieldChange} index = {3} /><ReportingInput handleChange = {boundHandleFieldChange} index = {4} />
+				<p>Footer:</p><ReportingInput handleChange = {boundHandleFieldChange} index = {5} /><ReportingInput handleChange = {boundHandleFieldChange} index = {6} /><ReportingInput handleChange = {boundHandleFieldChange} index = {7} />
 			</div>
 			);
 	}
