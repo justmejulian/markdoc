@@ -446,6 +446,10 @@ class MDDOM extends MDComponent {
         }
         if (node.literal)
             translated.value = node.literal;
+        if (node.sourcepos) {
+            translated.from = new SourcePosition(node.sourcepos[0]);
+            translated.to = new SourcePosition(node.sourcepos[1]);
+        }
         var child = node.firstChild;
         if (child) {
             translated.addChild(this._translateNode(child));
@@ -478,6 +482,22 @@ class MDDOM extends MDComponent {
     }
 }
 
+class SourcePosition {
+    constructor(array) {
+        this.row = array[0];
+        this.column = array[1];
+    }
+}
+
+var dom = MDDOM.parse(
+    "# Testheader 1\n" +
+    "Bla**blabla**.\n" +
+    "## Second test header\n" +
+    "[TOC]\n" +
+    "\n" +
+    "1. first\n" +
+    "2. second"
+);
 
 module.exports = {
     MDComponent: MDComponent,
@@ -497,5 +517,6 @@ module.exports = {
     MDImage: MDImage,
     MDSoftBreak: MDSoftBreak,
     MDBlockQuote: MDBlockQuote,
-    MDCodeBlock: MDCodeBlock
+    MDCodeBlock: MDCodeBlock,
+    SourcePosition: SourcePosition
 }

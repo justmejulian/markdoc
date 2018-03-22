@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { ipcRenderer } from 'electron';
 import './styles/App.sass';
-//import './styles/Preview.scss';
+import './styles/Preview.scss';
+import './styles/reset.scss';
 
 import Editor from './models/Editor.jsx';
 import Preview from './models/Preview.jsx';
