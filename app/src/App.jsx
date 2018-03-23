@@ -5,7 +5,7 @@ import './styles/reset.scss';
 
 import Editor from './models/Editor.jsx';
 import Preview from './models/Preview.jsx';
-import {MDDOM} from './js/markdown.js';
+import { MDDOM } from './js/markdown.js';
 
 // Old
 //var marked = require('marked');
@@ -14,11 +14,11 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      value: ""
-    }
+      value: ''
+    };
   }
 
-  handleChange (value) {
+  handleChange(value) {
     this.setState({
       value: MDDOM.parse(value).toHtml()
     });
@@ -37,7 +37,7 @@ class App extends React.Component {
         <Editor handleChange={this.handleChange.bind(this)} />
         <Preview html={this.state.value} />
       </div>
-    )
+    );
   }
 }
 
