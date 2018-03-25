@@ -3,6 +3,11 @@ const electron = require('electron')
 const fs = require('fs')
 const {app, dialog, ipcMain, BrowserWindow, Menu} = electron
 
+const {
+  GET_DOCUMENT_CONTENT,
+  OPEN_FILE_FROM_PATH,
+} = require('./app/utils/constants');
+
 
 // Let electron reloads by itself when webpack watches changes in ./app/
 require('electron-reload')(__dirname)
@@ -22,7 +27,7 @@ app.on('ready', () => {
 
 });
 
-// TODO: save opened windows in array, dereference windows if closed
+// TODO: save opened windows/application state in array, dereference windows if closed
 function createWindow() {
   mainWindow = new BrowserWindow({width: 1400, height: 1000, titleBarStyle: 'hiddenInset'})
 
@@ -47,39 +52,88 @@ function newWindow() {
   newWindow.loadURL(`file://${__dirname}/app/index.html`)
 }
 
-// only brings up open dialog, does nothing so far...
-// TODO: IPC to render process in react part of the app
+// Save open dialog stuff
+// TODO: once application state saving is implemented, save path/content per window
+var filePath = null;
+let content = null;
+
+
 function openFileDialog() {
-  dialog.showOpenDialog(
-    {
-      properties: [ 'openFile'],
-      filters: [
-        { name: 'Text', extensions: ['txt', 'md', 'mdoc'] }
-      ]
+  dialog.showOpenDialog((fileName) => {
+    // fileNames is an array that contains all the selected
+    if(fileName === undefined){
+        console.log("No file selected");
+        return;
     }
-  );
-}
 
-// only brings up save dialog, does nothing so far...
-// TODO: IPC to render process in react part of the app
-// TODO: attach save dialog to app window (=> macOS only)
-function saveFileDialog() {
-  dialog.showSaveDialog((fileName) => {
-      if (fileName === undefined){
-          console.log("You didn't save the file");
-          return;
-      }
+    // Save FilePath
+    // TODO: once application state saving is implemented, save path per window
+    filePath = fileName[0];
+    console.log(filePath);
 
-      // fileName is a string that contains the path and filename created in the save file dialog.
-      fs.writeFile(fileName, content, (err) => {
-          if(err){
-              alert("An error ocurred creating the file "+ err.message)
-          }
+    fs.readFile(fileName[0], 'utf-8', (err, data) => {
+        if(err){
+            console.log("An error ocurred reading the file :" + err.message);
+            return;
+        }
 
-          alert("The file has been succesfully saved");
-      });
+        mainWindow.send(OPEN_FILE_FROM_PATH, data);
+        console.log("The file content is : " + data);
+    });
   });
 }
+
+// TODO: attach save dialog to app window (=> macOS only)
+function saveFileDialog() {
+  if (filePath === null) {
+    dialog.showSaveDialog((newPath) => {
+        if (newPath === undefined){
+            console.log("You didn't save the file");
+            return;
+        }
+        console.log(newPath);
+
+        // save FilePath
+        filePath = newPath;
+        console.log(filePath);
+        console.log(content);
+
+        writeFileToPath(filePath, content);
+
+    });
+
+  } else {
+    console.log(filePath);
+
+    var newContent = "updated content";
+    writeFileToPath(filePath, newContent);
+
+  }
+}
+
+function writeFileToPath(filePath, content) {
+  fs.writeFile(filePath, content, (err) => {
+      if(err){
+          console.log("An error ocurred creating the file "+ err.message)
+      }
+
+      console.log("The file has been succesfully saved");
+      console.log(filePath);
+      console.log(content);
+  });
+}
+
+
+// IPC event listener
+ipcMain.on(GET_DOCUMENT_CONTENT, (event, arg) => {
+  console.log('get document content test', arg);
+  content = arg;
+  saveFileDialog();
+})
+
+ipcMain.on(OPEN_FILE_FROM_PATH, (event, arg) => {
+  console.log('open file from path test', arg);
+})
 
 // Quit when all windows are closed => non-macOS only
 app.on('window-all-closed', () => {
@@ -125,7 +179,8 @@ const mainMenuTemplate = [
         accelerator: process.platform === 'darwin' ? 'Command+S' : 'Ctrl+S',
         click() {
           console.log('Save');
-          saveFileDialog()
+          // Get File Content to save from renderer process
+          mainWindow.send(GET_DOCUMENT_CONTENT, 'save')
         }
       },
       {type: 'separator'},
