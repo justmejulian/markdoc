@@ -33,35 +33,43 @@ body
   height: 100vh;
   position: absolute
   border: none
+  padding: none
   overflow: auto
   resize: none
   text-align: left
   background-color: #292c34
   color: white
-  
-#sidebar button:first-child
-  height: 4vw
-  width: 4vw
-  border-bottom-left-radius: 4vw
-  border-bottom-right-radius: 4vw
-  border-top-left-radius: 4vw
-  border-top-right-radius: 4vw
+  transition: 0.5s
+
+#sidebar .expand-button
+  height: 7vh
+  width: 5vh
+  border-bottom-right-radius: 4vh
+  border-top-right-radius: 4vh
+  background-color: #fac
+  transition: 0.2s
+  color: #292c34
   
 #sidebar p:first-child, #sidebar p:nth-child(3), #sidebar p:nth-child(5)
   display: inline
+
+#sidebar h1, #sidebar p 
+  width: 45vw
   
 #sidebar input[type="text"]
   width: 25%
   position: relative
-  left: 1vw
-  margin-right: 3vw
-  
+  left: 2.22%
+  margin-right: 6.66%
+  border: none
+
 #sidebar .react-date-picker
   position: relative
   left: 1vw
   
 #sidebar .react-date-picker *
-  background: white  
+  background: white
+  border: none
   
 .page
     position: relative

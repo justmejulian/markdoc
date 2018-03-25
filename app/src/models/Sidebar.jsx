@@ -66,16 +66,21 @@ export default class Sidebar extends Component {
 			);
 	}
 	var expandOrCollapse = this.state.isCollapsed ? '>>' : '<<';
-	var style = this.state.isCollapsed ? {width: '4vw'} : {width: '45vw'};
-	var buttonStyle = this.state.isCollapsed ? {position: 'relative', top: '50vh'} : {};
+	var style = this.state.isCollapsed ? {width: '3vw'} : {width: '45vw'};
+	var buttonStyle = this.state.isHovering ? {} : {visibility: 'hidden', width: '0'};
+	if(this.state.isCollapsed){	buttonStyle.position = 'relative';
+								buttonStyle.top = '43vh';
+								};
+	
 	return (
 			<div id='sidebar' style={style} onMouseEnter={this.handleMouseHover} onMouseLeave={this.handleMouseHover}>
-					{this.state.isHovering &&
+					{
 						<div>
-							<button onClick={this.handleExpandOrCollapse} style={buttonStyle} id='sidebar-expand-button'>{expandOrCollapse}</button>
-							{content}
+							<button onClick={this.handleExpandOrCollapse} style={buttonStyle} className='expand-button' id='sidebar-expand-button'>{expandOrCollapse}</button>
+							
 						</div>
 					}
+					{content}
 			</div>
 		)
   }
