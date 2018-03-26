@@ -7,9 +7,16 @@ class Editor extends React.Component {
       value: ''
     };
   }
+
   handleChange({ target }) {
     this.setState({ value: target.value });
     this.props.handleChange(target.value);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      value: nextProps.value
+    });
   }
 
   handleKeyUp(e) {
