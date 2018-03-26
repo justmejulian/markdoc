@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 
 class Editor extends React.Component {
-<<<<<<< HEAD
     constructor() {
       super();
       this.state = {
-        value: ""
+        value: ''
       }
     }
 
@@ -26,24 +25,6 @@ class Editor extends React.Component {
                 //console.log("Enter Pressed");
                 this.checkIfList();
         }
-=======
-  constructor() {
-    super();
-    this.state = {
-      value: ''
-    };
-  }
-  handleChange({ target }) {
-    this.setState({ value: target.value });
-    this.props.handleChange(target.value);
-  }
-
-  handleKeyUp(e) {
-    // Enter pressed
-    if (e.keyCode === 13) {
-      //console.log("Enter Pressed");
-      this.checkIfList();
->>>>>>> master
     }
   }
 

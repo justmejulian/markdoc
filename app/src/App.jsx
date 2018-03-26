@@ -20,18 +20,13 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
-<<<<<<< HEAD
-      html: "",
-      value: "Test"
+      html: '',
+      value: ''
     }
 
     // bind to this
     this.getDocumentContent = (event, data) => this._getDocumentContent(event, data);
     this.receiveDocumentContent = (event, data) => this._receiveDocumentContent(event, data);
-=======
-      value: ''
-    };
->>>>>>> master
   }
 
   handleChange(value) {
