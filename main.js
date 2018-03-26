@@ -1,37 +1,34 @@
 // Basic init
-const electron = require('electron')
-const fs = require('fs')
-const {app, dialog, ipcMain, BrowserWindow, Menu} = electron
+const electron = require('electron');
+const fs = require('fs');
+const { app, dialog, ipcMain, BrowserWindow, Menu } = electron;
 
 const {
   GET_DOCUMENT_CONTENT,
-  OPEN_FILE_FROM_PATH,
+  OPEN_FILE_FROM_PATH
 } = require('./app/utils/constants');
 
-
 // Let electron reloads by itself when webpack watches changes in ./app/
-require('electron-reload')(__dirname)
+require('electron-reload')(__dirname);
 
 // To avoid being garbage collected
-let mainWindow
+let mainWindow;
 
 // TODO: save and reload application state (opened windows/documents, window size etc.)
 // maybe use https://github.com/sindresorhus/electron-store to store application state?
 app.on('ready', () => {
+  createWindow();
 
-    createWindow()
-
-    // Build Menu from mainMenuTemplate
-    const menu = Menu.buildFromTemplate(mainMenuTemplate)
-    Menu.setApplicationMenu(menu)
-
+  // Build Menu from mainMenuTemplate
+  const menu = Menu.buildFromTemplate(mainMenuTemplate);
+  Menu.setApplicationMenu(menu);
 });
 
 // TODO: save opened windows/application state in array, dereference windows if closed
 function createWindow() {
-  mainWindow = new BrowserWindow({width: 1400, height: 1000});
+  mainWindow = new BrowserWindow({ width: 1400, height: 1000 });
 
-  mainWindow.loadURL(`file://${__dirname}/app/index.html`)
+  mainWindow.loadURL(`file://${__dirname}/app/index.html`);
 
   // Don't show until we are ready and loaded
   mainWindow.once('ready-to-show', () => {
@@ -48,8 +45,8 @@ function createWindow() {
 // TODO: Refactor once save application state is implemented.
 // save opened windows to array, remove duplicated code from above
 function newWindow() {
-  let newWindow = new BrowserWindow({width: 1400, height: 1000})
-  newWindow.loadURL(`file://${__dirname}/app/index.html`)
+  let newWindow = new BrowserWindow({ width: 1400, height: 1000 });
+  newWindow.loadURL(`file://${__dirname}/app/index.html`);
 }
 
 // Save open dialog stuff
@@ -60,56 +57,54 @@ let content = null;
 function openFileDialog() {
   dialog.showOpenDialog(
     {
-      properties: [ 'openFile'],
-      filters: [
-        { name: 'Text', extensions: ['txt', 'md', 'mdoc'] }
-      ]
-    }, (fileName) => {
-    // fileName is an array that contains all the selected
-    if(fileName === undefined){
-        console.log("No file selected");
+      properties: ['openFile'],
+      filters: [{ name: 'Text', extensions: ['txt', 'md', 'mdoc'] }]
+    },
+    fileName => {
+      // fileName is an array that contains all the selected
+      if (fileName === undefined) {
+        console.log('No file selected');
         return;
-    }
+      }
 
-    // Save FilePath
-    // TODO: once application state saving is implemented, save path per window
-    filePath = fileName[0];
+      // Save FilePath
+      // TODO: once application state saving is implemented, save path per window
+      filePath = fileName[0];
 
-    fs.readFile(fileName[0], 'utf-8', (err, data) => {
-        if(err){
-            console.log("An error ocurred reading the file :" + err.message);
-            return;
+      fs.readFile(fileName[0], 'utf-8', (err, data) => {
+        if (err) {
+          console.log('An error ocurred reading the file :' + err.message);
+          return;
         }
 
         mainWindow.send(OPEN_FILE_FROM_PATH, data);
-    });
-  });
+      });
+    }
+  );
 }
 
 // TODO: attach save dialog to app window (=> macOS only)
 function saveFileDialog() {
   if (filePath === null) {
-    dialog.showSaveDialog((newPath) => {
-        if (newPath === undefined){
-            console.log("You didn't save the file");
-            return;
-        }
-        // save FilePath
-        filePath = newPath;
-        writeFileToPath(filePath, content);
+    dialog.showSaveDialog(newPath => {
+      if (newPath === undefined) {
+        console.log("You didn't save the file");
+        return;
+      }
+      // save FilePath
+      filePath = newPath;
+      writeFileToPath(filePath, content);
     });
-
   } else {
-
     writeFileToPath(filePath, content);
   }
 }
 
 function writeFileToPath(filePath, content) {
-  fs.writeFile(filePath, content, (err) => {
-      if(err){
-          console.log("An error ocurred creating the file "+ err.message)
-      }
+  fs.writeFile(filePath, content, err => {
+    if (err) {
+      console.log('An error ocurred creating the file ' + err.message);
+    }
   });
 }
 
@@ -117,7 +112,7 @@ function writeFileToPath(filePath, content) {
 ipcMain.on(GET_DOCUMENT_CONTENT, (event, arg) => {
   content = arg;
   saveFileDialog();
-})
+});
 
 // Quit when all windows are closed => non-macOS only
 app.on('window-all-closed', () => {
@@ -147,14 +142,13 @@ const mainMenuTemplate = [
         accelerator: process.platform === 'darwin' ? 'Command+N' : 'Ctrl+N',
         click() {
           console.log('New');
-          newWindow()
+          newWindow();
         }
       },
       {
         label: 'Open...',
         accelerator: process.platform === 'darwin' ? 'Command+O' : 'Ctrl+O',
         click() {
-          console.log('Open...');
           openFileDialog();
         }
       },
@@ -162,12 +156,11 @@ const mainMenuTemplate = [
         label: 'Save',
         accelerator: process.platform === 'darwin' ? 'Command+S' : 'Ctrl+S',
         click() {
-          console.log('Save');
           // Get File Content to save from renderer process
-          mainWindow.send(GET_DOCUMENT_CONTENT, 'save')
+          mainWindow.send(GET_DOCUMENT_CONTENT, 'save');
         }
       },
-      {type: 'separator'},
+      { type: 'separator' },
       {
         label: 'Export as...',
         accelerator: process.platform === 'darwin' ? 'Command+E' : 'Ctrl+E',
@@ -180,84 +173,80 @@ const mainMenuTemplate = [
   {
     label: 'Edit',
     submenu: [
-      {role: 'undo'},
-      {role: 'redo'},
-      {type: 'separator'},
-      {role: 'cut'},
-      {role: 'copy'},
-      {role: 'paste'},
-      {role: 'delete'},
-      {role: 'selectall'}
+      { role: 'undo' },
+      { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+      { role: 'delete' },
+      { role: 'selectall' }
     ]
   },
   {
     label: 'View',
     submenu: [
-      {role: 'reload'},
-      {role: 'forcereload'},
-      {role: 'toggledevtools'},
-      {type: 'separator'},
-      {role: 'resetzoom'},
-      {role: 'zoomin'},
-      {role: 'zoomout'},
-      {type: 'separator'},
-      {role: 'togglefullscreen'}
+      { role: 'reload' },
+      { role: 'forcereload' },
+      { role: 'toggledevtools' },
+      { type: 'separator' },
+      { role: 'resetzoom' },
+      { role: 'zoomin' },
+      { role: 'zoomout' },
+      { type: 'separator' },
+      { role: 'togglefullscreen' }
     ]
   },
   {
     role: 'window',
-    submenu: [
-      {role: 'minimize'},
-      {role: 'close'}
-    ]
+    submenu: [{ role: 'minimize' }, { role: 'close' }]
   },
   {
     role: 'help',
     submenu: [
       {
         label: 'Learn More',
-        click () {
-          require('electron').shell.openExternal('https://github.engineering.zhaw.ch/vissejul/markdoc')
+        click() {
+          require('electron').shell.openExternal(
+            'https://github.engineering.zhaw.ch/vissejul/markdoc'
+          );
         }
       }
     ]
   }
-]
+];
 
 if (process.platform === 'darwin') {
   mainMenuTemplate.unshift({
     label: app.getName(),
     submenu: [
-      {role: 'about'},
-      {type: 'separator'},
-      {role: 'services', submenu: []},
-      {type: 'separator'},
-      {role: 'hide'},
-      {role: 'hideothers'},
-      {role: 'unhide'},
-      {type: 'separator'},
-      {role: 'quit'}
+      { role: 'about' },
+      { type: 'separator' },
+      { role: 'services', submenu: [] },
+      { type: 'separator' },
+      { role: 'hide' },
+      { role: 'hideothers' },
+      { role: 'unhide' },
+      { type: 'separator' },
+      { role: 'quit' }
     ]
-  })
+  });
 
   // Edit menu
   mainMenuTemplate[2].submenu.push(
-    {type: 'separator'},
+    { type: 'separator' },
     {
       label: 'Speech',
-      submenu: [
-        {role: 'startspeaking'},
-        {role: 'stopspeaking'}
-      ]
+      submenu: [{ role: 'startspeaking' }, { role: 'stopspeaking' }]
     }
-  )
+  );
 
   // Window menu
   mainMenuTemplate[4].submenu = [
-    {role: 'close'},
-    {role: 'minimize'},
-    {role: 'zoom'},
-    {type: 'separator'},
-    {role: 'front'}
-  ]
+    { role: 'close' },
+    { role: 'minimize' },
+    { role: 'zoom' },
+    { type: 'separator' },
+    { role: 'front' }
+  ];
 }
