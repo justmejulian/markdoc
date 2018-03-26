@@ -11,7 +11,7 @@ import {
 
 import Editor from './models/Editor.jsx';
 import Preview from './models/Preview.jsx';
-import {MDDOM} from './js/markdown.js';
+import { MDDOM } from './js/markdown.js';
 
 // Old
 //var marked = require('marked');
@@ -20,6 +20,7 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
+<<<<<<< HEAD
       html: "",
       value: "Test"
     }
@@ -27,9 +28,13 @@ class App extends React.Component {
     // bind to this
     this.getDocumentContent = (event, data) => this._getDocumentContent(event, data);
     this.receiveDocumentContent = (event, data) => this._receiveDocumentContent(event, data);
+=======
+      value: ''
+    };
+>>>>>>> master
   }
 
-  handleChange (value) {
+  handleChange(value) {
     this.setState({
       html: MDDOM.parse(value).toHtml(),
       value: value
@@ -68,7 +73,7 @@ class App extends React.Component {
         <Editor handleChange={this.handleChange.bind(this)} value={this.state.value} />
         <Preview html={this.state.html} />
       </div>
-    )
+    );
   }
 }
 
