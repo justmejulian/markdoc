@@ -20,13 +20,19 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      value: ""
+      html: "",
+      value: "Test"
     }
+
+    // bind to this
+    this.getDocumentContent = (event, data) => this._getDocumentContent(event, data);
+    this.receiveDocumentContent = (event, data) => this._receiveDocumentContent(event, data);
   }
 
   handleChange (value) {
     this.setState({
-      value: MDDOM.parse(value).toHtml()
+      html: MDDOM.parse(value).toHtml(),
+      value: value
     });
   }
 
@@ -42,12 +48,12 @@ class App extends React.Component {
   }
 
   // TODO: replace text with editor content
-  getDocumentContent(event, data) {
+  _getDocumentContent(event, data) {
     console.log('getDocumentContent was called in renderer process by main process', data)
-    ipcRenderer.send(GET_DOCUMENT_CONTENT, 'replace with actual text from document')
+    ipcRenderer.send(GET_DOCUMENT_CONTENT, this.state.value)
   }
 
-  receiveDocumentContent(event, data) {
+  _receiveDocumentContent(event, data) {
     console.log('receiveDocumentContent was called in renderer process by main process')
     console.log('the file content received was:', data)
     ipcRenderer.send(OPEN_FILE_FROM_PATH, 'The data was received succesfully')
@@ -65,7 +71,7 @@ class App extends React.Component {
     return (
       <div>
         <Editor handleChange={this.handleChange.bind(this)} />
-        <Preview html={this.state.value} />
+        <Preview html={this.state.html} />
       </div>
     )
   }
