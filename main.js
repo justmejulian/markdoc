@@ -29,7 +29,7 @@ app.on('ready', () => {
 
 // TODO: save opened windows/application state in array, dereference windows if closed
 function createWindow() {
-  mainWindow = new BrowserWindow({width: 1400, height: 1000, titleBarStyle: 'hiddenInset'})
+  mainWindow = new BrowserWindow({width: 1400, height: 1000});
 
   mainWindow.loadURL(`file://${__dirname}/app/index.html`)
 
@@ -48,7 +48,7 @@ function createWindow() {
 // TODO: Refactor once save application state is implemented.
 // save opened windows to array, remove duplicated code from above
 function newWindow() {
-  let newWindow = new BrowserWindow({width: 1400, height: 1000, titleBarStyle: 'hiddenInset'})
+  let newWindow = new BrowserWindow({width: 1400, height: 1000})
   newWindow.loadURL(`file://${__dirname}/app/index.html`)
 }
 
@@ -57,10 +57,15 @@ function newWindow() {
 var filePath = null;
 let content = null;
 
-
 function openFileDialog() {
-  dialog.showOpenDialog((fileName) => {
-    // fileNames is an array that contains all the selected
+  dialog.showOpenDialog(
+    {
+      properties: [ 'openFile'],
+      filters: [
+        { name: 'Text', extensions: ['txt', 'md', 'mdoc'] }
+      ]
+    }, (fileName) => {
+    // fileName is an array that contains all the selected
     if(fileName === undefined){
         console.log("No file selected");
         return;
@@ -69,7 +74,6 @@ function openFileDialog() {
     // Save FilePath
     // TODO: once application state saving is implemented, save path per window
     filePath = fileName[0];
-    console.log(filePath);
 
     fs.readFile(fileName[0], 'utf-8', (err, data) => {
         if(err){
@@ -78,7 +82,6 @@ function openFileDialog() {
         }
 
         mainWindow.send(OPEN_FILE_FROM_PATH, data);
-        console.log("The file content is : " + data);
     });
   });
 }
@@ -91,23 +94,14 @@ function saveFileDialog() {
             console.log("You didn't save the file");
             return;
         }
-        console.log(newPath);
-
         // save FilePath
         filePath = newPath;
-        console.log(filePath);
-        console.log(content);
-
         writeFileToPath(filePath, content);
-
     });
 
   } else {
-    console.log(filePath);
 
-    var newContent = "updated content";
-    writeFileToPath(filePath, newContent);
-
+    writeFileToPath(filePath, content);
   }
 }
 
@@ -116,23 +110,13 @@ function writeFileToPath(filePath, content) {
       if(err){
           console.log("An error ocurred creating the file "+ err.message)
       }
-
-      console.log("The file has been succesfully saved");
-      console.log(filePath);
-      console.log(content);
   });
 }
 
-
 // IPC event listener
 ipcMain.on(GET_DOCUMENT_CONTENT, (event, arg) => {
-  console.log('get document content test', arg);
   content = arg;
   saveFileDialog();
-})
-
-ipcMain.on(OPEN_FILE_FROM_PATH, (event, arg) => {
-  console.log('open file from path test', arg);
 })
 
 // Quit when all windows are closed => non-macOS only

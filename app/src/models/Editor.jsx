@@ -13,6 +13,12 @@ class Editor extends React.Component {
         this.props.handleChange(target.value)
     }
 
+    componentWillReceiveProps(nextProps) {
+      this.setState({
+        value: nextProps.value
+      })
+    }
+
     handleKeyUp(e) {
         // Enter pressed
         if(e.keyCode === 13){

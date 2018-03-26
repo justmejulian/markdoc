@@ -47,17 +47,12 @@ class App extends React.Component {
     ipcRenderer.removeListener(OPEN_FILE_FROM_PATH, this.receiveDocumentContent)
   }
 
-  // TODO: replace text with editor content
   _getDocumentContent(event, data) {
-    console.log('getDocumentContent was called in renderer process by main process', data)
     ipcRenderer.send(GET_DOCUMENT_CONTENT, this.state.value)
   }
 
   _receiveDocumentContent(event, data) {
-    console.log('receiveDocumentContent was called in renderer process by main process')
-    console.log('the file content received was:', data)
-    ipcRenderer.send(OPEN_FILE_FROM_PATH, 'The data was received succesfully')
-    // TODO: put data into editor text field
+    this.handleChange(data)
   }
 
   // ToDo: Move this to the Preview or some other class
@@ -70,7 +65,7 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        <Editor handleChange={this.handleChange.bind(this)} />
+        <Editor handleChange={this.handleChange.bind(this)} value={this.state.value} />
         <Preview html={this.state.html} />
       </div>
     )
