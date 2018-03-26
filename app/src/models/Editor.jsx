@@ -1,30 +1,29 @@
 import React, { Component } from 'react';
 
 class Editor extends React.Component {
-    constructor() {
-      super();
-      this.state = {
-        value: ''
-      }
-    }
+  constructor() {
+    super();
+    this.state = {
+      value: ''
+    };
+  }
 
-    handleChange({target}){
-        this.setState({ value: target.value})
-        this.props.handleChange(target.value)
-    }
+  handleChange({ target }) {
+    this.setState({ value: target.value });
+    this.props.handleChange(target.value);
+  }
 
-    componentWillReceiveProps(nextProps) {
-      this.setState({
-        value: nextProps.value
-      })
-    }
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      value: nextProps.value
+    });
+  }
 
-    handleKeyUp(e) {
-        // Enter pressed
-        if(e.keyCode === 13){
-                //console.log("Enter Pressed");
-                this.checkIfList();
-        }
+  handleKeyUp(e) {
+    // Enter pressed
+    if (e.keyCode === 13) {
+      //console.log("Enter Pressed");
+      this.checkIfList();
     }
   }
 
