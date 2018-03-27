@@ -2,6 +2,7 @@
 
 *A beautiful, extended Markdown editor built for academic papers.*
 
+For more information about Markdoc, please visit our [Wiki](https://github.engineering.zhaw.ch/vissejul/markdoc/wiki).
 
 ## How get started
 
