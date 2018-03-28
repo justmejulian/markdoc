@@ -1,6 +1,7 @@
 // Basic init
 const electron = require('electron');
 const fs = require('fs');
+const path = require('path');
 const { app, dialog, ipcMain, BrowserWindow, Menu } = electron;
 
 const {
@@ -50,8 +51,11 @@ function createWindow() {
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
-    // Dereference the window object
+    // Dereference the window object & clear file variables
     mainWindow = null;
+    filePath = null;
+    fileName = null;
+    content = null;
   });
 }
 
@@ -65,26 +69,30 @@ function newWindow() {
 // Save open dialog stuff
 // TODO: once application state saving is implemented, save path/content per window
 var filePath = null;
+var fileName = null;
 let content = null;
 
 function openFileDialog() {
   dialog.showOpenDialog(
+    // TODO: once multi-window is implemented, replace mainWindow with current window
+    mainWindow,
     {
       properties: ['openFile'],
       filters: [{ name: 'Text', extensions: ['txt', 'md', 'mdoc'] }]
     },
-    fileName => {
-      // fileName is an array that contains all the selected
-      if (fileName === undefined) {
+    tempFilePath => {
+      // tempFilePath is an array that contains all the selected
+      if (tempFilePath === undefined) {
         console.log('No file selected');
         return;
       }
 
       // Save FilePath
       // TODO: once application state saving is implemented, save path per window
-      filePath = fileName[0];
+      filePath = tempFilePath[0];
+      fileName = path.posix.basename(filePath);
 
-      fs.readFile(fileName[0], 'utf-8', (err, data) => {
+      fs.readFile(tempFilePath[0], 'utf-8', (err, data) => {
         if (err) {
           console.log('An error ocurred reading the file :' + err.message);
           return;
@@ -99,14 +107,22 @@ function openFileDialog() {
 // TODO: attach save dialog to app window (=> macOS only)
 function saveFileDialog() {
   if (filePath === null) {
-    dialog.showSaveDialog(newPath => {
-      if (newPath === undefined) {
-        console.log("You didn't save the file");
-        return;
-      }
-      // save FilePath
-      filePath = newPath;
-      writeFileToPath(filePath, content);
+    dialog.showSaveDialog(
+      // TODO: once multi-window is implemented, replace mainWindow with current window
+      mainWindow,
+      {
+        filters: [{
+          name: 'Markdoc',
+          extensions: ['mdoc']
+        }]
+      }, newPath => {
+        if (newPath === undefined) {
+          console.log("You didn't save the file");
+          return;
+        }
+        // save FilePath
+        filePath = newPath;
+        writeFileToPath(filePath, content);
     });
   } else {
     writeFileToPath(filePath, content);
