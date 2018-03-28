@@ -122,15 +122,13 @@ export default class Sidebar extends Component {
       );
     }
     var expandOrCollapse = this.state.isCollapsed ? '>' : '<';
-    var style = this.state.isHovering ? { width: '3vw' } : { width: '2vw' };
+    var style = this.state.isCollapsed ? { width: '3vw' } : { width: '45vw' };
     var buttonStyle = this.state.isHovering
       ? {}
       : { visibility: 'hidden', width: '0' };
     if (this.state.isCollapsed) {
       buttonStyle.position = 'relative';
       buttonStyle.top = '43vh';
-    } else {
-      style.width = '45vw';
     }
 
     return (
