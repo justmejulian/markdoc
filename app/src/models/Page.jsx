@@ -37,7 +37,7 @@ class Page extends React.Component {
         <ReactHeight onHeightReady={height => this.handleHeight(height)}>
           <div id={this.state.id} dangerouslySetInnerHTML={this.state._html} />
         </ReactHeight>
-        <Footer />
+        <Footer pageNumber={this.state.id} />
       </div>
     );
   }

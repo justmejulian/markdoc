@@ -7,7 +7,13 @@ class Header extends React.Component {
   }
 
   render() {
-    return <div className="header"> This is a header</div>;
+    return (
+      <div className="header">
+        <div className="hfLeft"> Zusammenfassung</div>
+        <div className="hfCenter"> PSIT4 </div>
+        <div className="hfRight"> Max Muster </div>
+      </div>
+    );
   }
 }
 
