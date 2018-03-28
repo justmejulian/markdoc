@@ -97,4 +97,12 @@ describe("Markdown parser", () => {
             "second"
         );
     });
+    it("should parse the right source positions", () => {
+        var dom = MDDOM.parse(source);
+        var header = dom.children[0];
+        expect(header.from.row).toEqual(1);
+        expect(header.from.column).toEqual(1);
+        expect(header.to.row).toEqual(1);
+        expect(header.to.column).toEqual(14);
+    });
 });

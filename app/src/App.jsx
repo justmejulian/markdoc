@@ -1,11 +1,16 @@
 import React, { Component } from 'react';
+import { ipcRenderer } from 'electron';
 import './styles/App.sass';
-//import './styles/Preview.scss';
+import './styles/Preview.scss';
+import './styles/reset.scss';
+
+import { GET_DOCUMENT_CONTENT, OPEN_FILE_FROM_PATH } from '../utils/constants';
 
 import Sidebar from './models/Sidebar.jsx';
 import Editor from './models/Editor.jsx';
 import Preview from './models/Preview.jsx';
-import {MDDOM} from './js/markdown.js';
+import TitleBar from './models/Titlebar.jsx';
+import { MDDOM } from './js/markdown.js';
 
 // Old
 //var marked = require('marked');
@@ -14,14 +19,44 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      value: ""
-    }
+      html: '',
+      value: ''
+    };
+
+    // bind to this
+    this.getDocumentContent = (event, data) =>
+      this._getDocumentContent(event, data);
+    this.receiveDocumentContent = (event, data) =>
+      this._receiveDocumentContent(event, data);
   }
 
-  handleChange (value) {
+  handleChange(value) {
     this.setState({
-      value: MDDOM.parse(value).toHtml()
+      html: MDDOM.parse(value).toHtml(),
+      value: value
     });
+  }
+
+  // IPC event listeners
+  componentDidMount() {
+    ipcRenderer.on(GET_DOCUMENT_CONTENT, this.getDocumentContent);
+    ipcRenderer.on(OPEN_FILE_FROM_PATH, this.receiveDocumentContent);
+  }
+
+  componentWillUnmount() {
+    ipcRenderer.removeListener(GET_DOCUMENT_CONTENT, this.getDocumentContent);
+    ipcRenderer.removeListener(
+      OPEN_FILE_FROM_PATH,
+      this.receiveDocumentContent
+    );
+  }
+
+  _getDocumentContent(event, data) {
+    ipcRenderer.send(GET_DOCUMENT_CONTENT, this.state.value);
+  }
+
+  _receiveDocumentContent(event, data) {
+    this.handleChange(data);
   }
 
   // ToDo: Move this to the Preview or some other class
@@ -34,11 +69,15 @@ class App extends React.Component {
   render() {
     return (
       <div>
-		<Sidebar />
-        <Editor handleChange={this.handleChange.bind(this)} />
-        <Preview html={this.state.value} />
-	  </div>
-    )
+        <Sidebar />
+        <TitleBar />
+        <Editor
+          handleChange={this.handleChange.bind(this)}
+          value={this.state.value}
+        />
+        <Preview html={this.state.html} />
+      </div>
+    );
   }
 }
 
