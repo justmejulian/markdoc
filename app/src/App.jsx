@@ -4,13 +4,11 @@ import './styles/App.sass';
 import './styles/Preview.scss';
 import './styles/reset.scss';
 
-import {
-  GET_DOCUMENT_CONTENT,
-  OPEN_FILE_FROM_PATH,
-} from '../utils/constants';
+import { GET_DOCUMENT_CONTENT, OPEN_FILE_FROM_PATH } from '../utils/constants';
 
 import Editor from './models/Editor.jsx';
 import Preview from './models/Preview.jsx';
+import TitleBar from './models/Titlebar.jsx';
 import { MDDOM } from './js/markdown.js';
 
 // Old
@@ -22,11 +20,13 @@ class App extends React.Component {
     this.state = {
       html: '',
       value: ''
-    }
+    };
 
     // bind to this
-    this.getDocumentContent = (event, data) => this._getDocumentContent(event, data);
-    this.receiveDocumentContent = (event, data) => this._receiveDocumentContent(event, data);
+    this.getDocumentContent = (event, data) =>
+      this._getDocumentContent(event, data);
+    this.receiveDocumentContent = (event, data) =>
+      this._receiveDocumentContent(event, data);
   }
 
   handleChange(value) {
@@ -38,21 +38,24 @@ class App extends React.Component {
 
   // IPC event listeners
   componentDidMount() {
-    ipcRenderer.on(GET_DOCUMENT_CONTENT, this.getDocumentContent)
-    ipcRenderer.on(OPEN_FILE_FROM_PATH, this.receiveDocumentContent)
+    ipcRenderer.on(GET_DOCUMENT_CONTENT, this.getDocumentContent);
+    ipcRenderer.on(OPEN_FILE_FROM_PATH, this.receiveDocumentContent);
   }
 
   componentWillUnmount() {
-    ipcRenderer.removeListener(GET_DOCUMENT_CONTENT, this.getDocumentContent)
-    ipcRenderer.removeListener(OPEN_FILE_FROM_PATH, this.receiveDocumentContent)
+    ipcRenderer.removeListener(GET_DOCUMENT_CONTENT, this.getDocumentContent);
+    ipcRenderer.removeListener(
+      OPEN_FILE_FROM_PATH,
+      this.receiveDocumentContent
+    );
   }
 
   _getDocumentContent(event, data) {
-    ipcRenderer.send(GET_DOCUMENT_CONTENT, this.state.value)
+    ipcRenderer.send(GET_DOCUMENT_CONTENT, this.state.value);
   }
 
   _receiveDocumentContent(event, data) {
-    this.handleChange(data)
+    this.handleChange(data);
   }
 
   // ToDo: Move this to the Preview or some other class
@@ -65,7 +68,11 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        <Editor handleChange={this.handleChange.bind(this)} value={this.state.value} />
+        <TitleBar />
+        <Editor
+          handleChange={this.handleChange.bind(this)}
+          value={this.state.value}
+        />
         <Preview html={this.state.html} />
       </div>
     );

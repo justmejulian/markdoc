@@ -11,15 +11,6 @@ const {
 // Let electron reloads by itself when webpack watches changes in ./app/
 require('electron-reload')(__dirname);
 
-// Add the React Devtools to help dev
-const {
-  default: installExtension,
-  REACT_DEVELOPER_TOOLS
-} = require('electron-devtools-installer');
-installExtension(REACT_DEVELOPER_TOOLS)
-  .then(name => console.log(`Added Extension:  ${name}`))
-  .catch(err => console.log('An error occurred: ', err));
-
 // To avoid being garbage collected
 let mainWindow;
 
@@ -28,6 +19,15 @@ let mainWindow;
 app.on('ready', () => {
   createWindow();
 
+  // Add the React Devtools to help dev
+  const {
+    default: installExtension,
+    REACT_DEVELOPER_TOOLS
+  } = require('electron-devtools-installer');
+  installExtension(REACT_DEVELOPER_TOOLS)
+    .then(name => console.log(`Added Extension:  ${name}`))
+    .catch(err => console.log('An error occurred: ', err));
+
   // Build Menu from mainMenuTemplate
   const menu = Menu.buildFromTemplate(mainMenuTemplate);
   Menu.setApplicationMenu(menu);
@@ -35,7 +35,11 @@ app.on('ready', () => {
 
 // TODO: save opened windows/application state in array, dereference windows if closed
 function createWindow() {
-  mainWindow = new BrowserWindow({ width: 1400, height: 1000 });
+  mainWindow = new BrowserWindow({
+    width: 1400,
+    height: 1000,
+    titleBarStyle: 'hidden'
+  });
 
   mainWindow.loadURL(`file://${__dirname}/app/index.html`);
 
