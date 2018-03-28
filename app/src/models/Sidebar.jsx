@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import DatePicker from 'react-date-picker';
-import ReportingInput from './ReportingInput.jsx';
 
 export default class Sidebar extends Component {
 	//🐘
@@ -9,13 +8,20 @@ export default class Sidebar extends Component {
 	constructor(props) {
 		super(props);
 		this.handleDateChange = (date) => this._handleDateChange(date);
-		this.handleFieldChange = (index, evt) => this._handleFieldChange(index, evt);
+		this.handleFieldChange = (target) => this._handleFieldChange(target);
 		this.handleExpandOrCollapse = () => this._handleExpandOrCollapse();
 		this.handleMouseHover = () => this._handleMouseHover();
 		this.state = {
-			date: new Date(),
 			isCollapsed: true,
-			values: ["", "", "", "", "", "", ""],
+			title: "",
+			author: "",
+			date: new Date(),
+			headerLeft: "",
+			headerMiddle: "",
+			headerRight: "",
+			footerLeft: "",
+			footerMiddle: "",
+			footerRight: "",
 			isHovering: false,
 		};
 	}
@@ -28,13 +34,8 @@ export default class Sidebar extends Component {
 		this.setState({isCollapsed: !this.state.isCollapsed});
 	}
 	
-	_handleFieldChange(index, evt) {
-		//TODO: Probably split this function into multiple to distinguish which field was changed.
-		//Also TODO: Actually send the changed value someplace.
-		var value = evt.target.value;
-		var newValues = this.state.values.slice();
-		newValues[index] = value;
-		this.setState({values: newValues});
+	_handleFieldChange(target) {
+		this.setState({[target.name]: [target.value]});
 	}
 	
 	_handleMouseHover(){
@@ -50,19 +51,19 @@ export default class Sidebar extends Component {
 			<div>
 				<h1>Sidebar of sidebariness!</h1> {/* Note: This provides necessary space for the datepicker to display. Do not remove without replacement! */}
 				<p>Title:</p>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {0} value={this.state.values[0]}/>
+				<input type="text" onChange={evt => this.handleFieldChange(evt.target)} name="title" value={this.state.title}/>
 				<p><br></br>Author:</p>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {1} value={this.state.values[1]}/>
+				<input type="text" onChange={evt => this.handleFieldChange(evt.target)} name="author" value={this.state.author}/>
 				<p><br></br>Date:</p><DatePicker onChange={this.handleDateChange} value={this.state.date} />
 				<p>Header:</p>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {2} value={this.state.values[2]}/>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {3} value={this.state.values[3]}/>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {4} value={this.state.values[4]}/>
+				<input type="text" onChange={evt => this.handleFieldChange(evt.target)} name="headerLeft" value={this.state.headerLeft}/>
+				<input type="text" onChange={evt => this.handleFieldChange(evt.target)} name="headerMiddle" value={this.state.headerMiddle}/>
+				<input type="text" onChange={evt => this.handleFieldChange(evt.target)} name="headerRight" value={this.state.headerRight}/>
 				<p>Footer:</p>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {5} value={this.state.values[5]}/>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {6} value={this.state.values[6]}/>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {7} value={this.state.values[7]}/>
-			</div>
+				<input type="text" onChange={evt => this.handleFieldChange(evt.target)} name="footerLeft" value={this.state.footerLeft}/>
+				<input type="text" onChange={evt => this.handleFieldChange(evt.target)} name="footerMiddle" value={this.state.footerMiddle}/>
+				<input type="text" onChange={evt => this.handleFieldChange(evt.target)} name="footerRight" value={this.state.footerRight}/>
+				</div>
 			);
 	}
 	var expandOrCollapse = this.state.isCollapsed ? '>' : '<';
