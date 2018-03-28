@@ -19,6 +19,7 @@
     "commonmark": "^0.28.1",
     "css-loader": "^0.28.10",
     "electron": "^1.4.15",
+    "electron-devtools-installer": "^2.2.3",
     "electron-reload": "^1.1.0",
     "extract-text-webpack-plugin": "^2.0.0-rc.3",
     "file-loader": "^ 1.1.11",
