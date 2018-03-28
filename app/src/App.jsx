@@ -6,6 +6,7 @@ import './styles/reset.scss';
 
 import { GET_DOCUMENT_CONTENT, OPEN_FILE_FROM_PATH } from '../utils/constants';
 
+import Sidebar from './models/Sidebar.jsx';
 import Editor from './models/Editor.jsx';
 import Preview from './models/Preview.jsx';
 import TitleBar from './models/Titlebar.jsx';
@@ -68,6 +69,7 @@ class App extends React.Component {
   render() {
     return (
       <div>
+        <Sidebar />
         <TitleBar />
         <Editor
           handleChange={this.handleChange.bind(this)}
