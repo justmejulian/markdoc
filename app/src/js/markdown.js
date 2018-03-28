@@ -1,7 +1,6 @@
 'use strict';
-const commonmark = require('commonmark');
 
-// TODO: complete existing classes and add missing ones
+const commonmark = require('commonmark');
 
 class MDComponent {
   constructor() {
@@ -13,11 +12,16 @@ class MDComponent {
     component.parent = this;
     this.children.push(component);
   }
+
   removeChild(component) {
     if (this.children.includes(component)) {
       this.children.splice(this.children.indexOf(component));
       component.parent = null;
     }
+  }
+
+  _parseReplace() {
+    return this;
   }
 
   toHtml() {
@@ -35,6 +39,7 @@ class MDComponent {
     }
     return tags.join('');
   }
+
   toMarkDown() {
     var tags = [];
     for (var component of this.children) {
@@ -169,6 +174,15 @@ class MDSoftBreak extends MDComponent {
 // per line components:
 
 class MDParagraph extends MDComponent {
+  _parseReplace() {
+    if (/^\[TOC\]$/gm.test(this.toString())) {
+      var toc = new MDTOC();
+      toc.parent = this.parent;
+      toc.compile(this.parent.children);
+      return toc;
+    }
+    return this;
+  }
   toHtml() {
     return `<p>${super.toHtml()}</p>`;
   }
@@ -224,12 +238,18 @@ class MDTOC extends MDComponent {
 }
 
 class MDListBase extends MDComponent {
-  scoutNestedLevel() {
+  _parseReplace() {
     this.level = 0;
-    var parent = this.parent;
-    this.level += parent instanceof MDListBase ? 1 : 0;
-    while ((parent = parent.parent)) {
-      this.level += parent instanceof MDListBase ? 1 : 0;
+    this._setNestedLevels();
+    return this;
+  }
+
+  _setNestedLevels() {
+    for (const child of this.children) {
+      if (child.children[0] instanceof MDListBase) {
+        child.children[0].level = this.level + 1;
+        child.children[0]._setNestedLevels();
+      }
     }
   }
 }
@@ -356,16 +376,7 @@ class MDDOM extends MDComponent {
   _aftermath() {
     for (let index = 0; index < this.children.length; index++) {
       const component = this.children[index];
-      if (component instanceof MDParagraph) {
-        // Sort out paragraphs for further parsing
-        if (/^\[TOC\]$/gm.test(component.toString())) {
-          // Parse toc
-          var toc = new MDTOC();
-          toc.parent = this;
-          toc.compile(this.children);
-          this.children[index] = toc;
-        }
-      }
+      this.children[index] = this.children[index]._parseReplace();
       if (component instanceof MDListBase) {
         // Prepare lists
         this._scoutNestedLevels(component, 0);
