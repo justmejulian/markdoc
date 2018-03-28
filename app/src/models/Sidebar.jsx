@@ -48,7 +48,7 @@ export default class Sidebar extends Component {
     var boundHandleFieldChange = this.handleFieldChange.bind(this);
     if (!this.state.isCollapsed) {
       content = (
-        <div id="sidebar-content-container">
+        <div>
           <p>Title:</p>
           <input
             type="text"
