@@ -6,6 +6,12 @@ body
   padding: 0
   font-family: sans-serif
 
+.titleBar
+  position: fixed
+  width: 100vw
+  height: 25px
+  -webkit-app-region: drag
+
 #preview
   overflow: auto
   margin: 0
@@ -76,17 +82,30 @@ body
     padding: 20px
     width: 595px
     height: 842px
+    box-shadow: 0 4px 2px -2px gray
+    margin-bottom: 5px
     p
         margin: 0
         padding: 0
     .header
-        height: 50px
+        display: flex
+        margin: 5px 0
         position: relative
         top: 0
-        background-color: pink
+        border-bottom: 1px solid black
+
     .footer
-        height: 50px
+        display: flex
+        justify-content: space-between
+        margin: 5px 0
         width: 595px
         position: absolute
         bottom: 0
-        background-color: blue
+
+    .hfRight
+        text-align: right
+    .hfCenter
+        margin-left: auto
+        margin-right: auto
+        width: auto
+        text-align: center
