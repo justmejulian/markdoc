@@ -49,8 +49,6 @@ export default class Sidebar extends Component {
     if (!this.state.isCollapsed) {
       content = (
         <div id="sidebar-content-container">
-          <h1>Sidebar of sidebariness!</h1>{' '}
-          {/* Note: This provides necessary space for the datepicker to display. Do not remove without replacement! */}
           <p>Title:</p>
           <input
             type="text"
@@ -68,49 +66,57 @@ export default class Sidebar extends Component {
             value={this.state.author}
           />
           <p>
+            <br />Header:
+          </p>
+          <div className="sidebar-input-container">
+            <input
+              type="text"
+              onChange={evt => this.handleFieldChange(evt.target)}
+              name="headerLeft"
+              value={this.state.headerLeft}
+            />
+            <input
+              type="text"
+              onChange={evt => this.handleFieldChange(evt.target)}
+              name="headerMiddle"
+              value={this.state.headerMiddle}
+            />
+            <input
+              type="text"
+              onChange={evt => this.handleFieldChange(evt.target)}
+              name="headerRight"
+              value={this.state.headerRight}
+            />
+          </div>
+          <p>
+            <br />Footer:
+          </p>
+          <div className="sidebar-input-container">
+            <input
+              type="text"
+              onChange={evt => this.handleFieldChange(evt.target)}
+              name="footerLeft"
+              value={this.state.footerLeft}
+            />
+            <input
+              type="text"
+              onChange={evt => this.handleFieldChange(evt.target)}
+              name="footerMiddle"
+              value={this.state.footerMiddle}
+            />
+            <input
+              type="text"
+              onChange={evt => this.handleFieldChange(evt.target)}
+              name="footerRight"
+              value={this.state.footerRight}
+            />
+          </div>
+          <p>
             <br />Date:
           </p>
           <DatePicker
             onChange={this.handleDateChange}
             value={this.state.date}
-          />
-          <p>Header:</p>
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="headerLeft"
-            value={this.state.headerLeft}
-          />
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="headerMiddle"
-            value={this.state.headerMiddle}
-          />
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="headerRight"
-            value={this.state.headerRight}
-          />
-          <p>Footer:</p>
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="footerLeft"
-            value={this.state.footerLeft}
-          />
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="footerMiddle"
-            value={this.state.footerMiddle}
-          />
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="footerRight"
-            value={this.state.footerRight}
           />
         </div>
       );
