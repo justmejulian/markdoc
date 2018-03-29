@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import DatePicker from 'react-date-picker';
+import DatePicker from 'react-datepicker';
+import moment from 'moment';
 
 export default class Sidebar extends Component {
   //🐘
@@ -15,7 +16,7 @@ export default class Sidebar extends Component {
       isCollapsed: true,
       title: '',
       author: '',
-      date: new Date(),
+      startDate: moment(),
       headerLeft: '',
       headerMiddle: '',
       headerRight: '',
@@ -27,7 +28,7 @@ export default class Sidebar extends Component {
   }
 
   _handleDateChange(date) {
-    this.setState({ date });
+    this.setState({ startDate: date });
   }
 
   _handleExpandOrCollapse() {
@@ -115,8 +116,9 @@ export default class Sidebar extends Component {
             <br />Date:
           </p>
           <DatePicker
+            dateFormat="DD/MM/YYYY"
             onChange={this.handleDateChange}
-            value={this.state.date}
+            selected={this.state.startDate}
           />
         </div>
       );
