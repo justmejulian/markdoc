@@ -48,22 +48,19 @@ export default class Sidebar extends Component {
     var boundHandleFieldChange = this.handleFieldChange.bind(this);
     var sidebarContentStyle = this.state.isCollapsed
       ? { marginLeft: '-45vw' }
-      : {};
+      : { background: '#EEE8CD' };
     var expandOrCollapse = this.state.isCollapsed ? '>' : '<';
     var contentCoverStyle = this.state.isCollapsed
       ? {}
       : { opacity: '1', pointerEvents: 'all' };
     var sidebarStyle = this.state.isCollapsed
       ? { width: '3vw' }
-      : { width: '45vw' };
-
-    var buttonStyle = this.state.isHovering
-      ? {}
-      : { visibility: 'hidden', width: '0' };
-    if (this.state.isCollapsed) {
-      buttonStyle.position = 'relative';
-      buttonStyle.top = '43vh';
+      : { width: '48vw' };
+    var buttonStyle = {};
+    if (!this.state.isHovering && this.state.isCollapsed) {
+      buttonStyle = { visibility: 'hidden', width: '0' };
     }
+    buttonStyle.marginLeft = this.state.isCollapsed ? '' : '45vw';
 
     return (
       <div>
@@ -74,23 +71,13 @@ export default class Sidebar extends Component {
         >
           {' '}
         </div>
+
         <div
           id="sidebar"
           style={sidebarStyle}
           onMouseEnter={this.handleMouseHover}
           onMouseLeave={this.handleMouseHover}
         >
-          {
-            <div>
-              <button
-                onClick={this.handleExpandOrCollapse}
-                style={buttonStyle}
-                id="sidebar-expand-button"
-              >
-                {expandOrCollapse}
-              </button>
-            </div>
-          }
           <div style={sidebarContentStyle} id="sidebar-content">
             <p>Title:</p>
             <input
@@ -163,6 +150,13 @@ export default class Sidebar extends Component {
               selected={this.state.startDate}
             />
           </div>
+          <button
+            onClick={this.handleExpandOrCollapse}
+            style={buttonStyle}
+            id="sidebar-expand-button"
+          >
+            {expandOrCollapse}
+          </button>
         </div>
       </div>
     );
