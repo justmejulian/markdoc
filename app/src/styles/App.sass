@@ -32,9 +32,9 @@ body
   resize: none
   text-align: left
   background-color: #292c34
-  color: white  
-  
-  
+  color: white
+
+
 #sidebar
   /* Element now dynamically resizes its own width. */
   height: 100vh
@@ -49,7 +49,7 @@ body
   z-index: 1001
 
 #sidebar-content
-  transition: 0.3s
+  transition: 0.5s
   height: 100%
   width: 45vw
   border-right: 2px solid gray
@@ -60,36 +60,36 @@ body
   height: 100%
   z-index: 1000
   background: rgba(77, 77, 77, 0.4)
-  transition: all 0.5s ease-in-out 
+  transition: all 500ms ease-in-out
   pointer-events: none
   opacity: 0
-  
+
 #sidebar-expand-button
-  height: 7vh
-  width: 3vw
-  border-bottom-right-radius: 4vh
-  border-top-right-radius: 4vh
-  border: 2px solid gray
-  transition: 0.3s
-  color: #898c84
-  background-color: #EEE8CD
+  width: 25px
+  height: 50px
+  border-radius: 0 25px 25px 0
+  border-style: none
+  transition: 0.5s
+  cursor: pointer
+  background-color: #009688
+  color: white
   position: absolute
-  top: 43vh
-  
+  top: 47vh
+
 #sidebar .sidebar-input-container
   display: inline-flex
   justify-content: space-evenly
   flex-wrap: nowrap
 
-#sidebar p 
+#sidebar p
   width: 45vw
-  
+
 #sidebar input[type="text"]
   margin-right: 3vw
   position: relative
   left: 1vw
-  border: auto
-  
+  border: none
+
 .page
     position: relative
     padding: 20px
