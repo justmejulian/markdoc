@@ -3,6 +3,7 @@ import { ipcRenderer } from 'electron';
 import './styles/App.sass';
 import './styles/Preview.scss';
 import './styles/reset.scss';
+import './font/font.scss';
 
 import { GET_DOCUMENT_CONTENT, OPEN_FILE_FROM_PATH } from '../utils/constants';
 

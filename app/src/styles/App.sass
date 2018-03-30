@@ -4,7 +4,6 @@
 body
   margin: 0
   padding: 0
-  font-family: sans-serif
 
 .titleBar
   position: fixed
@@ -30,13 +29,16 @@ body
   overflow: auto
   outline: none
   resize: none
+
+  font-family: Roboto Mono
+  font-size: 14px
   text-align: left
   background-color: #292c34
-  color: white  
-  
+  color: white
+
 #sidebar
   /* Element now dynamically resizes its own width. */
-  height: 100vh;
+  height: 100vh
   position: absolute
   border: none
   padding: none
@@ -55,13 +57,13 @@ body
   transition: 0.2s
   background-color: #292c34
   color: #898c84
-  
+
 #sidebar p:first-child, #sidebar p:nth-child(3), #sidebar p:nth-child(5)
   display: inline
 
-#sidebar h1, #sidebar p 
+#sidebar h1, #sidebar p
   width: 45vw
-  
+
 #sidebar input[type="text"]
   width: 25%
   position: relative
@@ -72,11 +74,11 @@ body
 #sidebar .react-date-picker
   position: relative
   left: 1vw
-  
+
 #sidebar .react-date-picker *
   background: white
   border: none
-  
+
 .page
     position: relative
     padding: 20px
