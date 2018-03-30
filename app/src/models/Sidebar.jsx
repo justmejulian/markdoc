@@ -41,7 +41,6 @@ export default class Sidebar extends Component {
 
   _handleMouseHover() {
     this.setState({ isHovering: !this.state.isHovering });
-    this.setState({ isCollapsed: true });
   }
 
   render() {
@@ -124,7 +123,12 @@ export default class Sidebar extends Component {
       );
     }
     var expandOrCollapse = this.state.isCollapsed ? '>' : '<';
-    var style = this.state.isCollapsed ? { width: '3vw' } : { width: '45vw' };
+    var contentCoverStyle = this.state.isCollapsed
+      ? {}
+      : { opacity: '1', pointerEvents: 'all' };
+    var sidebarStyle = this.state.isCollapsed
+      ? { width: '3vw' }
+      : { width: '45vw' };
     var buttonStyle = this.state.isHovering
       ? {}
       : { visibility: 'hidden', width: '0' };
@@ -134,24 +138,33 @@ export default class Sidebar extends Component {
     }
 
     return (
-      <div
-        id="sidebar"
-        style={style}
-        onMouseEnter={this.handleMouseHover}
-        onMouseLeave={this.handleMouseHover}
-      >
-        {
-          <div>
-            <button
-              onClick={this.handleExpandOrCollapse}
-              style={buttonStyle}
-              id="sidebar-expand-button"
-            >
-              {expandOrCollapse}
-            </button>
-          </div>
-        }
-        {content}
+      <div>
+        <div
+          id="sidebar-content-cover"
+          style={contentCoverStyle}
+          onClick={this.handleExpandOrCollapse}
+        >
+          {' '}
+        </div>
+        <div
+          id="sidebar"
+          style={sidebarStyle}
+          onMouseEnter={this.handleMouseHover}
+          onMouseLeave={this.handleMouseHover}
+        >
+          {
+            <div>
+              <button
+                onClick={this.handleExpandOrCollapse}
+                style={buttonStyle}
+                id="sidebar-expand-button"
+              >
+                {expandOrCollapse}
+              </button>
+            </div>
+          }
+          {content}
+        </div>
       </div>
     );
   }
