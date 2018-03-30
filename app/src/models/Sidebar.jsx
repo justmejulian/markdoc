@@ -49,82 +49,6 @@ export default class Sidebar extends Component {
     var sidebarContentStyle = this.state.isCollapsed
       ? { marginLeft: '-45vw' }
       : {};
-
-    content = (
-      <div style={sidebarContentStyle} id="sidebar-content">
-        <p>Title:</p>
-        <input
-          type="text"
-          onChange={evt => this.handleFieldChange(evt.target)}
-          name="title"
-          value={this.state.title}
-        />
-        <p>
-          <br />Author:
-        </p>
-        <input
-          type="text"
-          onChange={evt => this.handleFieldChange(evt.target)}
-          name="author"
-          value={this.state.author}
-        />
-        <p>
-          <br />Header:
-        </p>
-        <div className="sidebar-input-container">
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="headerLeft"
-            value={this.state.headerLeft}
-          />
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="headerMiddle"
-            value={this.state.headerMiddle}
-          />
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="headerRight"
-            value={this.state.headerRight}
-          />
-        </div>
-        <p>
-          <br />Footer:
-        </p>
-        <div className="sidebar-input-container">
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="footerLeft"
-            value={this.state.footerLeft}
-          />
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="footerMiddle"
-            value={this.state.footerMiddle}
-          />
-          <input
-            type="text"
-            onChange={evt => this.handleFieldChange(evt.target)}
-            name="footerRight"
-            value={this.state.footerRight}
-          />
-        </div>
-        <p>
-          <br />Date:
-        </p>
-        <DatePicker
-          dateFormat="DD/MM/YYYY"
-          onChange={this.handleDateChange}
-          selected={this.state.startDate}
-        />
-      </div>
-    );
-
     var expandOrCollapse = this.state.isCollapsed ? '>' : '<';
     var contentCoverStyle = this.state.isCollapsed
       ? {}
@@ -167,7 +91,78 @@ export default class Sidebar extends Component {
               </button>
             </div>
           }
-          {content}
+          <div style={sidebarContentStyle} id="sidebar-content">
+            <p>Title:</p>
+            <input
+              type="text"
+              onChange={evt => this.handleFieldChange(evt.target)}
+              name="title"
+              value={this.state.title}
+            />
+            <p>
+              <br />Author:
+            </p>
+            <input
+              type="text"
+              onChange={evt => this.handleFieldChange(evt.target)}
+              name="author"
+              value={this.state.author}
+            />
+            <p>
+              <br />Header:
+            </p>
+            <div className="sidebar-input-container">
+              <input
+                type="text"
+                onChange={evt => this.handleFieldChange(evt.target)}
+                name="headerLeft"
+                value={this.state.headerLeft}
+              />
+              <input
+                type="text"
+                onChange={evt => this.handleFieldChange(evt.target)}
+                name="headerMiddle"
+                value={this.state.headerMiddle}
+              />
+              <input
+                type="text"
+                onChange={evt => this.handleFieldChange(evt.target)}
+                name="headerRight"
+                value={this.state.headerRight}
+              />
+            </div>
+            <p>
+              <br />Footer:
+            </p>
+            <div className="sidebar-input-container">
+              <input
+                type="text"
+                onChange={evt => this.handleFieldChange(evt.target)}
+                name="footerLeft"
+                value={this.state.footerLeft}
+              />
+              <input
+                type="text"
+                onChange={evt => this.handleFieldChange(evt.target)}
+                name="footerMiddle"
+                value={this.state.footerMiddle}
+              />
+              <input
+                type="text"
+                onChange={evt => this.handleFieldChange(evt.target)}
+                name="footerRight"
+                value={this.state.footerRight}
+              />
+            </div>
+            <p>
+              <br />Date:
+            </p>
+            <DatePicker
+              dateFormat="DD/MM/YYYY"
+              onChange={this.handleDateChange}
+              selected={this.state.startDate}
+            />
+          </div>
         </div>
       </div>
     );
