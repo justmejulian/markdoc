@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
+import Store from '../stores/Store.js';
+import * as Actions from '../actions/Actions';
 
 class Editor extends React.Component {
   constructor() {
     super();
     this.state = {
-      value: ''
+      value: Store.getMarkdown()
     };
   }
 
   handleChange({ target }) {
     this.setState({ value: target.value });
+    Actions.setHTML(target.value);
     this.props.handleChange(target.value);
   }
 

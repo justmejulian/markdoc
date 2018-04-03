@@ -7,10 +7,10 @@ import './font/font.scss';
 
 import { GET_DOCUMENT_CONTENT, OPEN_FILE_FROM_PATH } from '../utils/constants';
 
-import Sidebar from './models/Sidebar.jsx';
-import Editor from './models/Editor.jsx';
-import Preview from './models/Preview.jsx';
-import TitleBar from './models/Titlebar.jsx';
+import Sidebar from './components/Sidebar.jsx';
+import Editor from './components/Editor.jsx';
+import Preview from './components/Preview.jsx';
+import TitleBar from './components/Titlebar.jsx';
 import { MDDOM } from './js/markdown.js';
 
 // Old

@@ -1,15 +1,27 @@
 import React, { Component } from 'react';
 import Page from './Page.jsx';
+import Store from '../stores/Store.js';
 
 class Pages extends React.Component {
   constructor(props) {
     super(props);
+    this.getWords = this.getWords.bind(this);
     this.state = {
-      pages: [{ key: 0, html: '', height: 0 }],
+      pages: [{ key: 0, html: Store.getMarkdown(), height: 0 }],
       words: [],
       currentWord: 0,
       currentPage: 0
     };
+  }
+
+  componentWillMount() {
+    Store.on('HTML_changed', this.getWords);
+  }
+
+  getWords() {
+    this.setState({
+      words: Store.getWords()
+    });
   }
 
   componentWillReceiveProps(nextProps) {
