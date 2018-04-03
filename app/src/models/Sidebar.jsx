@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
+import '../styles/Sidebar.sass';
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 
 export default class Sidebar extends Component {
   //🐘
@@ -47,20 +49,20 @@ export default class Sidebar extends Component {
     var content;
     var boundHandleFieldChange = this.handleFieldChange.bind(this);
     var sidebarContentStyle = this.state.isCollapsed
-      ? { marginLeft: '-45vw' }
-      : { background: '#EEE8CD' };
+      ? { marginLeft: '-47vw' }
+      : { background: '#FDFDFD' };
     var expandOrCollapse = this.state.isCollapsed ? '>' : '<';
     var contentCoverStyle = this.state.isCollapsed
       ? {}
       : { opacity: '1', pointerEvents: 'all' };
     var sidebarStyle = this.state.isCollapsed
       ? { width: '3vw' }
-      : { width: '48vw' };
+      : { width: '52vw' };
     var buttonStyle = {};
     if (!this.state.isHovering && this.state.isCollapsed) {
       buttonStyle = { visibility: 'hidden', width: '0' };
     }
-    buttonStyle.marginLeft = this.state.isCollapsed ? '' : '45vw';
+    buttonStyle.marginLeft = this.state.isCollapsed ? '' : '48vw';
 
     return (
       <div>
@@ -79,76 +81,83 @@ export default class Sidebar extends Component {
           onMouseLeave={this.handleMouseHover}
         >
           <div style={sidebarContentStyle} id="sidebar-content">
-            <p>Title:</p>
-            <input
-              type="text"
-              onChange={evt => this.handleFieldChange(evt.target)}
-              name="title"
-              value={this.state.title}
-            />
-            <p>
-              <br />Author:
-            </p>
-            <input
-              type="text"
-              onChange={evt => this.handleFieldChange(evt.target)}
-              name="author"
-              value={this.state.author}
-            />
-            <p>
-              <br />Header:
-            </p>
-            <div className="sidebar-input-container">
+            <h1> Mardoc </h1>
+            <div className="form-group">
+              <label>Title:</label>
               <input
                 type="text"
                 onChange={evt => this.handleFieldChange(evt.target)}
-                name="headerLeft"
-                value={this.state.headerLeft}
-              />
-              <input
-                type="text"
-                onChange={evt => this.handleFieldChange(evt.target)}
-                name="headerMiddle"
-                value={this.state.headerMiddle}
-              />
-              <input
-                type="text"
-                onChange={evt => this.handleFieldChange(evt.target)}
-                name="headerRight"
-                value={this.state.headerRight}
+                name="titleInput"
+                value={this.state.title}
               />
             </div>
-            <p>
-              <br />Footer:
-            </p>
-            <div className="sidebar-input-container">
+
+            <div className="form-group">
+              <label>Author:</label>
               <input
                 type="text"
                 onChange={evt => this.handleFieldChange(evt.target)}
-                name="footerLeft"
-                value={this.state.footerLeft}
-              />
-              <input
-                type="text"
-                onChange={evt => this.handleFieldChange(evt.target)}
-                name="footerMiddle"
-                value={this.state.footerMiddle}
-              />
-              <input
-                type="text"
-                onChange={evt => this.handleFieldChange(evt.target)}
-                name="footerRight"
-                value={this.state.footerRight}
+                name="author"
+                value={this.state.author}
               />
             </div>
-            <p>
-              <br />Date:
-            </p>
-            <DatePicker
-              dateFormat="DD/MM/YYYY"
-              onChange={this.handleDateChange}
-              selected={this.state.startDate}
-            />
+
+            <div className="form-group">
+              <label>Header:</label>
+              <div className="input-container">
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="headerLeftInput"
+                  value={this.state.headerLeft}
+                />
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="headerMiddle"
+                  value={this.state.headerMiddle}
+                />
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="headerRight"
+                  value={this.state.headerRight}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Footer:</label>
+              <div className="input-container">
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="footerLeft"
+                  value={this.state.footerLeft}
+                />
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="footerMiddle"
+                  value={this.state.footerMiddle}
+                />
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="footerRight"
+                  value={this.state.footerRight}
+                />
+              </div>
+            </div>
+
+            <div className="date-group">
+              <label>Date:</label>
+              <DatePicker
+                dateFormat="DD/MM/YYYY"
+                onChange={this.handleDateChange}
+                selected={this.state.startDate}
+              />
+            </div>
           </div>
           <button
             onClick={this.handleExpandOrCollapse}

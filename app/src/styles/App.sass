@@ -13,6 +13,7 @@ body
   -webkit-app-region: drag
 
 #preview
+  background-color: #FDFDFD
   overflow: auto
   margin: 0
   display: inline-block
@@ -33,62 +34,6 @@ body
   text-align: left
   background-color: #292c34
   color: white
-
-
-#sidebar
-  /* Element now dynamically resizes its own width. */
-  height: 100vh
-  position: absolute
-  border: none
-  padding: none
-  overflow: auto
-  resize: none
-  text-align: left
-  color: black
-  transition: 0.3s
-  z-index: 1001
-
-#sidebar-content
-  transition: 0.5s
-  height: 100%
-  width: 45vw
-  border-right: 2px solid gray
-  
-#sidebar-content-cover
-  position: absolute
-  width: 100%
-  height: 100%
-  z-index: 1000
-  background: rgba(77, 77, 77, 0.4)
-  transition: all 500ms ease-in-out
-  pointer-events: none
-  opacity: 0
-
-#sidebar-expand-button
-  width: 25px
-  height: 50px
-  border-radius: 0 25px 25px 0
-  border-style: none
-  transition: 0.5s
-  cursor: pointer
-  background-color: #009688
-  color: white
-  position: absolute
-  top: 47vh
-
-#sidebar .sidebar-input-container
-  display: inline-flex
-  justify-content: space-evenly
-  flex-wrap: nowrap
-
-#sidebar p
-  width: 45vw
-
-#sidebar input[type="text"]
-  margin-right: 3vw
-  position: relative
-  left: 1vw
-  border: none
 
 .page
     position: relative
