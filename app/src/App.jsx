@@ -12,6 +12,8 @@ import Editor from './components/Editor.jsx';
 import Preview from './components/Preview.jsx';
 import TitleBar from './components/Titlebar.jsx';
 import { MDDOM } from './js/markdown.js';
+import Store from './stores/Store.js';
+import * as Actions from './actions/Actions';
 
 // Old
 //var marked = require('marked');
@@ -19,52 +21,32 @@ import { MDDOM } from './js/markdown.js';
 class App extends React.Component {
   constructor() {
     super();
-    this.state = {
-      html: '',
-      value: ''
-    };
+    this.state = {};
 
     // bind to this
     this.getDocumentContent = (event, data) =>
       this._getDocumentContent(event, data);
-    this.receiveDocumentContent = (event, data) =>
-      this._receiveDocumentContent(event, data);
-  }
-
-  handleChange(value) {
-    this.setState({
-      html: MDDOM.parse(value).toHtml(),
-      value: value
-    });
+    this.setDocumentContent = (event, data) =>
+      this._setDocumentContent(event, data);
   }
 
   // IPC event listeners
   componentDidMount() {
     ipcRenderer.on(GET_DOCUMENT_CONTENT, this.getDocumentContent);
-    ipcRenderer.on(OPEN_FILE_FROM_PATH, this.receiveDocumentContent);
+    ipcRenderer.on(OPEN_FILE_FROM_PATH, this.setDocumentContent);
   }
 
   componentWillUnmount() {
     ipcRenderer.removeListener(GET_DOCUMENT_CONTENT, this.getDocumentContent);
-    ipcRenderer.removeListener(
-      OPEN_FILE_FROM_PATH,
-      this.receiveDocumentContent
-    );
+    ipcRenderer.removeListener(OPEN_FILE_FROM_PATH, this.setDocumentContent);
   }
 
   _getDocumentContent(event, data) {
-    ipcRenderer.send(GET_DOCUMENT_CONTENT, this.state.value);
+    ipcRenderer.send(GET_DOCUMENT_CONTENT, Store.getMarkdown());
   }
 
-  _receiveDocumentContent(event, data) {
-    this.handleChange(data);
-  }
-
-  // ToDo: Move this to the Preview or some other class
-  createMarkup() {
-    return {
-      __html: this.state.value
-    };
+  _setDocumentContent(event, data) {
+    Actions.setHTML(data);
   }
 
   render() {
@@ -72,10 +54,7 @@ class App extends React.Component {
       <div>
         <Sidebar />
         <TitleBar />
-        <Editor
-          handleChange={this.handleChange.bind(this)}
-          value={this.state.value}
-        />
+        <Editor />
         <Preview html={this.state.html} />
       </div>
     );

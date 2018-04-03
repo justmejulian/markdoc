@@ -3,7 +3,15 @@ import React, { Component } from 'react';
 class Header extends React.Component {
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+      pageNumber: 0
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      pageNumber: nextProps.pageNumber + 1
+    });
   }
 
   render() {
