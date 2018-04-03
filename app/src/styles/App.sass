@@ -12,6 +12,7 @@ body
   -webkit-app-region: drag
 
 #preview
+  background-color: #FDFDFD
   overflow: auto
   margin: 0
   display: inline-block
@@ -22,7 +23,7 @@ body
 #editor
   float: left
   padding: 5vh 5vw
-  width: 38vw
+  width: 40vw
   height: 90vh
   /*remove textarea styles
   border: none
@@ -35,49 +36,6 @@ body
   text-align: left
   background-color: #292c34
   color: white
-
-#sidebar
-  /* Element now dynamically resizes its own width. */
-  height: 100vh
-  position: absolute
-  border: none
-  padding: none
-  overflow: auto
-  resize: none
-  text-align: left
-  background-color: #292c34
-  color: white
-  transition: 0.5s
-
-#sidebar .expand-button
-  height: 7vh
-  width: 5vh
-  border-bottom-right-radius: 4vh
-  border-top-right-radius: 4vh
-  transition: 0.2s
-  background-color: #292c34
-  color: #898c84
-
-#sidebar p:first-child, #sidebar p:nth-child(3), #sidebar p:nth-child(5)
-  display: inline
-
-#sidebar h1, #sidebar p
-  width: 45vw
-
-#sidebar input[type="text"]
-  width: 25%
-  position: relative
-  left: 2.22%
-  margin-right: 6.66%
-  border: none
-
-#sidebar .react-date-picker
-  position: relative
-  left: 1vw
-
-#sidebar .react-date-picker *
-  background: white
-  border: none
 
 .page
     position: relative

@@ -1,89 +1,173 @@
 import React, { Component } from 'react';
-import DatePicker from 'react-date-picker';
-import ReportingInput from './ReportingInput.jsx';
+import DatePicker from 'react-datepicker';
+import moment from 'moment';
+import '../styles/Sidebar.sass';
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 
 export default class Sidebar extends Component {
-	//🐘
-	//TODO: Send field values to appropriate places, meaning header and footer and I imagine the other fields have to be queried somewhere.
-	
-	constructor(props) {
-		super(props);
-		this.handleDateChange = (date) => this._handleDateChange(date);
-		this.handleFieldChange = (index, evt) => this._handleFieldChange(index, evt);
-		this.handleExpandOrCollapse = () => this._handleExpandOrCollapse();
-		this.handleMouseHover = () => this._handleMouseHover();
-		this.state = {
-			date: new Date(),
-			isCollapsed: true,
-			values: ["", "", "", "", "", "", ""],
-			isHovering: false,
-		};
-	}
-	
-	_handleDateChange(date) {
-		this.setState({date});
-	}
-	
-	_handleExpandOrCollapse(){
-		this.setState({isCollapsed: !this.state.isCollapsed});
-	}
-	
-	_handleFieldChange(index, evt) {
-		//TODO: Probably split this function into multiple to distinguish which field was changed.
-		//Also TODO: Actually send the changed value someplace.
-		var value = evt.target.value;
-		var newValues = this.state.values.slice();
-		newValues[index] = value;
-		this.setState({values: newValues});
-	}
-	
-	_handleMouseHover(){
-		this.setState({isHovering: !this.state.isHovering});
-		this.setState({isCollapsed: true});
-	}
+  //🐘
+  //TODO: Send field values to appropriate places, meaning header and footer and I imagine the other fields have to be queried somewhere.
+
+  constructor(props) {
+    super(props);
+    this.handleDateChange = date => this._handleDateChange(date);
+    this.handleFieldChange = target => this._handleFieldChange(target);
+    this.handleExpandOrCollapse = () => this._handleExpandOrCollapse();
+    this.handleMouseHover = () => this._handleMouseHover();
+    this.state = {
+      isCollapsed: true,
+      title: '',
+      author: '',
+      startDate: moment(),
+      headerLeft: '',
+      headerMiddle: '',
+      headerRight: '',
+      footerLeft: '',
+      footerMiddle: '',
+      footerRight: '',
+      isHovering: false
+    };
+  }
+
+  _handleDateChange(date) {
+    this.setState({ startDate: date });
+  }
+
+  _handleExpandOrCollapse() {
+    this.setState({ isCollapsed: !this.state.isCollapsed });
+  }
+
+  _handleFieldChange(target) {
+    this.setState({ [target.name]: [target.value] });
+  }
+
+  _handleMouseHover() {
+    this.setState({ isHovering: !this.state.isHovering });
+  }
 
   render() {
     var content;
-	var boundHandleFieldChange = this.handleFieldChange.bind(this);
-	if(!this.state.isCollapsed){
-		content = (
-			<div>
-				<h1>Sidebar of sidebariness!</h1> {/* Note: This provides necessary space for the datepicker to display. Do not remove without replacement! */}
-				<p>Title:</p>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {0} value={this.state.values[0]}/>
-				<p><br></br>Author:</p>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {1} value={this.state.values[1]}/>
-				<p><br></br>Date:</p><DatePicker onChange={this.handleDateChange} value={this.state.date} />
-				<p>Header:</p>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {2} value={this.state.values[2]}/>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {3} value={this.state.values[3]}/>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {4} value={this.state.values[4]}/>
-				<p>Footer:</p>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {5} value={this.state.values[5]}/>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {6} value={this.state.values[6]}/>
-				<ReportingInput handleFieldChange = {boundHandleFieldChange} index = {7} value={this.state.values[7]}/>
-			</div>
-			);
-	}
-	var expandOrCollapse = this.state.isCollapsed ? '>' : '<';
-	var style = this.state.isHovering ? {width: '3vw'} : {width: '2vw'};
-	var buttonStyle = this.state.isHovering ? {} : {visibility: 'hidden', width: '0'};
-	if(this.state.isCollapsed){	buttonStyle.position = 'relative';
-								buttonStyle.top = '43vh';
-							} else {
-								style.width = '45vw';
-							};
-	
-	return (
-			<div id='sidebar' style={style} onMouseEnter={this.handleMouseHover} onMouseLeave={this.handleMouseHover}>
-					{
-						<div>
-							<button onClick={this.handleExpandOrCollapse} style={buttonStyle} className='expand-button' id='sidebar-expand-button'>{expandOrCollapse}</button>
-							
-						</div>
-					}
-					{content}
-			</div>
-		)
+    var boundHandleFieldChange = this.handleFieldChange.bind(this);
+    var sidebarContentStyle = this.state.isCollapsed
+      ? { marginLeft: '-47vw' }
+      : { background: '#FDFDFD' };
+    var expandOrCollapse = this.state.isCollapsed ? '>' : '<';
+    var contentCoverStyle = this.state.isCollapsed
+      ? {}
+      : { opacity: '1', pointerEvents: 'all' };
+    var sidebarStyle = this.state.isCollapsed
+      ? { width: '3vw' }
+      : { width: '52vw' };
+    var buttonStyle = {};
+    if (!this.state.isHovering && this.state.isCollapsed) {
+      buttonStyle = { visibility: 'hidden', width: '0' };
+    }
+    buttonStyle.marginLeft = this.state.isCollapsed ? '' : '48vw';
+
+    return (
+      <div>
+        <div
+          id="sidebar-content-cover"
+          style={contentCoverStyle}
+          onClick={this.handleExpandOrCollapse}
+        >
+          {' '}
+        </div>
+
+        <div
+          id="sidebar"
+          style={sidebarStyle}
+          onMouseEnter={this.handleMouseHover}
+          onMouseLeave={this.handleMouseHover}
+        >
+          <div style={sidebarContentStyle} id="sidebar-content">
+            <h1> Mardoc </h1>
+            <div className="form-group">
+              <label>Title:</label>
+              <input
+                type="text"
+                onChange={evt => this.handleFieldChange(evt.target)}
+                name="titleInput"
+                value={this.state.title}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Author:</label>
+              <input
+                type="text"
+                onChange={evt => this.handleFieldChange(evt.target)}
+                name="author"
+                value={this.state.author}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Header:</label>
+              <div className="input-container">
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="headerLeftInput"
+                  value={this.state.headerLeft}
+                />
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="headerMiddle"
+                  value={this.state.headerMiddle}
+                />
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="headerRight"
+                  value={this.state.headerRight}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Footer:</label>
+              <div className="input-container">
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="footerLeft"
+                  value={this.state.footerLeft}
+                />
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="footerMiddle"
+                  value={this.state.footerMiddle}
+                />
+                <input
+                  type="text"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  name="footerRight"
+                  value={this.state.footerRight}
+                />
+              </div>
+            </div>
+
+            <div className="date-group">
+              <label>Date:</label>
+              <DatePicker
+                dateFormat="DD/MM/YYYY"
+                onChange={this.handleDateChange}
+                selected={this.state.startDate}
+              />
+            </div>
+          </div>
+          <button
+            onClick={this.handleExpandOrCollapse}
+            style={buttonStyle}
+            id="sidebar-expand-button"
+          >
+            {expandOrCollapse}
+          </button>
+        </div>
+      </div>
+    );
   }
 }
