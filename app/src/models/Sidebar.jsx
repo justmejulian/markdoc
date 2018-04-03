@@ -62,7 +62,7 @@ export default class Sidebar extends Component {
     if (!this.state.isHovering && this.state.isCollapsed) {
       buttonStyle = { visibility: 'hidden', width: '0' };
     }
-    buttonStyle.marginLeft = this.state.isCollapsed ? '' : '48vw';
+    buttonStyle.marginLeft = this.state.isCollapsed ? '' : '47vw';
 
     return (
       <div>
@@ -81,13 +81,15 @@ export default class Sidebar extends Component {
           onMouseLeave={this.handleMouseHover}
         >
           <div style={sidebarContentStyle} id="sidebar-content">
-            <h1> Mardoc </h1>
+            <div className="sidebar-header">
+              <h1> Markdoc </h1>
+            </div>
             <div className="form-group">
               <label>Title:</label>
               <input
                 type="text"
                 onChange={evt => this.handleFieldChange(evt.target)}
-                name="titleInput"
+                name="title"
                 value={this.state.title}
               />
             </div>
@@ -108,20 +110,23 @@ export default class Sidebar extends Component {
                 <input
                   type="text"
                   onChange={evt => this.handleFieldChange(evt.target)}
-                  name="headerLeftInput"
+                  name="headerLeft"
                   value={this.state.headerLeft}
+                  placeholder="Left"
                 />
                 <input
                   type="text"
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="headerMiddle"
                   value={this.state.headerMiddle}
+                  placeholder="Middle"
                 />
                 <input
                   type="text"
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="headerRight"
                   value={this.state.headerRight}
+                  placeholder="Right"
                 />
               </div>
             </div>
@@ -134,18 +139,21 @@ export default class Sidebar extends Component {
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="footerLeft"
                   value={this.state.footerLeft}
+                  placeholder="Left"
                 />
                 <input
                   type="text"
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="footerMiddle"
                   value={this.state.footerMiddle}
+                  placeholder="Middle"
                 />
                 <input
                   type="text"
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="footerRight"
                   value={this.state.footerRight}
+                  placeholder="Right"
                 />
               </div>
             </div>
