@@ -100,11 +100,10 @@ export default class Sidebar extends Component {
     var sidebarStyle = this.state.isCollapsed
       ? { width: '3vw' }
       : { width: '52vw' };
-    var buttonStyle = {};
+    var buttonStyle = this.state.isCollapsed ? {} : { marginLeft: '47vw' };
     if (!this.state.isHovering && this.state.isCollapsed) {
-      buttonStyle = { visibility: 'hidden', width: '0' };
+      buttonStyle = { visibility: 'hidden', width: '0', marginLeft: '-15px' };
     }
-    buttonStyle.marginLeft = this.state.isCollapsed ? '' : '47vw';
 
     return (
       <div>
