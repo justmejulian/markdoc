@@ -1,22 +1,26 @@
 import React, { Component } from 'react';
 import Page from './Page.jsx';
+import Store from '../stores/Store.js';
 
-class Pages extends React.Component {
+class Preview extends React.Component {
   constructor(props) {
     super(props);
+    this.setPreview = this.setPreview.bind(this);
     this.state = {
-      pages: [{ key: 0, html: '', height: 0 }],
+      pages: [{ key: 0, html: Store.getMarkdown(), height: 0 }],
       words: [],
       currentWord: 0,
       currentPage: 0
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    //console.log("Got the props");
+  componentWillMount() {
+    Store.on('HTML_changed', this.setPreview);
+  }
 
+  setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
-    var html = nextProps.html;
+    var html = Store.getHTML();
     var words = html.split(' ');
 
     //console.log(words);
@@ -81,7 +85,7 @@ class Pages extends React.Component {
 
   render() {
     return (
-      <div id="pages">
+      <div id="preview">
         {this.state.pages.map(page => (
           <Page
             id={page.key}
@@ -95,4 +99,4 @@ class Pages extends React.Component {
   }
 }
 
-export default Pages;
+export default Preview;

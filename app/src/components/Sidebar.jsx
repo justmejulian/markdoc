@@ -4,6 +4,9 @@ import moment from 'moment';
 import '../styles/Sidebar.sass';
 import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 
+import Store from '../stores/Store.js';
+import * as SidebarActions from '../actions/SidebarActions';
+
 export default class Sidebar extends Component {
   //🐘
   //TODO: Send field values to appropriate places, meaning header and footer and I imagine the other fields have to be queried somewhere.
@@ -14,11 +17,12 @@ export default class Sidebar extends Component {
     this.handleFieldChange = target => this._handleFieldChange(target);
     this.handleExpandOrCollapse = () => this._handleExpandOrCollapse();
     this.handleMouseHover = () => this._handleMouseHover();
+    this.getTitle = this.getTitle.bind(this);
     this.state = {
       isCollapsed: true,
       title: '',
       author: '',
-      startDate: moment(),
+      date: moment(),
       headerLeft: '',
       headerMiddle: '',
       headerRight: '',
@@ -29,8 +33,19 @@ export default class Sidebar extends Component {
     };
   }
 
+  componentWillMount() {
+    Store.on('Title_changed', this.getTitle);
+  }
+
+  getTitle() {
+    this.setState({
+      title: Store.getTitle()
+    });
+  }
+
   _handleDateChange(date) {
-    this.setState({ startDate: date });
+    Actions.setDate(date);
+    this.setState({ date: date });
   }
 
   _handleExpandOrCollapse() {
@@ -39,6 +54,33 @@ export default class Sidebar extends Component {
 
   _handleFieldChange(target) {
     this.setState({ [target.name]: [target.value] });
+    switch (target.name) {
+      case 'title':
+        SidebarActions.setTitle(target.value);
+        break;
+      case 'author':
+        SidebarActions.setAuthor(target.value);
+        break;
+      case 'headerRight':
+        SidebarActions.setHeaderRight(target.value);
+        break;
+      case 'headerMiddle':
+        SidebarActions.setHeaderMiddle(target.value);
+        break;
+      case 'headerLeft':
+        SidebarActions.setHeaderLeft(target.value);
+        break;
+      case 'footerLeft':
+        SidebarActions.setFooterLeft(target.value);
+        break;
+      case 'footerMiddle':
+        SidebarActions.setFooterMiddle(target.value);
+        break;
+      case 'footerRight':
+        SidebarActions.setFooterRight(target.value);
+        break;
+      default:
+    }
   }
 
   _handleMouseHover() {
@@ -146,7 +188,7 @@ export default class Sidebar extends Component {
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="footerMiddle"
                   value={this.state.footerMiddle}
-                  placeholder="Middle"
+                  placeholder="Isch im mom. page zahl"
                 />
                 <input
                   type="text"
@@ -163,7 +205,7 @@ export default class Sidebar extends Component {
               <DatePicker
                 dateFormat="DD/MM/YYYY"
                 onChange={this.handleDateChange}
-                selected={this.state.startDate}
+                selected={this.state.date}
               />
             </div>
           </div>

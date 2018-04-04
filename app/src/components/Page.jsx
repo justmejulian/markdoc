@@ -19,7 +19,7 @@ class Page extends React.Component {
   componentWillReceiveProps(nextProps) {
     //console.log("Got the props in page " + nextProps.id);
     this.setState({
-      _html: this.createMarkup(nextProps.html),
+      __html: this.createMarkup(nextProps.html),
       id: nextProps.id
     });
   }
@@ -32,10 +32,10 @@ class Page extends React.Component {
 
   render() {
     return (
-      <div className="page">
-        <Header />
+      <div className={'page page_' + this.state.id}>
+        <Header pageNumber={this.state.id} />
         <ReactHeight onHeightReady={height => this.handleHeight(height)}>
-          <div id={this.state.id} dangerouslySetInnerHTML={this.state._html} />
+          <div id={this.state.id} dangerouslySetInnerHTML={this.state.__html} />
         </ReactHeight>
         <Footer pageNumber={this.state.id} />
       </div>
