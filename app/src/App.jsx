@@ -55,7 +55,7 @@ class App extends React.Component {
         <Sidebar />
         <TitleBar />
         <Editor />
-        <Preview html={this.state.html} />
+        <Preview />
       </div>
     );
   }
