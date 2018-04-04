@@ -32,7 +32,7 @@ class Page extends React.Component {
 
   render() {
     return (
-      <div className="page">
+      <div className={'page page_' + this.state.id}>
         <Header pageNumber={this.state.id} />
         <ReactHeight onHeightReady={height => this.handleHeight(height)}>
           <div id={this.state.id} dangerouslySetInnerHTML={this.state.__html} />
