@@ -93,7 +93,7 @@ export default class Sidebar extends Component {
     var sidebarContentStyle = this.state.isCollapsed
       ? { marginLeft: '-47vw' }
       : { background: '#FDFDFD' };
-    var expandOrCollapse = this.state.isCollapsed ? '>' : '<';
+    var expandOrCollapse = this.state.isCollapsed ? '❯' : '❮';
     var contentCoverStyle = this.state.isCollapsed
       ? {}
       : { opacity: '1', pointerEvents: 'all' };
