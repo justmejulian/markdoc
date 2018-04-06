@@ -8,6 +8,7 @@ const { app, dialog, ipcMain, BrowserWindow, Menu } = electron;
 const {
   GET_DOCUMENT_CONTENT,
   OPEN_FILE_FROM_PATH,
+  SET_FILE_PATH,
   EXTENSIONS
 } = require('./app/utils/constants');
 
@@ -17,11 +18,15 @@ const viewMenu = require('./main/menus/viewMenu');
 const windowMenu = require('./main/menus/windowMenu');
 const helpMenu = require('./main/menus/helpMenu');
 
+// Window Settings
+const defaultWindow = require('./main/defaultWindow');
+
 // Let electron reloads by itself when webpack watches changes in ./app/
 require('electron-reload')(__dirname);
 
 // To avoid being garbage collected
 let mainWindow;
+var fileName = null;
 
 // TODO: save and reload application state (opened windows/documents, window size etc.)
 // maybe use https://github.com/sindresorhus/electron-store to store application state?
@@ -44,11 +49,7 @@ app.on('ready', () => {
 
 // TODO: save opened windows/application state in array, dereference windows if closed
 function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 1000,
-    titleBarStyle: 'hidden'
-  });
+  mainWindow = new BrowserWindow(defaultWindow);
 
   mainWindow.loadURL(`file://${__dirname}/app/index.html`);
 
@@ -61,29 +62,22 @@ function createWindow() {
   mainWindow.on('closed', function() {
     // Dereference the window object & clear file variables
     mainWindow = null;
-    filePath = null;
     fileName = null;
-    content = null;
   });
 }
 
 // TODO: Refactor once save application state is implemented.
 // save opened windows to array, remove duplicated code from above
 function newWindow() {
-  let newWindow = new BrowserWindow({ width: 1400, height: 1000 });
+  let newWindow = new BrowserWindow(defaultWindow);
   newWindow.loadURL(`file://${__dirname}/app/index.html`);
 }
 
-// Save open dialog stuff
-// TODO: once application state saving is implemented, save path/content per window
-var filePath = null;
-var fileName = null;
-let content = null;
-
 function openFileDialog() {
+  var currentWindow = BrowserWindow.getFocusedWindow();
+  var currentFilePath;
   dialog.showOpenDialog(
-    // TODO: once multi-window is implemented, replace mainWindow with current window
-    mainWindow,
+    currentWindow,
     {
       properties: ['openFile'],
       filters: [{ name: 'Text', extensions: EXTENSIONS }]
@@ -96,28 +90,28 @@ function openFileDialog() {
       }
 
       // Save FilePath
-      // TODO: once application state saving is implemented, save path per window
-      filePath = tempFilePath[0];
-      fileName = path.posix.basename(filePath);
+      currentFilePath = tempFilePath[0];
+      fileName = path.posix.basename(currentFilePath);
 
-      fs.readFile(tempFilePath[0], 'utf-8', (err, data) => {
+      fs.readFile(currentFilePath, 'utf-8', (err, currentContent) => {
         if (err) {
           console.log('An error ocurred reading the file :' + err.message);
           return;
         }
 
-        mainWindow.send(OPEN_FILE_FROM_PATH, data);
+        currentWindow.send(OPEN_FILE_FROM_PATH, {
+          currentFilePath,
+          currentContent
+        });
       });
     }
   );
 }
 
-// TODO: attach save dialog to app window (=> macOS only)
-function saveFileDialog() {
-  if (filePath === null) {
+function saveFileDialog(currentContent, currentFilePath, currentWindow) {
+  if (currentFilePath === null || currentFilePath === '') {
     dialog.showSaveDialog(
-      // TODO: once multi-window is implemented, replace mainWindow with current window
-      mainWindow,
+      BrowserWindow.fromId(currentWindow),
       {
         filters: [
           {
@@ -131,18 +125,17 @@ function saveFileDialog() {
           console.log("You didn't save the file");
           return;
         }
-        // save FilePath
-        filePath = newPath;
-        writeFileToPath(filePath, content);
+        writeFileToPath(currentContent, newPath, currentWindow);
       }
     );
   } else {
-    writeFileToPath(filePath, content);
+    writeFileToPath(currentContent, currentFilePath, currentWindow);
   }
 }
 
-function writeFileToPath(filePath, content) {
-  fs.writeFile(filePath, content, err => {
+function writeFileToPath(currentContent, currentFilePath, currentWindow) {
+  BrowserWindow.fromId(currentWindow).send(SET_FILE_PATH, currentFilePath);
+  fs.writeFile(currentFilePath, currentContent, err => {
     if (err) {
       console.log('An error ocurred creating the file ' + err.message);
     }
@@ -151,8 +144,7 @@ function writeFileToPath(filePath, content) {
 
 // IPC event listener
 ipcMain.on(GET_DOCUMENT_CONTENT, (event, arg) => {
-  content = arg;
-  saveFileDialog();
+  saveFileDialog(arg.currentContent, arg.currentFilePath, arg.currentWindow);
 });
 
 // Quit when all windows are closed => non-macOS only
@@ -198,7 +190,7 @@ const mainMenuTemplate = [
         accelerator: process.platform === 'darwin' ? 'Command+S' : 'Ctrl+S',
         click() {
           // Get File Content to save from renderer process
-          mainWindow.send(GET_DOCUMENT_CONTENT, 'save');
+          BrowserWindow.getFocusedWindow().send(GET_DOCUMENT_CONTENT, 'save');
         }
       },
       { type: 'separator' },
