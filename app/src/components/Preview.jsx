@@ -42,7 +42,7 @@ class Preview extends React.Component {
   }
 
   _handleZoomIn() {
-    if (this.state.zoom < 2) {
+    if (this.state.zoom < 1.7) {
       var newState = this.state;
       newState.zoom += 0.1;
       this.setState(newState);
