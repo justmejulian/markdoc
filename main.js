@@ -4,10 +4,18 @@ const fs = require('fs');
 const path = require('path');
 const { app, dialog, ipcMain, BrowserWindow, Menu } = electron;
 
+// Constants
 const {
   GET_DOCUMENT_CONTENT,
-  OPEN_FILE_FROM_PATH
+  OPEN_FILE_FROM_PATH,
+  EXTENSIONS
 } = require('./app/utils/constants');
+
+// Menus
+const editMenu = require('./main/menus/editMenu');
+const viewMenu = require('./main/menus/viewMenu');
+const windowMenu = require('./main/menus/windowMenu');
+const helpMenu = require('./main/menus/helpMenu');
 
 // Let electron reloads by itself when webpack watches changes in ./app/
 require('electron-reload')(__dirname);
@@ -78,7 +86,7 @@ function openFileDialog() {
     mainWindow,
     {
       properties: ['openFile'],
-      filters: [{ name: 'Text', extensions: ['txt', 'md', 'mdoc'] }]
+      filters: [{ name: 'Text', extensions: EXTENSIONS }]
     },
     tempFilePath => {
       // tempFilePath is an array that contains all the selected
@@ -111,11 +119,14 @@ function saveFileDialog() {
       // TODO: once multi-window is implemented, replace mainWindow with current window
       mainWindow,
       {
-        filters: [{
-          name: 'Markdoc',
-          extensions: ['mdoc']
-        }]
-      }, newPath => {
+        filters: [
+          {
+            name: 'Markdoc',
+            extensions: ['mdoc']
+          }
+        ]
+      },
+      newPath => {
         if (newPath === undefined) {
           console.log("You didn't save the file");
           return;
@@ -123,7 +134,8 @@ function saveFileDialog() {
         // save FilePath
         filePath = newPath;
         writeFileToPath(filePath, content);
-    });
+      }
+    );
   } else {
     writeFileToPath(filePath, content);
   }
@@ -199,50 +211,10 @@ const mainMenuTemplate = [
       }
     ]
   },
-  {
-    label: 'Edit',
-    submenu: [
-      { role: 'undo' },
-      { role: 'redo' },
-      { type: 'separator' },
-      { role: 'cut' },
-      { role: 'copy' },
-      { role: 'paste' },
-      { role: 'delete' },
-      { role: 'selectall' }
-    ]
-  },
-  {
-    label: 'View',
-    submenu: [
-      { role: 'reload' },
-      { role: 'forcereload' },
-      { role: 'toggledevtools' },
-      { type: 'separator' },
-      { role: 'resetzoom' },
-      { role: 'zoomin' },
-      { role: 'zoomout' },
-      { type: 'separator' },
-      { role: 'togglefullscreen' }
-    ]
-  },
-  {
-    role: 'window',
-    submenu: [{ role: 'minimize' }, { role: 'close' }]
-  },
-  {
-    role: 'help',
-    submenu: [
-      {
-        label: 'Learn More',
-        click() {
-          require('electron').shell.openExternal(
-            'https://github.engineering.zhaw.ch/vissejul/markdoc'
-          );
-        }
-      }
-    ]
-  }
+  editMenu,
+  viewMenu,
+  windowMenu,
+  helpMenu
 ];
 
 if (process.platform === 'darwin') {
