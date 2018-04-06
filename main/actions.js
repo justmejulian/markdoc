@@ -1,10 +1,8 @@
 const electron = require('electron');
 const fs = require('fs');
-const path = require('path');
 const { dialog, BrowserWindow } = electron;
 
 const {
-  GET_DOCUMENT_CONTENT,
   OPEN_FILE_FROM_PATH,
   SET_FILE_PATH,
   EXTENSIONS
@@ -26,7 +24,6 @@ function openFileDialog() {
         return;
       }
 
-      // Save FilePath
       currentFilePath = tempFilePath[0];
 
       fs.readFile(currentFilePath, 'utf-8', (err, currentContent) => {
