@@ -6,11 +6,13 @@ class Preview extends React.Component {
   constructor(props) {
     super(props);
     this.setPreview = this.setPreview.bind(this);
+    this.handleZoomIn = this._handleZoomIn.bind(this);
     this.state = {
       pages: [{ key: 0, html: Store.getMarkdown(), height: 0 }],
       words: [],
       currentWord: 0,
-      currentPage: 0
+      currentPage: 0,
+      zoom: 1
     };
   }
 
@@ -36,6 +38,16 @@ class Preview extends React.Component {
       },
       this.nextWord
     );
+  }
+
+  _handleZoomIn() {
+    if (this.state.zoom < 2) {
+      var newState = this.state;
+      newState.zoom += 0.1;
+      this.setState(newState);
+    } else {
+      alert('Maximum zoom has been reached!');
+    }
   }
 
   handleHeight(height, id) {
@@ -85,7 +97,10 @@ class Preview extends React.Component {
 
   render() {
     return (
-      <div id="preview">
+      <div id="preview" style={{ zoom: this.state.zoom }}>
+        <button className="zoomButton" onClick={this.handleZoomIn}>
+          Zoom in
+        </button>
         {this.state.pages.map(page => (
           <Page
             id={page.key}
