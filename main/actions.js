@@ -1,8 +1,9 @@
 const electron = require('electron');
 const fs = require('fs');
-const { dialog, BrowserWindow } = electron;
+const { dialog, BrowserWindow, ipcMain } = electron;
 
 const {
+  HOME_DIRECTORY,
   OPEN_FILE_FROM_PATH,
   SET_FILE_PATH,
   EXTENSIONS
@@ -14,6 +15,7 @@ function openFileDialog() {
   dialog.showOpenDialog(
     currentWindow,
     {
+      defaultPath: HOME_DIRECTORY,
       properties: ['openFile'],
       filters: [{ name: 'Text', extensions: EXTENSIONS }]
     },
@@ -41,17 +43,19 @@ function openFileDialog() {
   );
 }
 
-function saveFileDialog(currentContent, currentFilePath, currentWindow) {
+function saveFileDialog(
+  fileType,
+  directoryPath,
+  currentContent,
+  currentFilePath,
+  currentWindow
+) {
   if (currentFilePath === null || currentFilePath === '') {
     dialog.showSaveDialog(
       BrowserWindow.fromId(currentWindow),
       {
-        filters: [
-          {
-            name: 'Markdoc',
-            extensions: ['mdoc']
-          }
-        ]
+        defaultPath: directoryPath === '' ? HOME_DIRECTORY : directoryPath,
+        filters: [fileType]
       },
       newPath => {
         if (newPath === undefined) {

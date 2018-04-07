@@ -7,6 +7,7 @@ import './font/font.scss';
 
 import {
   GET_DOCUMENT_CONTENT,
+  GET_HTML_CONTENT,
   OPEN_FILE_FROM_PATH,
   SET_FILE_PATH
 } from '../utils/constants';
@@ -34,17 +35,20 @@ class App extends React.Component {
     this.setDocumentContent = (event, data) =>
       this._setDocumentContent(event, data);
     this.setFilePath = (event, data) => this._setFilePath(event, data);
+    this.getHTMLContent = (event, data) => this._getHTMLContent(event, data);
   }
 
   // IPC event listeners
   componentDidMount() {
     ipcRenderer.on(GET_DOCUMENT_CONTENT, this.getDocumentContent);
+    ipcRenderer.on(GET_HTML_CONTENT, this.getHTMLContent);
     ipcRenderer.on(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.on(SET_FILE_PATH, this.setFilePath);
   }
 
   componentWillUnmount() {
     ipcRenderer.removeListener(GET_DOCUMENT_CONTENT, this.getDocumentContent);
+    ipcRenderer.removeListener(GET_HTML_CONTENT, this.getHTMLContent);
     ipcRenderer.removeListener(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.removeListener(SET_FILE_PATH, this.setFilePath);
   }
@@ -54,6 +58,17 @@ class App extends React.Component {
     var currentFilePath = this.state.filePath;
     var currentContent = Store.getMarkdown();
     ipcRenderer.send(GET_DOCUMENT_CONTENT, {
+      currentWindow,
+      currentFilePath,
+      currentContent
+    });
+  }
+
+  _getHTMLContent(event, data) {
+    var currentWindow = require('electron').remote.getCurrentWindow().id;
+    var currentFilePath = this.state.filePath;
+    var currentContent = Store.getHTML();
+    ipcRenderer.send(GET_HTML_CONTENT, {
       currentWindow,
       currentFilePath,
       currentContent
