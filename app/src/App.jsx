@@ -11,7 +11,6 @@ import Sidebar from './components/Sidebar.jsx';
 import Editor from './components/Editor.jsx';
 import Preview from './components/Preview.jsx';
 import TitleBar from './components/Titlebar.jsx';
-import { MDDOM } from './js/markdown.js';
 import Store from './stores/Store.js';
 import * as Actions from './actions/Actions';
 
