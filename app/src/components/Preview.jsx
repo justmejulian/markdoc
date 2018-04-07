@@ -47,7 +47,8 @@ class Preview extends React.Component {
       newState.zoom += 0.1;
       this.setState(newState);
     } else {
-      alert('Maximum zoom has been reached!');
+      //alert('Maximum zoom has been reached!');
+      //Whether the app should explicitly report that maximum zoom has been reach or not is a matter of taste. Uncomment above line for 'verbose mode'.
     }
   }
 
@@ -57,7 +58,8 @@ class Preview extends React.Component {
       newState.zoom -= 0.1;
       this.setState(newState);
     } else {
-      alert('Minimum zoom has been reached!');
+      //alert('Minimum zoom has been reached!');
+      //Whether the app should explicitly report that maximum zoom has been reach or not is a matter of taste. Uncomment above line for 'verbose mode'.
     }
   }
 
