@@ -88,8 +88,6 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    var content;
-    var boundHandleFieldChange = this.handleFieldChange.bind(this);
     var sidebarContentStyle = this.state.isCollapsed
       ? { marginLeft: '-47vw' }
       : { background: '#FDFDFD' };
