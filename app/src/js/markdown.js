@@ -1,7 +1,7 @@
 'use strict';
 
 const commonmark = require('commonmark');
-toc_found = false;
+var toc_found = false;
 
 class MDComponent {
   constructor() {
@@ -344,6 +344,9 @@ class MDThematicBreak extends MDComponent {
 // New elements
 
 class MDTOC extends MDComponent {
+  _aftermath() {
+    this.compile(this.parent.children);
+  }
   compile(candidates) {
     this.children = [];
     var headercount = 0;
@@ -366,12 +369,12 @@ class MDTOC extends MDComponent {
     this.add(list);
   }
   static _test(string) {
-    return /^\[TOC\]$/gm.test(string) && toc_found;
+    return /^\[TOC\]$/gm.test(string) && !toc_found;
   }
-  static _parse(component) {
+  static _parse(daddy) {
     var toc = new MDTOC();
-    toc.parent = component.parent;
-    toc.compile(component.parent.children);
+    toc.parent = daddy.parent;
+    toc_found = true;
     return toc;
   }
   toHtml() {
@@ -386,11 +389,33 @@ class MDTOC extends MDComponent {
   }
 }
 
+class MDPageBreak extends MDComponent {
+  static _test(string) {
+    return /^\[PB\]$/gm.test(string);
+  }
+  static _parse(daddy) {
+    var pb = new MDPageBreak();
+    pb.parent = daddy.parent;
+    return pb;
+  }
+  toHtml() {
+    return `<div id="pagebreak" class="pagebreak"/>`;
+  }
+  toString() {
+    return '\n';
+  }
+  toMarkDown() {
+    return '[PB]\n';
+  }
+}
+
 // Central class
 class MDDOM extends MDComponent {
   static parse(source) {
     var dom = new MDDOM();
 
+    toc_found = false;
+    dom.toc = null;
     var reader = new commonmark.Parser();
     var parsed = reader.parse(source);
     var child = parsed.firstChild;
@@ -401,9 +426,10 @@ class MDDOM extends MDComponent {
       }
     }
     for (let index = 0; index < dom.children.length; index++) {
-      const component = dom.children[index];
-      dom.children[index] = dom.children[index]._parseReplace();
-      dom.children[index]._aftermath();
+      const component = dom.children[index]._parseReplace();
+      component._aftermath();
+      if (component instanceof MDTOC) dom.toc = component;
+      dom.children[index] = component;
     }
     return dom;
   }
@@ -523,10 +549,7 @@ class SourcePosition {
 //     '## Second test header\n' +
 //     '[TOC]\n' +
 //     '\n' +
-//     '1. first\n' +
-//     '2. second\n' +
-//     '    - sub1\n' +
-//     '    - sub2'
+//     '[TOC]\n'
 // );
 // console.log(dom.toString());
 
