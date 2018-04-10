@@ -1,7 +1,6 @@
 'use strict';
-const commonmark = require('commonmark');
 
-// TODO: complete existing classes and add missing ones
+const commonmark = require('commonmark');
 
 class MDComponent {
   constructor() {
@@ -30,6 +29,10 @@ class MDComponent {
       this.children.splice(index);
       component.parent = null;
     }
+  }
+
+  _parseReplace() {
+    return this;
   }
 
   toHtml() {
@@ -182,6 +185,11 @@ class MDSoftBreak extends MDComponent {
 // per line components:
 
 class MDParagraph extends MDComponent {
+  _parseReplace() {
+    var obj = this;
+    obj = MDTOC._test(this.toString()) ? MDTOC._parse(this) : obj;
+    return obj;
+  }
   toHtml() {
     return `<p>${super.toHtml()}</p>`;
   }
@@ -195,6 +203,10 @@ class MDParagraph extends MDComponent {
 
 class MDHeader extends MDComponent {
   toHtml() {
+    if (this.id)
+      return `<h${this.level} id="${this.id}">${super.toHtml()}</h${
+        this.level
+      }>`;
     return `<h${this.level}>${super.toHtml()}</h${this.level}>`;
   }
   toMarkDown() {
@@ -224,6 +236,15 @@ class MDTOC extends MDComponent {
     }
     this.addChild(list);
   }
+  static _test(string) {
+    return /^\[TOC\]$/gm.test(string);
+  }
+  static _parse(component) {
+    var toc = new MDTOC();
+    toc.parent = component.parent;
+    toc.compile(component.parent.children);
+    return toc;
+  }
   toHtml() {
     //TODO: Decide on a proper HTML tag
     return `<div id="toc" class="toc">${super.toHtml()}</div>`;
@@ -237,12 +258,18 @@ class MDTOC extends MDComponent {
 }
 
 class MDListBase extends MDComponent {
-  scoutNestedLevel() {
+  _parseReplace() {
     this.level = 0;
-    var parent = this.parent;
-    this.level += parent instanceof MDListBase ? 1 : 0;
-    while ((parent = parent.parent)) {
-      this.level += parent instanceof MDListBase ? 1 : 0;
+    this._setNestedLevels();
+    return this;
+  }
+
+  _setNestedLevels() {
+    for (const child of this.children) {
+      if (child.children[0] instanceof MDListBase) {
+        child.children[0].level = this.level + 1;
+        child.children[0]._setNestedLevels();
+      }
     }
   }
 }
@@ -369,16 +396,7 @@ class MDDOM extends MDComponent {
   _aftermath() {
     for (let index = 0; index < this.children.length; index++) {
       const component = this.children[index];
-      if (component instanceof MDParagraph) {
-        // Sort out paragraphs for further parsing
-        if (/^\[TOC\]$/gm.test(component.toString())) {
-          // Parse toc
-          var toc = new MDTOC();
-          toc.parent = this;
-          toc.compile(this.children);
-          this.children[index] = toc;
-        }
-      }
+      this.children[index] = this.children[index]._parseReplace();
       if (component instanceof MDListBase) {
         // Prepare lists
         this._scoutNestedLevels(component, 0);
@@ -514,6 +532,7 @@ var dom = MDDOM.parse(
     '1. first\n' +
     '2. second'
 );
+console.log(dom.toString());
 
 module.exports = {
   MDComponent: MDComponent,
