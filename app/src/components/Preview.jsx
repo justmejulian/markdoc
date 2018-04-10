@@ -43,23 +43,19 @@ class Preview extends React.Component {
 
   _handleZoomIn() {
     if (this.state.zoom < 1.7) {
+      //If not: Silently do nothing.
       var newState = this.state;
       newState.zoom += 0.1;
       this.setState(newState);
-    } else {
-      //alert('Maximum zoom has been reached!');
-      //Whether the app should explicitly report that maximum zoom has been reach or not is a matter of taste. Uncomment above line for 'verbose mode'.
     }
   }
 
   _handleZoomOut() {
     if (this.state.zoom > 0.5) {
+      //If not: Silently do nothing.
       var newState = this.state;
       newState.zoom -= 0.1;
       this.setState(newState);
-    } else {
-      //alert('Minimum zoom has been reached!');
-      //Whether the app should explicitly report that maximum zoom has been reach or not is a matter of taste. Uncomment above line for 'verbose mode'.
     }
   }
 
