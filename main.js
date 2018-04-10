@@ -46,15 +46,14 @@ app.on('ready', () => {
 ipcMain.on(GET_DOCUMENT_CONTENT, (event, arg) => {
   saveFileDialog(
     FILETYPE_MDOC,
-    '',
-    arg.currentContent,
     arg.currentFilePath,
+    arg.currentContent,
     arg.currentWindow
   );
 });
 
 ipcMain.on(GET_HTML_CONTENT, (event, arg) => {
-  exportAsHtml(arg.currentContent, arg.currentFilePath, arg.currentWindow);
+  exportAsHtml(arg.currentFilePath, arg.currentContent, arg.currentWindow);
 });
 
 ipcMain.on(GET_PDF_CONTENT, (event, arg) => {

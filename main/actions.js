@@ -1,11 +1,13 @@
 const electron = require('electron');
 const fs = require('fs');
+const path = require('path');
 const { dialog, BrowserWindow, ipcMain } = electron;
 
 const {
   HOME_DIRECTORY,
   OPEN_FILE_FROM_PATH,
   SET_FILE_PATH,
+  FILETYPE_MDOC,
   EXTENSIONS
 } = require('../app/utils/constants');
 
@@ -34,6 +36,7 @@ function openFileDialog() {
           return;
         }
 
+        setFilePath(currentFilePath, currentWindow.id);
         currentWindow.send(OPEN_FILE_FROM_PATH, {
           currentFilePath,
           currentContent
@@ -45,33 +48,46 @@ function openFileDialog() {
 
 function saveFileDialog(
   fileType,
-  directoryPath,
-  currentContent,
   currentFilePath,
+  currentContent,
   currentWindow
 ) {
-  if (currentFilePath === null || currentFilePath === '') {
+  var defaultFilePathTitle = getDefaultTitle(
+    currentFilePath,
+    fileType,
+    fileType.extensions[0]
+  );
+  console.log(defaultFilePathTitle);
+  if (
+    currentFilePath === null ||
+    currentFilePath === '' ||
+    fileType != FILETYPE_MDOC
+  ) {
     dialog.showSaveDialog(
       BrowserWindow.fromId(currentWindow),
       {
-        defaultPath: directoryPath === '' ? HOME_DIRECTORY : directoryPath,
-        filters: [fileType]
+        defaultPath: defaultFilePathTitle
       },
       newPath => {
         if (newPath === undefined) {
           console.log("You didn't save the file");
           return;
         }
-        writeFileToPath(currentContent, newPath, currentWindow);
+        if (
+          (currentFilePath === null || currentFilePath === '') &&
+          fileType === FILETYPE_MDOC
+        ) {
+          setFilePath(newPath, currentWindow);
+        }
+        writeFileToPath(currentContent, newPath);
       }
     );
   } else {
-    writeFileToPath(currentContent, currentFilePath, currentWindow);
+    writeFileToPath(currentContent, currentFilePath);
   }
 }
-// TODO: don't update filepath when exporting to html/pdf
-function writeFileToPath(currentContent, currentFilePath, currentWindow) {
-  BrowserWindow.fromId(currentWindow).send(SET_FILE_PATH, currentFilePath);
+
+function writeFileToPath(currentContent, currentFilePath) {
   fs.writeFile(currentFilePath, currentContent, err => {
     if (err) {
       console.log('An error ocurred creating the file ' + err.message);
@@ -79,8 +95,41 @@ function writeFileToPath(currentContent, currentFilePath, currentWindow) {
   });
 }
 
+function getDefaultTitle(filePath, fileType, extension) {
+  if (filePath === undefined || filePath === '') {
+    return path.join(HOME_DIRECTORY, 'Untitled') + '.' + extension;
+  } else {
+    var filename =
+      path.join(getDirectoryName(filePath), getFilename(filePath)) +
+      '.' +
+      extension;
+    return filename;
+  }
+}
+
+function setFilePath(filePath, currentWindow) {
+  BrowserWindow.fromId(currentWindow).send(SET_FILE_PATH, filePath);
+}
+
+// returns the filename without extension
+function getFilename(filePath) {
+  return path.basename(filePath, path.extname(filePath));
+}
+
+// returns the user homedir if filePath is not defined
+function getDirectoryName(filePath) {
+  if (filePath === undefined || filePath === '') {
+    return HOME_DIRECTORY;
+  } else {
+    return path.dirname(filePath);
+  }
+}
+
 module.exports = {
   openFileDialog: openFileDialog,
   saveFileDialog: saveFileDialog,
-  writeFileToPath: writeFileToPath
+  writeFileToPath: writeFileToPath,
+  setFilePath: setFilePath,
+  getFilename: getFilename,
+  getDirectoryName: getDirectoryName
 };

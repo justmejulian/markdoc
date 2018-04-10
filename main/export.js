@@ -18,17 +18,16 @@ const { saveFileDialog } = require('./actions');
 // import print window settings
 const printWindow = require('./printWindow');
 
-function exportAsHtml(currentHTMLContent, currentFilePath, currentWindow) {
+function exportAsHtml(currentFilePath, currentHTMLContent, currentWindow) {
   if (currentFilePath === '' || currentFilePath === null) {
     showSaveFirstMessage(currentWindow);
     return;
   }
-  var directoryPath = require('path').dirname(currentFilePath);
+  var directoryPath = path.dirname(currentFilePath);
   saveFileDialog(
     FILETYPE_HTML,
-    directoryPath,
+    currentFilePath,
     currentHTMLContent,
-    '',
     currentWindow
   );
 }
@@ -38,7 +37,7 @@ function exportAsPdf(currentFilePath, currentWindow, currentPages) {
     showSaveFirstMessage(currentWindow);
     return;
   }
-  var directoryPath = require('path').dirname(currentFilePath);
+  var directoryPath = path.dirname(currentFilePath);
   var pdfFilePath = path.join(directoryPath, 'print.pdf');
   const win = BrowserWindow.fromId(currentWindow);
 

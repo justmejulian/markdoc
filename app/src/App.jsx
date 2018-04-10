@@ -74,15 +74,16 @@ class App extends React.Component {
     var currentFilePath = this.state.filePath;
     var currentContent = Store.getHTML();
     ipcRenderer.send(GET_HTML_CONTENT, {
-      currentWindow,
       currentFilePath,
-      currentContent
+      currentContent,
+      currentWindow
     });
   }
 
   _getPDFContent(event, data) {
     var currentWindow = require('electron').remote.getCurrentWindow().id;
     var currentFilePath = this.state.filePath;
+    console.log(ReactDOMServer.renderToStaticMarkup());
     var currentPages =
       '<div class="page page_0"><div class="header" style="border-bottom: 1px solid black;"><div class="hfLeft">"Zusammenfassung"</div><div class="hfCenter">"PSIT"</div><div class="hfRight">"Max Muster"</div></div><div><div id="0"><p>I LOVE REACT</p></div></div><div class="footer"><div class="hfLeft"></div><div class="hfCenter">1</div><div class="hfRight"></div></div></div>'; //ReactDOMServer.renderToStaticMarkup(WTFGOPFERTAMMI);
     ipcRenderer.send(GET_PDF_CONTENT, {
