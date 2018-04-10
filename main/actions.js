@@ -69,7 +69,7 @@ function saveFileDialog(
     writeFileToPath(currentContent, currentFilePath, currentWindow);
   }
 }
-
+// TODO: don't update filepath when exporting to html/pdf
 function writeFileToPath(currentContent, currentFilePath, currentWindow) {
   BrowserWindow.fromId(currentWindow).send(SET_FILE_PATH, currentFilePath);
   fs.writeFile(currentFilePath, currentContent, err => {

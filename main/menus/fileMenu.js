@@ -5,6 +5,7 @@ const { ipcMain, BrowserWindow } = electron;
 const {
   GET_DOCUMENT_CONTENT,
   GET_HTML_CONTENT,
+  GET_PDF_CONTENT,
   DEFAULT_URL
 } = require('../../app/utils/constants');
 
@@ -47,8 +48,7 @@ module.exports = {
           accelerator:
             process.platform === 'darwin' ? 'Command+Shift+P' : 'Ctrl+Shift+P',
           click() {
-            console.log('Export as PDF');
-            //BrowserWindow.getFocusedWindow().send(GET_PDF_CONTENT, 'pdf');
+            BrowserWindow.getFocusedWindow().send(GET_PDF_CONTENT, 'pdf');
           }
         },
         {

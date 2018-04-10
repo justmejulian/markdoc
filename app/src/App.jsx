@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOMServer from 'react-dom/server';
 import { ipcRenderer } from 'electron';
 import './styles/App.sass';
 import './styles/Preview.scss';
@@ -8,6 +9,7 @@ import './font/font.scss';
 import {
   GET_DOCUMENT_CONTENT,
   GET_HTML_CONTENT,
+  GET_PDF_CONTENT,
   OPEN_FILE_FROM_PATH,
   SET_FILE_PATH
 } from '../utils/constants';
@@ -36,12 +38,14 @@ class App extends React.Component {
       this._setDocumentContent(event, data);
     this.setFilePath = (event, data) => this._setFilePath(event, data);
     this.getHTMLContent = (event, data) => this._getHTMLContent(event, data);
+    this.getPDFContent = (event, data) => this._getPDFContent(event, data);
   }
 
   // IPC event listeners
   componentDidMount() {
     ipcRenderer.on(GET_DOCUMENT_CONTENT, this.getDocumentContent);
     ipcRenderer.on(GET_HTML_CONTENT, this.getHTMLContent);
+    ipcRenderer.on(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.on(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.on(SET_FILE_PATH, this.setFilePath);
   }
@@ -49,6 +53,7 @@ class App extends React.Component {
   componentWillUnmount() {
     ipcRenderer.removeListener(GET_DOCUMENT_CONTENT, this.getDocumentContent);
     ipcRenderer.removeListener(GET_HTML_CONTENT, this.getHTMLContent);
+    ipcRenderer.removeListener(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.removeListener(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.removeListener(SET_FILE_PATH, this.setFilePath);
   }
@@ -72,6 +77,18 @@ class App extends React.Component {
       currentWindow,
       currentFilePath,
       currentContent
+    });
+  }
+
+  _getPDFContent(event, data) {
+    var currentWindow = require('electron').remote.getCurrentWindow().id;
+    var currentFilePath = this.state.filePath;
+    var currentPages =
+      '<div class="page page_0"><div class="header" style="border-bottom: 1px solid black;"><div class="hfLeft">"Zusammenfassung"</div><div class="hfCenter">"PSIT"</div><div class="hfRight">"Max Muster"</div></div><div><div id="0"><p>I LOVE REACT</p></div></div><div class="footer"><div class="hfLeft"></div><div class="hfCenter">1</div><div class="hfRight"></div></div></div>'; //ReactDOMServer.renderToStaticMarkup(WTFGOPFERTAMMI);
+    ipcRenderer.send(GET_PDF_CONTENT, {
+      currentWindow,
+      currentFilePath,
+      currentPages
     });
   }
 

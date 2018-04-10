@@ -7,6 +7,7 @@ const { app, dialog, ipcMain, BrowserWindow, Menu } = electron;
 const {
   GET_DOCUMENT_CONTENT,
   GET_HTML_CONTENT,
+  GET_PDF_CONTENT,
   FILETYPE_MDOC,
   FILETYPE_HTML,
   DEFAULT_URL
@@ -14,7 +15,7 @@ const {
 // import actions
 const { saveFileDialog } = require('./main/actions');
 // import export functions
-const { exportAsHtml } = require('./main/export');
+const { exportAsHtml, exportAsPdf } = require('./main/export');
 // import window manager
 const { markdocWindows, createWindow } = require('./main/windowManager');
 // import menu configurator
@@ -54,6 +55,10 @@ ipcMain.on(GET_DOCUMENT_CONTENT, (event, arg) => {
 
 ipcMain.on(GET_HTML_CONTENT, (event, arg) => {
   exportAsHtml(arg.currentContent, arg.currentFilePath, arg.currentWindow);
+});
+
+ipcMain.on(GET_PDF_CONTENT, (event, arg) => {
+  exportAsPdf(arg.currentFilePath, arg.currentWindow, arg.currentPages);
 });
 
 // Quit when all windows are closed => non-macOS only
