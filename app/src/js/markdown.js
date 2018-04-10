@@ -1,6 +1,7 @@
 'use strict';
 
 const commonmark = require('commonmark');
+toc_found = false;
 
 class MDComponent {
   constructor() {
@@ -328,6 +329,18 @@ class MDCodeBlock extends MDComponent {
   }
 }
 
+class MDThematicBreak extends MDComponent {
+  toHtml() {
+    return '<hr/>';
+  }
+  toString() {
+    return '';
+  }
+  toMarkDown() {
+    return '---';
+  }
+}
+
 // New elements
 
 class MDTOC extends MDComponent {
@@ -353,7 +366,7 @@ class MDTOC extends MDComponent {
     this.add(list);
   }
   static _test(string) {
-    return /^\[TOC\]$/gm.test(string);
+    return /^\[TOC\]$/gm.test(string) && toc_found;
   }
   static _parse(component) {
     var toc = new MDTOC();
@@ -370,18 +383,6 @@ class MDTOC extends MDComponent {
   }
   toMarkDown() {
     return '[TOC]\n';
-  }
-}
-
-class MDThematicBreak extends MDComponent {
-  toHtml() {
-    return '<hr/>';
-  }
-  toString() {
-    return '';
-  }
-  toMarkDown() {
-    return '---';
   }
 }
 
