@@ -2,6 +2,7 @@
 
 const commonmark = require('commonmark');
 var toc_found = false;
+var tof_found = false;
 
 class MDComponent {
   constructor() {
@@ -345,16 +346,16 @@ class MDThematicBreak extends MDComponent {
 
 class MDTOC extends MDComponent {
   _aftermath() {
-    this.compile(this.parent.children);
+    this._compile(this.parent.children);
   }
-  compile(candidates) {
+  _compile(candidates) {
     this.children = [];
-    var headercount = 0;
+    var figurecount = 0;
     var list = new MDOrderedList();
     for (var component of candidates) {
       if (component instanceof MDHeader) {
-        headercount++;
-        component.id = 'header' + headercount;
+        figurecount++;
+        component.id = 'header' + figurecount;
         var item = new MDItem();
         var text = new MDText();
         text.value = component.toString();
@@ -389,6 +390,73 @@ class MDTOC extends MDComponent {
   }
 }
 
+class MDTOF extends MDComponent {
+  _aftermath() {
+    this._compile(this.parent.children);
+  }
+  _compile(candidates) {
+    this.children = [];
+    var figurecount = 0;
+    var list = new MDOrderedList();
+    _compile_recursive(candidates, 0, list);
+    this.add(list);
+  }
+  _compile_recursive(currentparent, figurecount, list) {
+    for (const child of currentparent.children) {
+      if (child instanceof MDImage) {
+        const image = child;
+        if (/\*$/gm.test(image.name)) {
+          // TODO: Add an entry for this image
+          figurecount++;
+          component.id = 'figure' + figurecount;
+          var item = new MDItem();
+          var text = new MDText();
+          text.value = component.toString();
+          var link = new MDLink();
+          link.title = image.name;
+          link.destination = `#${component.id}`;
+          link.add(text);
+          item.add(link);
+          list.add(item);
+        }
+      } else {
+        if (
+          child instanceof MDText ||
+          child instanceof MDBlockQuote ||
+          child instanceof MDCodeBlock ||
+          child instanceof MDPageBreak ||
+          child instanceof MDSoftBreak ||
+          child instanceof MDThematicBreak ||
+          child instanceof MDTOC ||
+          child instanceof MDTOF
+        )
+          continue;
+        this._compile_recursive(child, figurecount, list);
+      }
+    }
+  }
+
+  static _test(string) {
+    return /^\[TOF\]$/gm.test(string) && !tof_found;
+  }
+  static _parse(daddy) {
+    var toc = new MDTOC();
+    toc.parent = daddy.parent;
+    tof_found = true;
+    return toc;
+  }
+  toHtml() {
+    //TODO: Decide on a proper HTML tag
+    return `<div id="tof" class="tof">${super.toHtml()}</div>`;
+  }
+  toString() {
+    return '\n';
+  }
+  toMarkDown() {
+    return '[TOF]\n';
+  }
+}
+
 class MDPageBreak extends MDComponent {
   static _test(string) {
     return /^\[PB\]$/gm.test(string);
@@ -416,6 +484,8 @@ class MDDOM extends MDComponent {
 
     toc_found = false;
     dom.toc = null;
+    tof_found = false;
+    dom.tof = null;
     var reader = new commonmark.Parser();
     var parsed = reader.parse(source);
     var child = parsed.firstChild;
@@ -429,6 +499,7 @@ class MDDOM extends MDComponent {
       const component = dom.children[index]._parseReplace();
       component._aftermath();
       if (component instanceof MDTOC) dom.toc = component;
+      if (component instanceof MDTOF) dom.tof = component;
       dom.children[index] = component;
     }
     return dom;
