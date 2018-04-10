@@ -368,10 +368,11 @@ class MDTOC extends MDComponent {
   static _test(string) {
     return /^\[TOC\]$/gm.test(string) && toc_found;
   }
-  static _parse(component) {
+  static _parse(daddy) {
     var toc = new MDTOC();
-    toc.parent = component.parent;
-    toc.compile(component.parent.children);
+    toc.parent = daddy.parent;
+    toc.compile(daddy.parent.children);
+    toc_found = true;
     return toc;
   }
   toHtml() {
@@ -386,11 +387,32 @@ class MDTOC extends MDComponent {
   }
 }
 
+class MDPageBreak extends MDComponent {
+  static _test(string) {
+    return /^\[PB\]$/gm.test(string);
+  }
+  static _parse(daddy) {
+    var pb = new MDPageBreak();
+    pb.parent = daddy.parent;
+    return pb;
+  }
+  toHtml() {
+    return `<div id="pagebreak" class="pagebreak"/>`;
+  }
+  toString() {
+    return '\n';
+  }
+  toMarkDown() {
+    return '[PB]\n';
+  }
+}
+
 // Central class
 class MDDOM extends MDComponent {
   static parse(source) {
     var dom = new MDDOM();
 
+    toc_found = false;
     var reader = new commonmark.Parser();
     var parsed = reader.parse(source);
     var child = parsed.firstChild;
