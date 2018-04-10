@@ -39,7 +39,7 @@ class MDComponent {
   }
 
   // Make some post parse actions if necessary
-  _aftermath() {
+  _aftermath(dom) {
     return;
   }
 
@@ -169,9 +169,12 @@ class MDLink extends MDComponent {
 
 class MDImage extends MDComponent {
   toHtml() {
-    return `<img src="${this.destination}" alt="${super.toHtml()}" title="${
-      this.title
-    }"/>`;
+    if (this.id) {
+      return `<img src="${this.destination}" id="${
+        this.id
+      }" alt="${super.toHtml()}"/>`;
+    }
+    return `<img src="${this.destination}" alt="${super.toHtml()}"/>`;
   }
   toMarkDown() {
     return `![${super.toMarkDown()}](${this.destination} "${this.title}")`;
@@ -196,6 +199,7 @@ class MDParagraph extends MDComponent {
   _parseReplace() {
     var obj = this;
     obj = MDTOC._test(this.toString()) ? MDTOC._parse(this) : obj;
+    obj = MDTOF._test(this.toString()) ? MDTOF._parse(this) : obj;
     return obj;
   }
   toHtml() {
@@ -224,7 +228,7 @@ class MDHeader extends MDComponent {
 }
 
 class MDListBase extends MDComponent {
-  _aftermath() {
+  _aftermath(dom) {
     this._scoutNestedLevels(0);
   }
 
@@ -345,8 +349,8 @@ class MDThematicBreak extends MDComponent {
 // New elements
 
 class MDTOC extends MDComponent {
-  _aftermath() {
-    this._compile(this.parent.children);
+  _aftermath(dom) {
+    this._compile(dom.children);
   }
   _compile(candidates) {
     this.children = [];
@@ -391,30 +395,30 @@ class MDTOC extends MDComponent {
 }
 
 class MDTOF extends MDComponent {
-  _aftermath() {
-    this._compile(this.parent.children);
+  _aftermath(dom) {
+    this._compile(dom);
   }
   _compile(candidates) {
     this.children = [];
     var figurecount = 0;
     var list = new MDOrderedList();
-    _compile_recursive(candidates, 0, list);
+    this._compile_recursive(candidates, 0, list);
     this.add(list);
   }
   _compile_recursive(currentparent, figurecount, list) {
     for (const child of currentparent.children) {
       if (child instanceof MDImage) {
         const image = child;
-        if (/\*$/gm.test(image.name)) {
-          // TODO: Add an entry for this image
+        var title = image.toString();
+        if (/\*$/gm.test(title)) {
           figurecount++;
-          component.id = 'figure' + figurecount;
+          image.id = 'figure' + figurecount;
           var item = new MDItem();
           var text = new MDText();
-          text.value = component.toString();
+          text.value = title.substring(0, title.length - 1);
           var link = new MDLink();
           link.title = image.name;
-          link.destination = `#${component.id}`;
+          link.destination = `#${image.id}`;
           link.add(text);
           item.add(link);
           list.add(item);
@@ -440,10 +444,10 @@ class MDTOF extends MDComponent {
     return /^\[TOF\]$/gm.test(string) && !tof_found;
   }
   static _parse(daddy) {
-    var toc = new MDTOC();
-    toc.parent = daddy.parent;
+    var tof = new MDTOF();
+    tof.parent = daddy.parent;
     tof_found = true;
-    return toc;
+    return tof;
   }
   toHtml() {
     //TODO: Decide on a proper HTML tag
@@ -497,7 +501,7 @@ class MDDOM extends MDComponent {
     }
     for (let index = 0; index < dom.children.length; index++) {
       const component = dom.children[index]._parseReplace();
-      component._aftermath();
+      component._aftermath(dom);
       if (component instanceof MDTOC) dom.toc = component;
       if (component instanceof MDTOF) dom.tof = component;
       dom.children[index] = component;
@@ -615,14 +619,9 @@ class SourcePosition {
 }
 
 // var dom = MDDOM.parse(
-//   '# Testheader 1\n' +
-//     'Bla**blabla**.\n' +
-//     '## Second test header\n' +
-//     '[TOC]\n' +
-//     '\n' +
-//     '[TOC]\n'
+//   '![alt text*](./img.png)\n\n' + '[TOF]\n' + '\n' + '[TOF]\n'
 // );
-// console.log(dom.toString());
+// console.log(dom.toHtml());
 
 module.exports = {
   MDComponent: MDComponent,
