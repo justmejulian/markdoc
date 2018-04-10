@@ -207,6 +207,11 @@ class MDParagraph extends MDComponent {
 
 class MDHeader extends MDComponent {
   toHtml() {
+    if (this.id) {
+      return `<h${this.level} id="${this.id}">${super.toHtml()}</h${
+        this.level
+      }>`;
+    }
     return `<h${this.level}>${super.toHtml()}</h${this.level}>`;
   }
   toMarkDown() {
