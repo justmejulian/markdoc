@@ -1,5 +1,5 @@
 const electron = require('electron');
-const { BrowserWindow } = electron;
+const { BrowserWindow, shell } = electron;
 
 // To avoid being garbage collected
 const _markdocWindows = {};
@@ -30,6 +30,18 @@ function createWindow(url) {
   // Don't show until we are ready and loaded
   window.once('ready-to-show', () => {
     window.show();
+  });
+
+  // Open links to external sites in the default browser
+  function isSafeishURL(url) {
+    return url.startsWith('#');
+  }
+
+  window.webContents.on('will-navigate', (event, url) => {
+    if (!isSafeishURL(url)) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
   });
 
   return window;
