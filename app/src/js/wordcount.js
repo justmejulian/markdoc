@@ -1,6 +1,11 @@
 class WordCounter {
   static countWords(str) {
-    return str.trim().split(/\s+/).length;
+    var strs = str.trim().split(/[\s\n\r\.\?\!\(\)\[\]\{\}\`]+/);
+    var count = 0;
+    for (const string of strs) {
+      count += string.length == 0 ? 0 : 1;
+    }
+    return count;
   }
 }
 

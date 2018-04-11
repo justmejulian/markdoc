@@ -1,21 +1,30 @@
 import React, { Component } from 'react';
+import Store from '../stores/Store.js';
+import * as Actions from '../actions/Actions';
 
 class Editor extends React.Component {
   constructor() {
     super();
+    this.getMarkdown = this.getMarkdown.bind(this);
     this.state = {
-      value: ''
+      value: Store.getMarkdown()
     };
   }
 
-  handleChange({ target }) {
-    this.setState({ value: target.value });
-    this.props.handleChange(target.value);
+  componentWillMount() {
+    Store.on('HTML_changed', this.getMarkdown);
   }
 
-  componentWillReceiveProps(nextProps) {
+  getMarkdown() {
     this.setState({
-      value: nextProps.value
+      value: Store.getMarkdown()
+    });
+  }
+
+  handleChange({ target }) {
+    Actions.setHTML(target.value);
+    this.setState({
+      value: target.value
     });
   }
 
@@ -31,7 +40,7 @@ class Editor extends React.Component {
   // Todo : fix for when text under what writing
   checkIfList() {
     console.log('checking if -');
-    var lines = this.state.value.split('\n');
+    var lines = Store.getMarkdown().split('\n');
     var length = lines.length;
     var lastLine = lines[length - 2];
     var firstChar = lastLine.charAt(0);
