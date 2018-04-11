@@ -34,12 +34,12 @@ function createWindow(url) {
 
   // Open links to external sites in the default browser
   function isSafeishURL(url) {
-    return url.startsWith('http:') || url.startsWith('https:');
+    return url.startsWith('#');
   }
 
   window.webContents.on('will-navigate', (event, url) => {
-    event.preventDefault();
-    if (isSafeishURL(url)) {
+    if (!isSafeishURL(url)) {
+      event.preventDefault();
       shell.openExternal(url);
     }
   });
