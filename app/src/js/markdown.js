@@ -2,6 +2,7 @@
 
 const commonmark = require('commonmark');
 var toc_found = false;
+var tof_found = false;
 
 class MDComponent {
   constructor() {
@@ -38,7 +39,7 @@ class MDComponent {
   }
 
   // Make some post parse actions if necessary
-  _aftermath() {
+  _aftermath(dom) {
     return;
   }
 
@@ -168,9 +169,12 @@ class MDLink extends MDComponent {
 
 class MDImage extends MDComponent {
   toHtml() {
-    return `<img src="${this.destination}" alt="${super.toHtml()}" title="${
-      this.title
-    }"/>`;
+    if (this.id) {
+      return `<img src="${this.destination}" id="${
+        this.id
+      }" alt="${super.toHtml()}"/>`;
+    }
+    return `<img src="${this.destination}" alt="${super.toHtml()}"/>`;
   }
   toMarkDown() {
     return `![${super.toMarkDown()}](${this.destination} "${this.title}")`;
@@ -195,6 +199,7 @@ class MDParagraph extends MDComponent {
   _parseReplace() {
     var obj = this;
     obj = MDTOC._test(this.toString()) ? MDTOC._parse(this) : obj;
+    obj = MDTOF._test(this.toString()) ? MDTOF._parse(this) : obj;
     return obj;
   }
   toHtml() {
@@ -223,7 +228,7 @@ class MDHeader extends MDComponent {
 }
 
 class MDListBase extends MDComponent {
-  _aftermath() {
+  _aftermath(dom) {
     this._scoutNestedLevels(0);
   }
 
@@ -344,17 +349,17 @@ class MDThematicBreak extends MDComponent {
 // New elements
 
 class MDTOC extends MDComponent {
-  _aftermath() {
-    this.compile(this.parent.children);
+  _aftermath(dom) {
+    this._compile(dom.children);
   }
-  compile(candidates) {
+  _compile(candidates) {
     this.children = [];
-    var headercount = 0;
+    var figurecount = 0;
     var list = new MDOrderedList();
     for (var component of candidates) {
       if (component instanceof MDHeader) {
-        headercount++;
-        component.id = 'header' + headercount;
+        figurecount++;
+        component.id = 'header' + figurecount;
         var item = new MDItem();
         var text = new MDText();
         text.value = component.toString();
@@ -389,6 +394,73 @@ class MDTOC extends MDComponent {
   }
 }
 
+class MDTOF extends MDComponent {
+  _aftermath(dom) {
+    this._compile(dom);
+  }
+  _compile(candidates) {
+    this.children = [];
+    var figurecount = 0;
+    var list = new MDOrderedList();
+    this._compile_recursive(candidates, 0, list);
+    this.add(list);
+  }
+  _compile_recursive(currentparent, figurecount, list) {
+    for (const child of currentparent.children) {
+      if (child instanceof MDImage) {
+        const image = child;
+        var title = image.toString();
+        if (/\*$/gm.test(title)) {
+          figurecount++;
+          image.id = 'figure' + figurecount;
+          var item = new MDItem();
+          var text = new MDText();
+          text.value = title.substring(0, title.length - 1);
+          var link = new MDLink();
+          link.title = image.name;
+          link.destination = `#${image.id}`;
+          link.add(text);
+          item.add(link);
+          list.add(item);
+        }
+      } else {
+        if (
+          child instanceof MDText ||
+          child instanceof MDBlockQuote ||
+          child instanceof MDCodeBlock ||
+          child instanceof MDPageBreak ||
+          child instanceof MDSoftBreak ||
+          child instanceof MDThematicBreak ||
+          child instanceof MDTOC ||
+          child instanceof MDTOF
+        )
+          continue;
+        this._compile_recursive(child, figurecount, list);
+      }
+    }
+  }
+
+  static _test(string) {
+    return /^\[TOF\]$/gm.test(string) && !tof_found;
+  }
+  static _parse(daddy) {
+    var tof = new MDTOF();
+    tof.parent = daddy.parent;
+    tof_found = true;
+    return tof;
+  }
+  toHtml() {
+    //TODO: Decide on a proper HTML tag
+    return `<div id="tof" class="tof">${super.toHtml()}</div>`;
+  }
+  toString() {
+    return '\n';
+  }
+  toMarkDown() {
+    return '[TOF]\n';
+  }
+}
+
 class MDPageBreak extends MDComponent {
   static _test(string) {
     return /^\[PB\]$/gm.test(string);
@@ -416,6 +488,8 @@ class MDDOM extends MDComponent {
 
     toc_found = false;
     dom.toc = null;
+    tof_found = false;
+    dom.tof = null;
     var reader = new commonmark.Parser();
     var parsed = reader.parse(source);
     var child = parsed.firstChild;
@@ -427,8 +501,9 @@ class MDDOM extends MDComponent {
     }
     for (let index = 0; index < dom.children.length; index++) {
       const component = dom.children[index]._parseReplace();
-      component._aftermath();
+      component._aftermath(dom);
       if (component instanceof MDTOC) dom.toc = component;
+      if (component instanceof MDTOF) dom.tof = component;
       dom.children[index] = component;
     }
     return dom;
@@ -544,14 +619,9 @@ class SourcePosition {
 }
 
 // var dom = MDDOM.parse(
-//   '# Testheader 1\n' +
-//     'Bla**blabla**.\n' +
-//     '## Second test header\n' +
-//     '[TOC]\n' +
-//     '\n' +
-//     '[TOC]\n'
+//   '![alt text*](./img.png)\n\n' + '[TOF]\n' + '\n' + '[TOF]\n'
 // );
-// console.log(dom.toString());
+// console.log(dom.toHtml());
 
 module.exports = {
   MDComponent: MDComponent,
