@@ -1,6 +1,6 @@
 # Markdoc
 
-[![Build Status](http://client108.cloudlab.zhaw.ch:8080/job/markdoc/badge/icon)](http://client108.cloudlab.zhaw.ch:8080/job/markdoc/)
+[![Build Status](http://client108.cloudlab.zhaw.ch:8080/buildStatus/icon?job=markdoc)](http://client108.cloudlab.zhaw.ch:8080/job/markdoc/)
 
 *A beautiful, extended Markdown editor built for academic papers.*
 
