@@ -13,9 +13,20 @@ class MDComponent {
     this.children.push(component);
   }
 
+  insertChild(component, index) {
+    component.parent = this;
+    this.children.splice(index, 0, component);
+  }
+
   removeChild(component) {
     if (this.children.includes(component)) {
-      this.children.splice(this.children.indexOf(component));
+      this.removeAt(this.children.indexOf(component));
+    }
+  }
+
+  removeAt(index) {
+    if (this.children[index]) {
+      this.children.splice(index);
       component.parent = null;
     }
   }
@@ -456,7 +467,7 @@ class MDDOM extends MDComponent {
         translated = new MDItem();
         break;
       default:
-        console.log(`--- UNKNOWN TOKEN TYPE: ${node.type} --`);
+        throw `Unknown token type: ${node.type}`;
         break;
     }
     if (node.literal) translated.value = node.literal;
