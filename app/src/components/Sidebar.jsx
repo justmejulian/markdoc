@@ -44,7 +44,7 @@ export default class Sidebar extends Component {
   }
 
   _handleDateChange(date) {
-    Actions.setDate(date);
+    SidebarActions.setDate(date);
     this.setState({ date: date });
   }
 
