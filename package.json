@@ -6,12 +6,11 @@
   "scripts": {
     "dev": "webpack",
     "electron": "electron .",
-    "test": "jest",
+    "test": "jest --coverage",
     "start": "npm-run-all --parallel dev electron",
     "precommit": "pretty-quick --staged",
     "clean": "rm -rf node_modules",
-    "reinstall": "npm run clean && npm install",
-    "coverage": "jest --coverage"
+    "reinstall": "npm run clean && npm install"
   },
   "author": "PSIT Gruppe ",
   "repository": "https://github.engineering.zhaw.ch/vissejul/markdoc.git",
