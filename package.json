@@ -10,7 +10,8 @@
     "start": "npm-run-all --parallel dev electron",
     "precommit": "pretty-quick --staged",
     "clean": "rm -rf node_modules",
-    "reinstall": "npm run clean && npm install"
+    "reinstall": "npm run clean && npm install",
+    "coverage": "jest --coverage"
   },
   "author": "PSIT Gruppe ",
   "repository": "https://github.engineering.zhaw.ch/vissejul/markdoc.git",
