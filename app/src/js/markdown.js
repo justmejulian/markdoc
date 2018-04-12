@@ -471,7 +471,7 @@ class MDPageBreak extends MDComponent {
     return pb;
   }
   toHtml() {
-    return `<div id="pagebreak" class="pagebreak"/>`;
+    return `<div class="pagebreak"/>`;
   }
   toString() {
     return '\n';
