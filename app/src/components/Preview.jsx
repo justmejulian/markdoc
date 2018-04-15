@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Page from './Page.jsx';
-import Store from '../stores/Store.js';
+import PagesStore from '../stores/PagesStore.js';
 
 class Preview extends React.Component {
   constructor(props) {
@@ -9,7 +9,7 @@ class Preview extends React.Component {
     this.handleZoomIn = this._handleZoomIn.bind(this);
     this.handleZoomOut = this._handleZoomOut.bind(this);
     this.state = {
-      pages: [{ key: 0, html: Store.getMarkdown(), height: 0 }],
+      pages: [{ key: 0, html: PagesStore.getMarkdown(), height: 0 }],
       words: [],
       currentWord: 0,
       currentPage: 0,
@@ -18,12 +18,12 @@ class Preview extends React.Component {
   }
 
   componentWillMount() {
-    Store.on('HTML_changed', this.setPreview);
+    PagesStore.on('HTML_changed', this.setPreview);
   }
 
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
-    var html = Store.getHTML();
+    var html = PagesStore.getHTML();
     var words = html.split(' ');
 
     //console.log(words);

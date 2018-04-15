@@ -1,13 +1,10 @@
 import { EventEmitter } from 'events';
-import { MDDOM } from '../js/markdown.js';
 
 import dispatcher from '../dispatcher';
 
 class Store extends EventEmitter {
   constructor() {
     super();
-    this.markdown = '';
-    this.html = '';
     this.title = '';
     this.author = '';
     this.date = '';
@@ -17,14 +14,6 @@ class Store extends EventEmitter {
     this.footerLeft = '';
     this.footerMiddle = '';
     this.footerRight = '';
-  }
-
-  setMarkdown(text) {
-    this.markdown = text;
-  }
-
-  setHTML(markdown) {
-    this.html = MDDOM.parse(markdown).toHtml();
   }
 
   setTitle(title) {
@@ -63,16 +52,8 @@ class Store extends EventEmitter {
     this.footerRight = text;
   }
 
-  getHTML() {
-    return this.html;
-  }
-
   getTitle() {
     return this.title;
-  }
-
-  getMarkdown() {
-    return this.markdown;
   }
 
   getAuthor() {
@@ -109,11 +90,6 @@ class Store extends EventEmitter {
 
   handleActions(action) {
     switch (action.type) {
-      case 'SET_HTML':
-        this.setMarkdown(action.text);
-        this.setHTML(this.markdown);
-        this.emit('HTML_changed');
-        break;
       case 'SET_TITLE':
         this.setTitle(action.text);
         this.emit('Title_changed');

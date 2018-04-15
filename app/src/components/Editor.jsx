@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Store from '../stores/Store.js';
+import PagesStore from '../stores/PagesStore.js';
 import * as Actions from '../actions/Actions';
 
 class Editor extends React.Component {
@@ -7,17 +7,17 @@ class Editor extends React.Component {
     super();
     this.getMarkdown = this.getMarkdown.bind(this);
     this.state = {
-      value: Store.getMarkdown()
+      value: PagesStore.getMarkdown()
     };
   }
 
   componentWillMount() {
-    Store.on('HTML_changed', this.getMarkdown);
+    PagesStore.on('HTML_changed', this.getMarkdown);
   }
 
   getMarkdown() {
     this.setState({
-      value: Store.getMarkdown()
+      value: PagesStore.getMarkdown()
     });
   }
 
@@ -39,8 +39,8 @@ class Editor extends React.Component {
   // Checks on enter if first char is - and if so adds - to new line
   // Todo : fix for when text under what writing
   checkIfList() {
-    console.log('checking if -');
-    var lines = Store.getMarkdown().split('\n');
+    //console.log('checking if -');
+    var lines = PagesStore.getMarkdown().split('\n');
     var length = lines.length;
     var lastLine = lines[length - 2];
     var firstChar = lastLine.charAt(0);
@@ -50,7 +50,7 @@ class Editor extends React.Component {
       var value = this.state.value;
       value += '- ';
       this.setState({ value: value });
-      console.log(this.state.value);
+      //console.log(this.state.value);
     }
   }
 
