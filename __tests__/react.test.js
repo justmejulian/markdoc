@@ -1,10 +1,11 @@
 import React from 'react';
 import Enzyme from 'enzyme';
-import { shallow, mount } from 'enzyme';
+import { shallow } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 
 import Editor from '../app/src/components/Editor.jsx';
 import Preview from '../app/src/components/Preview.jsx';
+import Sidebar from '../app/src/components/Sidebar.jsx';
 import Header from '../app/src/components/Header.jsx';
 import Footer from '../app/src/components/Footer.jsx';
 
@@ -97,5 +98,52 @@ describe('Test Zoom', () => {
       .at(1)
       .simulate('click');
     expect(preview.state().zoom).toBeCloseTo(0.9);
+  });
+});
+
+describe('Test sidebar', () => {
+  var sidebar;
+  beforeEach(() => {
+    sidebar = shallow(<Sidebar />);
+  });
+
+  it('opens and closes when clicked', () => {
+    expect(sidebar.state().isCollapsed).toBeTruthy();
+    sidebar.find('#sidebar-expand-button').simulate('click');
+    expect(sidebar.state().isCollapsed).toBeFalsy();
+    sidebar.find('#sidebar-expand-button').simulate('click');
+    expect(sidebar.state().isCollapsed).toBeTruthy();
+  });
+
+  it('tracks mouse hovering and leaving the sidebar area', () => {
+    expect(sidebar.state().isHovering).toBeFalsy();
+    sidebar.find('#sidebar').simulate('mouseEnter');
+    expect(sidebar.state().isHovering).toBeTruthy();
+    sidebar.find('#sidebar').simulate('mouseLeave');
+    expect(sidebar.state().isHovering).toBeFalsy();
+  });
+
+  it('updates state with info filled into fields', () => {
+    var i = 0;
+    var input;
+    const preview = shallow(<Preview />);
+    [
+      'title',
+      'author',
+      'headerLeft',
+      'headerMiddle',
+      'headerRight',
+      'footerLeft',
+      'footerMiddle',
+      'footerRight'
+    ].forEach(field => {
+      expect(sidebar.state(field)).toEqual('');
+      input = sidebar.find('input').at(i);
+      input.value = 'Changed';
+      input.name = field;
+      input.simulate('change', { target: input });
+      expect(sidebar.state(field)).toEqual(['Changed']);
+      i++;
+    });
   });
 });
