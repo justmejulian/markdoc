@@ -3,6 +3,8 @@ import { ipcRenderer } from 'electron';
 import './styles/App.sass';
 import './styles/Preview.scss';
 import './styles/reset.scss';
+import './styles/Sidebar.sass';
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 import './font/font.scss';
 
 import {

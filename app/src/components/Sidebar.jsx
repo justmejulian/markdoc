@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
-import '../styles/Sidebar.sass';
-import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 
 import Store from '../stores/Store.js';
 import * as SidebarActions from '../actions/SidebarActions';
