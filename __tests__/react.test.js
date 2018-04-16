@@ -80,4 +80,22 @@ describe('Test Zoom', () => {
     expect(preview.state().zoom).toBeCloseTo(1.7);
     expect(preview.childAt(1).html()).toContain('zoom:1.7');
   });
+
+  it('invokes handleZoomIn on zoom-in button click', () => {
+    expect(preview.state().zoom).toBeCloseTo(1.0);
+    preview
+      .find('.zoomButton')
+      .at(0)
+      .simulate('click');
+    expect(preview.state().zoom).toBeCloseTo(1.1);
+  });
+
+  it('invokes handleZoomOut on zoom-out button click', () => {
+    expect(preview.state().zoom).toBeCloseTo(1.0);
+    preview
+      .find('.zoomButton')
+      .at(1)
+      .simulate('click');
+    expect(preview.state().zoom).toBeCloseTo(0.9);
+  });
 });
