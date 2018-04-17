@@ -33,6 +33,10 @@ class PagesStore extends EventEmitter {
         this.setHTML(this.markdown);
         this.emit('HTML_changed');
         break;
+      case 'SET_MARKDOWN':
+        this.setMarkdown(action.text);
+        this.emit('Markdown_changed');
+        break;
     }
   }
 }

@@ -12,7 +12,7 @@ class Editor extends React.Component {
   }
 
   componentWillMount() {
-    PagesStore.on('HTML_changed', this.getMarkdown);
+    PagesStore.on('Markdown_changed', this.getMarkdown);
   }
 
   getMarkdown() {
@@ -22,10 +22,10 @@ class Editor extends React.Component {
   }
 
   handleChange({ target }) {
-    Actions.setHTML(target.value);
     this.setState({
       value: target.value
     });
+    Actions.setHTML(target.value);
   }
 
   handleKeyUp(e) {
