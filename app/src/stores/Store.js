@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 
 import dispatcher from '../dispatcher';
+import moment from 'moment';
 
 class Store extends EventEmitter {
   constructor() {
@@ -8,9 +9,9 @@ class Store extends EventEmitter {
     this.hasTitlepage = false;
     this.hasHeader = true;
     this.hasFooter = true;
-    this.title = '';
-    this.author = '';
-    this.date = '';
+    this.title = 'Title';
+    this.author = 'Author';
+    this.date = moment().format('DD/MM/YYYY');
     this.headerLeft = 'Zusammenfassung';
     this.headerMiddle = 'PSIT';
     this.headerRight = 'Max Muster';
@@ -40,7 +41,7 @@ class Store extends EventEmitter {
   }
 
   setDate(date) {
-    this.date = date;
+    this.date = date.format('DD/MM/YYYY');
   }
 
   setHeaderLeft(tex) {
