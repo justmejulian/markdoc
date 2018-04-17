@@ -2,19 +2,23 @@ import React, { Component } from 'react';
 import Store from '../stores/Store.js';
 
 class Footer extends React.Component {
-  constructor() {
+  constructor(props) {
     super();
     this.getFooterInfo = this.getFooterInfo.bind(this);
     this.state = {
       headerLeft: '',
       headerMiddle: '',
       headerRight: '',
-      pageNumber: 0
+      pageNumber: props.pageNumber + 1
     };
   }
 
   componentWillMount() {
     Store.on('Footer_changed', this.getFooterInfo);
+  }
+
+  componentWillUnmount() {
+    Store.removeListener('Footer_changed', this.getFooterInfo);
   }
 
   getFooterInfo() {
@@ -25,15 +29,15 @@ class Footer extends React.Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      pageNumber: nextProps.pageNumber + 1
-    });
+  getStyle() {
+    return {
+      visibility: this.props.visibility ? 'visible' : 'hidden'
+    };
   }
 
   render() {
     return (
-      <div className="footer">
+      <div className="footer" style={this.getStyle()}>
         <div className="hfLeft"> {this.state.footerLeft} </div>
         <div className="hfCenter"> {this.state.pageNumber} </div>
         <div className="hfRight"> {this.state.footerRight} </div>

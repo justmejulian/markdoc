@@ -5,6 +5,9 @@ import dispatcher from '../dispatcher';
 class Store extends EventEmitter {
   constructor() {
     super();
+    this.hasTitlepage = false;
+    this.hasHeader = true;
+    this.hasFooter = true;
     this.title = '';
     this.author = '';
     this.date = '';
@@ -14,6 +17,18 @@ class Store extends EventEmitter {
     this.footerLeft = '';
     this.footerMiddle = '';
     this.footerRight = '';
+  }
+
+  setHasTitlepage(title) {
+    this.hasTitlepage = title;
+  }
+
+  setHasHeader(title) {
+    this.hasHeader = title;
+  }
+
+  setHasFooter(title) {
+    this.hasFooter = title;
   }
 
   setTitle(title) {
@@ -50,6 +65,18 @@ class Store extends EventEmitter {
 
   setFooterRight(text) {
     this.footerRight = text;
+  }
+
+  getHasTitlepage() {
+    return this.hasTitlepage;
+  }
+
+  getHasHeader() {
+    return this.hasHeader;
+  }
+
+  getHasFooter() {
+    return this.hasFooter;
   }
 
   getTitle() {
@@ -90,6 +117,18 @@ class Store extends EventEmitter {
 
   handleActions(action) {
     switch (action.type) {
+      case 'SET_HASTITLEPAGE':
+        this.setHasTitlepage(action.text);
+        this.emit('hasTitlepage_changed');
+        break;
+      case 'SET_HASHEADER':
+        this.setHasHeader(action.text);
+        this.emit('hasHeader_changed');
+        break;
+      case 'SET_HASFOOTER':
+        this.setHasFooter(action.text);
+        this.emit('hasFooter_changed');
+        break;
       case 'SET_TITLE':
         this.setTitle(action.text);
         this.emit('Title_changed');
@@ -100,7 +139,6 @@ class Store extends EventEmitter {
         break;
       case 'SET_DATE':
         this.setDate(action.text);
-        this.setHTML(this.markdown);
         this.emit('Date_changed');
         break;
       case 'SET_HEADER_LEFT':

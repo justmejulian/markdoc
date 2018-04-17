@@ -18,6 +18,7 @@ import Editor from './components/Editor.jsx';
 import Preview from './components/Preview.jsx';
 import TitleBar from './components/Titlebar.jsx';
 import Store from './stores/Store.js';
+import PageStore from './stores/PagesStore.js';
 import * as Actions from './actions/Actions';
 
 // Old
@@ -54,7 +55,7 @@ class App extends React.Component {
   _getDocumentContent(event, data) {
     var currentWindow = require('electron').remote.getCurrentWindow().id;
     var currentFilePath = this.state.filePath;
-    var currentContent = Store.getMarkdown();
+    var currentContent = PageStore.getMarkdown();
     ipcRenderer.send(GET_DOCUMENT_CONTENT, {
       currentWindow,
       currentFilePath,

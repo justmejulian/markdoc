@@ -12,12 +12,15 @@ export default class Sidebar extends Component {
   constructor(props) {
     super(props);
     this.handleDateChange = date => this._handleDateChange(date);
+    this.handleCheckboxChange = target => this._handleCheckboxChange(target);
     this.handleFieldChange = target => this._handleFieldChange(target);
     this.handleExpandOrCollapse = () => this._handleExpandOrCollapse();
     this.handleMouseHover = () => this._handleMouseHover();
-    this.getTitle = this.getTitle.bind(this);
     this.state = {
       isCollapsed: true,
+      hasTitlepage: Store.getHasTitlepage(),
+      hasHeader: Store.getHasHeader(),
+      hasFooter: Store.getHasFooter(),
       title: '',
       author: '',
       date: moment(),
@@ -29,16 +32,6 @@ export default class Sidebar extends Component {
       footerRight: '',
       isHovering: false
     };
-  }
-
-  componentWillMount() {
-    Store.on('Title_changed', this.getTitle);
-  }
-
-  getTitle() {
-    this.setState({
-      title: Store.getTitle()
-    });
   }
 
   _handleDateChange(date) {
@@ -81,6 +74,23 @@ export default class Sidebar extends Component {
     }
   }
 
+  _handleCheckboxChange(target) {
+    var name = target.name;
+    var isChecked = target.checked;
+    this.setState({ [name]: isChecked });
+    switch (name) {
+      case 'hasTitlepage':
+        SidebarActions.setHasTitlepage(isChecked);
+        break;
+      case 'hasHeader':
+        SidebarActions.setHasHeader(isChecked);
+        break;
+      case 'hasFooter':
+        SidebarActions.setHasFooter(isChecked);
+        break;
+    }
+  }
+
   _handleMouseHover() {
     this.setState({ isHovering: !this.state.isHovering });
   }
@@ -120,6 +130,31 @@ export default class Sidebar extends Component {
           <div style={sidebarContentStyle} id="sidebar-content">
             <div className="sidebar-header">
               <h1> Markdoc </h1>
+            </div>
+            <div className="form-group">
+              <div className="input-container">
+                <label>Titlepage:</label>
+                <input
+                  type="checkbox"
+                  onChange={evt => this.handleCheckboxChange(evt.target)}
+                  name="hasTitlepage"
+                  checked={this.state.hasTitlepage}
+                />
+                <label>Header:</label>
+                <input
+                  type="checkbox"
+                  onChange={evt => this.handleCheckboxChange(evt.target)}
+                  name="hasHeader"
+                  checked={this.state.hasHeader}
+                />
+                <label>Footer:</label>
+                <input
+                  type="checkbox"
+                  onChange={evt => this.handleCheckboxChange(evt.target)}
+                  name="hasFooter"
+                  checked={this.state.hasFooter}
+                />
+              </div>
             </div>
             <div className="form-group">
               <label>Title:</label>
