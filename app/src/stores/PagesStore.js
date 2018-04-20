@@ -29,7 +29,6 @@ class PagesStore extends EventEmitter {
   handleActions(action) {
     switch (action.type) {
       case 'SET_HTML':
-        this.setMarkdown(action.text);
         this.setHTML(this.markdown);
         this.emit('HTML_changed');
         break;

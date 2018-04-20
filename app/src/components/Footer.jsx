@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import Store from '../stores/Store.js';
 
 class Footer extends React.Component {
-  constructor(props) {
+  constructor() {
     super();
     this.getFooterInfo = this.getFooterInfo.bind(this);
     this.state = {
       headerLeft: '',
       headerMiddle: '',
       headerRight: '',
-      pageNumber: props.pageNumber + 1
+      pageNumber: ''
     };
   }
 
@@ -39,7 +39,7 @@ class Footer extends React.Component {
     return (
       <div className="footer" style={this.getStyle()}>
         <div className="hfLeft"> {this.state.footerLeft} </div>
-        <div className="hfCenter"> {this.state.pageNumber} </div>
+        <div className="hfCenter"> {this.props.pageNumber + 1} </div>
         <div className="hfRight"> {this.state.footerRight} </div>
       </div>
     );

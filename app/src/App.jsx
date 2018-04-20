@@ -53,6 +53,8 @@ class App extends React.Component {
   }
 
   _getDocumentContent(event, data) {
+    // Set Html to Preview
+    Actions.setHTML();
     var currentWindow = require('electron').remote.getCurrentWindow().id;
     var currentFilePath = this.state.filePath;
     var currentContent = PageStore.getMarkdown();
