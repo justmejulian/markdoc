@@ -13,14 +13,6 @@ Enzyme.configure({ adapter: new Adapter() });
 
 jest.mock('../app/src/dispatcher.js');
 
-describe('Test Footer', () => {
-  it('should set pageNumber in Footer', () => {
-    const footer = shallow(<Footer pageNumber="1" />);
-    footer.setState({ pageNumber: 1 });
-    expect(footer.find('.hfCenter').text()).toEqual(' 1 ');
-  });
-});
-
 describe('Test Header', () => {
   it('should set left text in header', () => {
     const header = shallow(<Header pageNumber="1" />);
