@@ -126,7 +126,6 @@ describe('Test sidebar', () => {
   it('updates state with info filled into fields', () => {
     var i = 0;
     var input;
-    const preview = shallow(<Preview />);
     [
       'title',
       'author',
@@ -138,7 +137,7 @@ describe('Test sidebar', () => {
       'footerRight'
     ].forEach(field => {
       expect(sidebar.state(field)).toEqual('');
-      input = sidebar.find('input').at(i);
+      input = sidebar.find('input').at(i + 3);
       input.value = 'Changed';
       input.name = field;
       input.simulate('change', { target: input });

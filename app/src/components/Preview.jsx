@@ -145,8 +145,8 @@ class Preview extends React.Component {
             </svg>
           </button>
         </div>
-        <Titlepage visibility={this.state.hasTitlepage} />
         <div style={{ zoom: this.state.zoom }}>
+          <Titlepage visibility={this.state.hasTitlepage} />
           {this.state.pages.map(page => (
             <Page
               id={page.key}
