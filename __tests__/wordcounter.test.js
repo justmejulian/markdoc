@@ -27,7 +27,7 @@ describe('WordCounter', () => {
   });
 });
 
-describe('CharCounter', () => {
+describe('CharacterCounter', () => {
   it('should count every single character in the document', () => {
     expect(WordCounter.countCharacters('Hey, this is a test.')).toEqual(20);
     expect(WordCounter.countCharacters('Hello')).toEqual(5);
