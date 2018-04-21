@@ -1,7 +1,13 @@
 'use strict';
 const MD = require('../app/src/js/markdown');
-const { MDDOM, MDTOC } = MD;
-// import {MDDOM} from '../src/js/markdown.js';
+const { MDDOM, MDTOC, Lexer, Parser } = MD;
+
+describe('Lexer', () => {
+  it('should tokenize correctly', () => {
+    var tokens = Lexer.tokenize('Test `this`!');
+    expect(tokens.length).toEqual(5);
+  });
+});
 
 describe('Markdown parser', () => {
   const source =
