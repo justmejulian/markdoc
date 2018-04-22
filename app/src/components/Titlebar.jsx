@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Store from '../stores/Store.js';
-import { countWords } from '../js/wordcount.js';
+import { WordCounter } from '../js/wordcounter.js';
 
 class TitleBar extends React.Component {
   constructor() {

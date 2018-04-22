@@ -1,5 +1,5 @@
 'use strict';
-const { WordCounter } = require('../app/src/js/wordcount');
+const { WordCounter } = require('../app/src/js/wordcounter');
 
 describe('WordCounter', () => {
   it('should count words in the document', () => {

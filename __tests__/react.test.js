@@ -32,6 +32,26 @@ describe('Test Header', () => {
   });
 });
 
+describe('Test Footer', () => {
+  it('should set left text in footer', () => {
+    const footer = shallow(<Footer pageNumber="1" />);
+    footer.setState({ hfLeft: 'Semester' });
+    expect(footer.find('.hfLeft').text()).toEqual(' Semester ');
+  });
+
+  it('should set middle text in footer', () => {
+    const footer = shallow(<Footer pageNumber="1" />);
+    footer.setState({ hfCenter: '1' });
+    expect(footer.find('.hfCenter').text()).toEqual(' 1 ');
+  });
+
+  it('should set right text in footer', () => {
+    const footer = shallow(<Footer pageNumber="1" />);
+    footer.setState({ hfRight: 'Kürzel' });
+    expect(footer.find('.hfRight').text()).toEqual(' Kürzel ');
+  });
+});
+
 describe('Test Zoom', () => {
   var preview;
   var inst;

@@ -6,9 +6,9 @@ class Footer extends React.Component {
     super();
     this.getFooterInfo = this.getFooterInfo.bind(this);
     this.state = {
-      headerLeft: '',
-      headerMiddle: '',
-      headerRight: '',
+      headerLeft: Store.getFooterLeft(),
+      headerMiddle: Store.getFooterMiddle(),
+      headerRight: Store.getFooterRight(),
       pageNumber: props.pageNumber + 1
     };
   }
