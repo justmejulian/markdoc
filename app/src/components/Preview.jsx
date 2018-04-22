@@ -42,7 +42,7 @@ class Preview extends React.Component {
     var html = PagesStore.getHTML();
     var words = html.split(' ');
 
-    //console.log(words);
+    console.log(words);
 
     copyArray[0].html = words[0];
 
@@ -84,7 +84,7 @@ class Preview extends React.Component {
   }
 
   nextWord() {
-    //console.log("Change");
+    console.log('Change');
     var copyArray = this.state.pages;
     var currentWord = this.state.currentWord;
     var currentPage = this.state.currentPage;

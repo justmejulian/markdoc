@@ -5,7 +5,7 @@ class WordCounter {
     for (const string of strs) {
       count += string.length == 0 ? 0 : 1;
     }
-    return count;
+    return strs.length;
   }
 
   static countCharacters(str) {

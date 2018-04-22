@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-
 import Store from '../stores/Store.js';
 import { WordCounter } from '../js/wordcount.js';
 
@@ -9,7 +8,6 @@ class TitleBar extends React.Component {
     this.state = {
       words: 0
     };
-
     this.getWords = this.getWords.bind(this);
   }
 
