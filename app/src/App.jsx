@@ -75,7 +75,7 @@ class App extends React.Component {
   _getHTMLContent(event, data) {
     var currentWindow = require('electron').remote.getCurrentWindow().id;
     var currentFilePath = this.state.filePath;
-    var currentContent = Store.getHTML();
+    var currentContent = PageStore.getHTML();
     ipcRenderer.send(GET_HTML_CONTENT, {
       currentFilePath,
       currentContent,
@@ -86,9 +86,10 @@ class App extends React.Component {
   _getPDFContent(event, data) {
     var currentWindow = require('electron').remote.getCurrentWindow().id;
     var currentFilePath = this.state.filePath;
-    console.log(ReactDOMServer.renderToStaticMarkup());
-    var currentPages =
-      '<div class="page page_0"><div class="header" style="border-bottom: 1px solid black;"><div class="hfLeft">"Zusammenfassung"</div><div class="hfCenter">"PSIT"</div><div class="hfRight">"Max Muster"</div></div><div><div id="0"><p>I LOVE REACT</p></div></div><div class="footer"><div class="hfLeft"></div><div class="hfCenter">1</div><div class="hfRight"></div></div></div>'; //ReactDOMServer.renderToStaticMarkup(WTFGOPFERTAMMI);
+    // TODO: change to generate markup from pages divs only -> how? I don't know.
+    // refs on pages are set, I just need a way to access them and pass them to the ReactDOMServer
+    var currentPages = ReactDOMServer.renderToStaticMarkup(<Preview />);
+    console.log(currentPages);
     ipcRenderer.send(GET_PDF_CONTENT, {
       currentWindow,
       currentFilePath,

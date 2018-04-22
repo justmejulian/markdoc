@@ -11,10 +11,11 @@ const {
   GET_DOCUMENT_CONTENT,
   PRINT_URL,
   READY_TO_PRINT,
-  FILETYPE_HTML
+  FILETYPE_HTML,
+  FILETYPE_PDF
 } = require('../app/utils/constants');
 // import actions
-const { saveFileDialog } = require('./actions');
+const { saveFile } = require('./actions');
 // import print window settings
 const printWindow = require('./printWindow');
 
@@ -24,12 +25,7 @@ function exportAsHtml(currentFilePath, currentHTMLContent, currentWindow) {
     return;
   }
   var directoryPath = path.dirname(currentFilePath);
-  saveFileDialog(
-    FILETYPE_HTML,
-    currentFilePath,
-    currentHTMLContent,
-    currentWindow
-  );
+  saveFile(FILETYPE_HTML, currentFilePath, currentHTMLContent, currentWindow);
 }
 
 function exportAsPdf(currentFilePath, currentWindow, currentPages) {
@@ -37,9 +33,6 @@ function exportAsPdf(currentFilePath, currentWindow, currentPages) {
     showSaveFirstMessage(currentWindow);
     return;
   }
-  var directoryPath = path.dirname(currentFilePath);
-  var pdfFilePath = path.join(directoryPath, 'print.pdf');
-  const win = BrowserWindow.fromId(currentWindow);
 
   var printToPDFWindow = new BrowserWindow(printWindow);
   printToPDFWindow.loadURL(PRINT_URL);
@@ -58,13 +51,7 @@ function exportAsPdf(currentFilePath, currentWindow, currentPages) {
       if (printErr) {
         return console.log(printErr.message);
       }
-
-      fs.writeFile(pdfFilePath, data, function(writeErr) {
-        if (writeErr) {
-          return console.log(writeErr.message);
-        }
-        shell.openExternal('file://' + pdfFilePath);
-      });
+      saveFile(FILETYPE_PDF, currentFilePath, data, currentWindow);
     });
   });
 }

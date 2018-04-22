@@ -13,7 +13,7 @@ const {
   DEFAULT_URL
 } = require('./app/utils/constants');
 // import actions
-const { saveFileDialog } = require('./main/actions');
+const { saveFile } = require('./main/actions');
 // import export functions
 const { exportAsHtml, exportAsPdf } = require('./main/export');
 // import window manager
@@ -47,7 +47,7 @@ app.on('ready', () => {
 
 // IPC event listener
 ipcMain.on(GET_DOCUMENT_CONTENT, (event, arg) => {
-  saveFileDialog(
+  saveFile(
     FILETYPE_MDOC,
     arg.currentFilePath,
     arg.currentContent,

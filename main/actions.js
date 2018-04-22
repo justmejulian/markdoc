@@ -8,6 +8,8 @@ const {
   OPEN_FILE_FROM_PATH,
   SET_FILE_PATH,
   FILETYPE_MDOC,
+  FILETYPE_HTML,
+  FILETYPE_PDF,
   EXTENSIONS
 } = require('../app/utils/constants');
 
@@ -46,45 +48,67 @@ function openFileDialog() {
   );
 }
 
-function saveFileDialog(
-  fileType,
-  currentFilePath,
-  currentContent,
-  currentWindow
-) {
+function saveFile(fileType, currentFilePath, currentContent, currentWindow) {
   var defaultFilePathTitle = getDefaultTitle(
     currentFilePath,
     fileType,
     fileType.extensions[0]
   );
-  console.log(defaultFilePathTitle);
-  if (
-    currentFilePath === null ||
-    currentFilePath === '' ||
-    fileType != FILETYPE_MDOC
-  ) {
-    dialog.showSaveDialog(
-      BrowserWindow.fromId(currentWindow),
-      {
-        defaultPath: defaultFilePathTitle
-      },
-      newPath => {
-        if (newPath === undefined) {
-          console.log("You didn't save the file");
-          return;
-        }
-        if (
-          (currentFilePath === null || currentFilePath === '') &&
-          fileType === FILETYPE_MDOC
-        ) {
-          setFilePath(newPath, currentWindow);
-        }
-        writeFileToPath(currentContent, newPath);
+  switch (fileType) {
+    case FILETYPE_PDF:
+      openSaveDialog(
+        fileType,
+        defaultFilePathTitle,
+        currentContent,
+        currentWindow
+      );
+      break;
+    case FILETYPE_HTML:
+      openSaveDialog(
+        fileType,
+        defaultFilePathTitle,
+        currentContent,
+        currentWindow
+      );
+      break;
+    default:
+      if (currentFilePath === null || currentFilePath === '') {
+        openSaveDialog(
+          fileType,
+          defaultFilePathTitle,
+          currentContent,
+          currentWindow
+        );
+      } else {
+        writeFileToPath(currentContent, currentFilePath);
       }
-    );
-  } else {
-    writeFileToPath(currentContent, currentFilePath);
   }
+}
+
+// opens the save dialog and updates the filePath if fileType == FILETYPE_MDOC
+function openSaveDialog(
+  fileType,
+  defaultFilePathTitle,
+  currentContent,
+  currentWindow
+) {
+  dialog.showSaveDialog(
+    BrowserWindow.fromId(currentWindow),
+    {
+      defaultPath: defaultFilePathTitle
+    },
+    newPath => {
+      if (newPath === undefined) {
+        console.log("You didn't save the file");
+        return;
+      }
+      // update filePath to prevent dialog to show up in the future
+      if (fileType === FILETYPE_MDOC) {
+        setFilePath(newPath, currentWindow);
+      }
+      writeFileToPath(currentContent, newPath);
+    }
+  );
 }
 
 function writeFileToPath(currentContent, currentFilePath) {
@@ -127,7 +151,7 @@ function getDirectoryName(filePath) {
 
 module.exports = {
   openFileDialog: openFileDialog,
-  saveFileDialog: saveFileDialog,
+  saveFile: saveFile,
   writeFileToPath: writeFileToPath,
   setFilePath: setFilePath,
   getFilename: getFilename,

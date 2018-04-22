@@ -7,6 +7,7 @@ import Store from '../stores/Store.js';
 class Preview extends React.Component {
   constructor(props) {
     super(props);
+    this.pageRef = React.createRef();
     this.setPreview = this.setPreview.bind(this);
     this.setHasTitlepage = this.setHasTitlepage.bind(this);
     this.handleZoomIn = this._handleZoomIn.bind(this);
@@ -150,6 +151,7 @@ class Preview extends React.Component {
           {this.state.pages.map(page => (
             <Page
               id={page.key}
+              ref={this.pageRef}
               key={page.key}
               html={page.html}
               handleHeight={this.handleHeight.bind(this)}
