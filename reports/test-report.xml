@@ -1,39 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
   <file path="/Users/sharonsoultanis/GitHub/markdoc/__tests__/markdown.test.js">
-    <testCase name="Markdown parser should parse headers correctly" duration="14"/>
+    <testCase name="Markdown parser should parse headers correctly" duration="12"/>
     <testCase name="Markdown parser should parse formatted paragraphs correctly" duration="7"/>
-    <testCase name="Markdown parser should parse an ordered list correctly" duration="4"/>
-    <testCase name="Markdown parser should parse an unordered list correctly" duration="2"/>
-    <testCase name="Markdown parser should parse nested lists correctly" duration="2"/>
+    <testCase name="Markdown parser should parse an ordered list correctly" duration="3"/>
+    <testCase name="Markdown parser should parse an unordered list correctly" duration="1"/>
+    <testCase name="Markdown parser should parse nested lists correctly" duration="1"/>
     <testCase name="Markdown parser should output Html code correctly" duration="2"/>
-    <testCase name="Markdown parser should output the same source when calling toMarkDown() after parsing" duration="3"/>
+    <testCase name="Markdown parser should output the same source when calling toMarkDown() after parsing" duration="2"/>
     <testCase name="Markdown parser should correctly convert markdown to formatless string" duration="1"/>
     <testCase name="Markdown parser should parse the right source positions" duration="2"/>
   </file>
-  <file path="/Users/sharonsoultanis/GitHub/markdoc/__tests__/react.test.js">
-    <testCase name="Test Header should set left text in header" duration="18"/>
-    <testCase name="Test Header should set middle text in header" duration="3"/>
-    <testCase name="Test Header should set right text in header" duration="1"/>
-    <testCase name="Test Zoom begins with zoom set to 1.0" duration="15"/>
-    <testCase name="Test Zoom does not zoom the zoom buttons" duration="2"/>
-    <testCase name="Test Zoom can zoom in" duration="14"/>
-    <testCase name="Test Zoom can zoom out" duration="9"/>
-    <testCase name="Test Zoom doesn&apos;t go below minimum zoom" duration="2"/>
-    <testCase name="Test Zoom doesn&apos;t go above maximum zoom" duration="2"/>
-    <testCase name="Test Zoom invokes handleZoomIn on zoom-in button click" duration="2"/>
-    <testCase name="Test Zoom invokes handleZoomOut on zoom-out button click" duration="2"/>
-    <testCase name="Test sidebar opens and closes when clicked" duration="10"/>
-    <testCase name="Test sidebar tracks mouse hovering and leaving the sidebar area" duration="10"/>
-    <testCase name="Test sidebar updates state with info filled into fields" duration="27"/>
-  </file>
   <file path="/Users/sharonsoultanis/GitHub/markdoc/__tests__/wordcounter.test.js">
-    <testCase name="WordCounter should count words in the document" duration="9"/>
-    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="2"/>
-    <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="3"/>
-    <testCase name="CharCounter should count every single character in the document" duration="2"/>
-    <testCase name="CharCounter should not count spaces" duration="1"/>
-    <testCase name="CharCounter should count special character" duration="1"/>
-    <testCase name="CharCounter should show zero, if no it has no text" duration="2"/>
+    <testCase name="WordCounter should count words in the document" duration="6"/>
+    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="87">
+      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
+
+Expected value to equal:
+  6
+Received:
+  11
+    at Object.<anonymous> (/Users/sharonsoultanis/GitHub/markdoc/__tests__/wordcounter.test.js:12:63)
+    at Object.asyncFn (/Users/sharonsoultanis/GitHub/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
+    at resolve (/Users/sharonsoultanis/GitHub/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/sharonsoultanis/GitHub/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
+    at promise.then (/Users/sharonsoultanis/GitHub/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)]]></failure>
+    </testCase>
+    <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="1">
+      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
+
+Expected value to equal:
+  1
+Received:
+  2
+    at Object.<anonymous> (/Users/sharonsoultanis/GitHub/markdoc/__tests__/wordcounter.test.js:16:34)
+    at Object.asyncFn (/Users/sharonsoultanis/GitHub/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
+    at resolve (/Users/sharonsoultanis/GitHub/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/sharonsoultanis/GitHub/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
+    at promise.then (/Users/sharonsoultanis/GitHub/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)]]></failure>
+    </testCase>
+    <testCase name="CharacterCounter should count every single character in the document" duration="0"/>
+    <testCase name="CharacterCounter should not count spaces" duration="1"/>
+    <testCase name="CharacterCounter should count special character" duration="0"/>
+    <testCase name="CharacterCounter should show zero, if no it has no text" duration="1"/>
+  </file>
+  <file path="/Users/sharonsoultanis/GitHub/markdoc/__tests__/react.test.js">
+    <testCase name="Test Header should set left text in header" duration="19"/>
+    <testCase name="Test Header should set middle text in header" duration="6"/>
+    <testCase name="Test Header should set right text in header" duration="2"/>
+    <testCase name="Test Zoom begins with zoom set to 1.0" duration="14"/>
+    <testCase name="Test Zoom does not zoom the zoom buttons" duration="4"/>
+    <testCase name="Test Zoom can zoom in" duration="13"/>
+    <testCase name="Test Zoom can zoom out" duration="8"/>
+    <testCase name="Test Zoom doesn&apos;t go below minimum zoom" duration="3"/>
+    <testCase name="Test Zoom doesn&apos;t go above maximum zoom" duration="2"/>
+    <testCase name="Test Zoom invokes handleZoomIn on zoom-in button click" duration="3"/>
+    <testCase name="Test Zoom invokes handleZoomOut on zoom-out button click" duration="2"/>
+    <testCase name="Test sidebar opens and closes when clicked" duration="11"/>
+    <testCase name="Test sidebar tracks mouse hovering and leaving the sidebar area" duration="11"/>
+    <testCase name="Test sidebar updates state with info filled into fields" duration="30"/>
   </file>
 </testExecutions>

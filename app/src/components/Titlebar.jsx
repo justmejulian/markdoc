@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Store from '../stores/Store.js';
-import { WordCounter } from '../js/wordcount.js';
+import { countWords } from '../js/wordcount.js';
 
 class TitleBar extends React.Component {
   constructor() {
@@ -17,7 +17,7 @@ class TitleBar extends React.Component {
 
   getWords() {
     var markdown = Store.getMarkdown();
-    var countedWords = WordCounter.countWords(markdown);
+    var countedWords = countWords(markdown);
 
     this.setState({
       words: countedWords
