@@ -1,5 +1,26 @@
 import dispatcher from '../dispatcher';
 
+export function setHasTitlepage(text) {
+  dispatcher.dispatch({
+    type: 'SET_HASTITLEPAGE',
+    text
+  });
+}
+
+export function setHasHeader(text) {
+  dispatcher.dispatch({
+    type: 'SET_HASHEADER',
+    text
+  });
+}
+
+export function setHasFooter(text) {
+  dispatcher.dispatch({
+    type: 'SET_HASFOOTER',
+    text
+  });
+}
+
 export function setTitle(text) {
   dispatcher.dispatch({
     type: 'SET_TITLE',

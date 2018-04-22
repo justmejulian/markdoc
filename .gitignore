@@ -7,6 +7,9 @@
 # Packaged app
 /bin
 
+# Jest
+/coverage
+
 #sass
 .sass-cache
 

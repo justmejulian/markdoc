@@ -21,8 +21,11 @@ const { markdocWindows, createWindow } = require('./main/windowManager');
 // import menu configurator
 const { configureMenu } = require('./main/menuConfigurator');
 
-// Let electron reloads by itself when webpack watches changes in ./app/
-require('electron-reload')(__dirname);
+// Enable live reload for Electron too
+require('electron-reload')(__dirname, {
+  // Note that the path to electron may vary according to the main file
+  electron: require(`${__dirname}/node_modules/electron`)
+});
 
 // TODO: save and reload application state (opened windows/documents, window size etc.)
 // maybe use https://github.com/sindresorhus/electron-store to store application state?
@@ -35,7 +38,7 @@ app.on('ready', () => {
     REACT_DEVELOPER_TOOLS
   } = require('electron-devtools-installer');
   installExtension(REACT_DEVELOPER_TOOLS)
-    .then(name => console.log(`Added Extension:  ${name}`))
+    .then(name => console.log(`Added an Extension:  ${name}`))
     .catch(err => console.log('An error occurred: ', err));
 
   // Set application menu

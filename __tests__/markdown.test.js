@@ -1,6 +1,6 @@
 'use strict';
 const MD = require('../app/src/js/markdown');
-const { MDDOM } = MD;
+const { MDDOM, MDTOC } = MD;
 // import {MDDOM} from '../src/js/markdown.js';
 
 describe('Markdown parser', () => {
@@ -93,4 +93,32 @@ describe('Markdown parser', () => {
     expect(header.to.row).toEqual(1);
     expect(header.to.column).toEqual(14);
   });
+  if (
+    ('should parse one TOC and only one',
+    () => {
+      var dom = MDDOM.parse('# Header\n' + '[TOC]\n' + '\n' + '[TOC]');
+      var count = 0;
+      for (const child of dom.children) {
+        if (child instanceof MDTOC) count++;
+      }
+      expect(count).toEqual(1);
+      expect(dom.toc).toBeDefined();
+      expect(dom.toc.children.length).toEqual(1);
+    })
+  );
+  if (
+    ('should parse one TOF and only one',
+    () => {
+      var dom = MDDOM.parse(
+        '![alt text](./img.png)\n' + '[TOF]\n' + '\n' + '[TOF]'
+      );
+      var count = 0;
+      for (const child of dom.children) {
+        if (child instanceof MDTOC) count++;
+      }
+      expect(count).toEqual(1);
+      expect(dom.tof).toBeDefined();
+      expect(dom.tof.children.length).toEqual(1);
+    })
+  );
 });

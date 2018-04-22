@@ -6,3 +6,10 @@ export function setHTML(text) {
     text
   });
 }
+
+export function setMarkdown(text) {
+  dispatcher.dispatch({
+    type: 'SET_MARKDOWN',
+    text
+  });
+}
