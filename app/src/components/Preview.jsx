@@ -42,8 +42,6 @@ class Preview extends React.Component {
     var html = PagesStore.getHTML();
     var words = html.split(' ');
 
-    //console.log(words);
-
     copyArray[0].html = words[0];
 
     this.setState(

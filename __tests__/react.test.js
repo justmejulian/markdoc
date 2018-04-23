@@ -2,7 +2,6 @@ import React from 'react';
 import Enzyme from 'enzyme';
 import { shallow } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-
 import Editor from '../app/src/components/Editor.jsx';
 import Preview from '../app/src/components/Preview.jsx';
 import Sidebar from '../app/src/components/Sidebar.jsx';
@@ -13,17 +12,68 @@ Enzyme.configure({ adapter: new Adapter() });
 
 jest.mock('../app/src/dispatcher.js');
 
+//describe('Test Titlepage', () => {
+//it('should set the title in the titlepage', () => {
+//const header = shallow(<Header pageNumber="1" />);
+//header.setState({ hfLeft: 'Zusammenfassung' });
+//expect(header.find('.hfLeft').text()).toEqual(' Zusammenfassung ');
+//});
+//it('should set the author in the titlepage', () => {
+//const header = shallow(<Header pageNumber="1" />);
+//header.setState({ hfLeft: 'Zusammenfassung' });
+//expect(header.find('.hfLeft').text()).toEqual(' Zusammenfassung ');
+//});
+//it('should set the date in the titlepage', () => {
+//const header = shallow(<Header pageNumber="1" />);
+//header.setState({ hfLeft: 'Zusammenfassung' });
+//expect(header.find('.hfLeft').text()).toEqual(' Zusammenfassung ');
+//});
+//});
+
 describe('Test Header', () => {
   it('should set left text in header', () => {
     const header = shallow(<Header pageNumber="1" />);
     header.setState({ hfLeft: 'Zusammenfassung' });
     expect(header.find('.hfLeft').text()).toEqual(' Zusammenfassung ');
   });
+
+  it('should set middle text in header', () => {
+    const header = shallow(<Header pageNumber="1" />);
+    header.setState({ hfCenter: 'PSIT' });
+    expect(header.find('.hfCenter').text()).toEqual(' PSIT ');
+  });
+
+  it('should set right text in header', () => {
+    const header = shallow(<Header pageNumber="1" />);
+    header.setState({ hfRight: 'Max Muster' });
+    expect(header.find('.hfRight').text()).toEqual(' Max Muster ');
+  });
+});
+
+describe('Test Footer', () => {
+  it('should set left text in footer', () => {
+    const footer = shallow(<Footer pageNumber="1" />);
+    footer.setState({ hfLeft: 'Semester' });
+    expect(footer.find('.hfLeft').text()).toEqual(' Semester ');
+  });
+
+  it('should set middle text in footer', () => {
+    const footer = shallow(<Footer pageNumber="1" />);
+    footer.setState({ hfCenter: '1' });
+    expect(footer.find('.hfCenter').text()).toEqual(' 1 ');
+  });
+
+  it('should set right text in footer', () => {
+    const footer = shallow(<Footer pageNumber="1" />);
+    footer.setState({ hfRight: 'Kürzel' });
+    expect(footer.find('.hfRight').text()).toEqual(' Kürzel ');
+  });
 });
 
 describe('Test Zoom', () => {
   var preview;
   var inst;
+
   beforeEach(() => {
     preview = shallow(<Preview />);
     inst = preview.instance();
