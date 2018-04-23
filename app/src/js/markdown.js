@@ -1,5 +1,7 @@
 'use strict';
 
+const BOF = 'BOF';
+const EOF = 'EOF';
 const NEWLINE = 'Newline';
 const HEADER = 'Header';
 const BOLD = 'Bold';
@@ -27,20 +29,20 @@ class Lexer {
     var tokens = [
       new Token(NEWLINE, /^\n/),
       new Token(HEADER, /^#{1,6}\s/),
-      new Token(BOLD, /^\*\*/),
-      new Token(ITALICS, /^_/),
-      new Token(STRIKETHROUGH, /^~~/),
+      new Token(BOLD, /^\*\*/).escapable(),
+      new Token(ITALICS, /^_/).escapable(),
+      new Token(STRIKETHROUGH, /^~~/).escapable(),
       new Token(BLOCKQUOTE, /^> /),
       new Token(NUMBEREDLIST, /^\d+?\. /),
       new Token(UNNUMBEREDLIST, /^\* /),
-      new Token(RULE, /^(\*\*\*|---|___)\s*/),
+      new Token(RULE, /^(\*\*\*|---|___)\s*/).escapable(),
       new Token(
         LINK,
         /^(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
       ),
       new Token(IMAGE, /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/),
       new Token(CODEBLOCK, /^```/),
-      new Token(CODE, /^`/),
+      new Token(CODE, /^`/).escapable(),
       new Token(INDENT, /^(    |\t)/),
       new Token(TOC, /^\[TOC\]/),
       new Token(TOF, /^\[TOF\]/),
@@ -49,12 +51,18 @@ class Lexer {
       new Token(LATEXBLOCK, /^\$\$/),
       new Token(ESCAPE, /^\\/)
     ];
-    var out = [];
+    var out = [new Token(BOF)];
     var foundToken = false;
+    var escaped = false;
     while (string.length) {
       for (const token of tokens) {
-        if (token.test(string)) {
+        if (token.test(string, escaped)) {
           var newToken = token.createNew();
+          if (token.type === ESCAPE) {
+            escaped = true;
+            break;
+          }
+          escaped = false;
           string = newToken.apply(string);
           out.push(newToken);
           foundToken = true;
@@ -73,6 +81,7 @@ class Lexer {
         }
       }
     }
+    out.push(new Token(EOF));
     return out;
   }
 }
@@ -81,14 +90,20 @@ class Token {
   constructor(type, pattern) {
     this.type = type;
     this.pattern = pattern;
+    this.value = '';
+    this.escapable = false;
   }
-  test(string) {
-    return this.pattern.test(string);
+  test(string, escaped) {
+    return !(this.escapable && escaped) && this.pattern.test(string);
   }
   apply(string) {
     this.match = string.match(this.pattern);
     this.value = this.match[0];
     return string.substr(this.value.length);
+  }
+  escapable() {
+    this.escapable = true;
+    return this;
   }
   createNew() {
     return new Token(this.type, this.pattern);
@@ -102,11 +117,11 @@ class Parser {
       new MDTextBold(),
       new MDTextItalics(),
       new MDTextCode(),
-      new MDTextMath(),
+      new MDTextLaTeX(),
       new MDLink(),
       new MDImage(),
-      new MDParagraph(),
       new MDHeader(),
+      new MDParagraph(),
       new MDOrderedList(),
       new MDBulletList(),
       new MDItem(),
@@ -117,14 +132,33 @@ class Parser {
       new MDTOF(),
       new MDPageBreak()
     ];
+    var column = 0;
+    var row = 0;
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
+      if (token.type == NEWLINE) {
+        row++;
+        column = 0;
+      } else {
+        column += token.value.length;
+      }
       for (const component of availableComponents) {
-        if (component.prematch(token)) {
+        if (component.match(tokens, index)) {
+          // Found beginning of a new component
+          var matched = component.createNew();
         }
       }
     }
   }
+}
+
+class TokenArray {}
+class TokenFilter {
+  constructor() {}
+  oneOf(tokenArray) {}
+  nOf(number, tokenArray) {}
+  anyNOf(tokenArray) {}
+  noneOf(tokenArray) {}
 }
 
 const commonmark = require('commonmark');
@@ -135,6 +169,7 @@ class MDComponent {
   constructor() {
     this.parent = null;
     this.children = [];
+    this.prematchFilters = [];
   }
 
   add(component) {
@@ -160,9 +195,43 @@ class MDComponent {
     }
   }
 
-  // Consume token to check for a match
-  prematch(token) {
-    return false;
+  // Consume token to check for a prematch
+  prematch(tokens, index) {
+    var prematchIndex = 0;
+    for (const prematchFilter of this.prematchFilters) {
+      if (prematchFilter.matches.includes(EOF)) {
+      }
+      if (prematchFilter.match(tokens[index + prematchIndex])) {
+        this.prematchIndex++;
+      } else {
+        this.prematchIndex = 0;
+      }
+    }
+    return this.prematchIndex == this.prematchFilters.length;
+  }
+
+  // Check for match and if not invalidated by escaping or nesting exclusions
+  match(tokens, index, stack) {
+    if (!this._couldMatch(tokens, index)) return false;
+    if (!this._isNotEscaped(tokens, index)) return false;
+    if (!this._isNotInsideExcludingComponents(stack)) return false;
+    return true;
+  }
+
+  // Check if this could be a match
+  _couldMatch(tokens, index) {}
+
+  // Check for leading escape
+  _isNotEscaped(tokens, index) {
+    if (this.escapable && index > 0) {
+      if (tokens[index - 1].type == ESCAPE) return false;
+    }
+    return true;
+  }
+
+  // Check for elements in a higher hierarchy excluding this component
+  _isNotInsideExcludingComponents(stack) {
+    return !stack.includes(this.nestedExclusions);
   }
 
   // Replace current component with a new one if parsable
@@ -202,6 +271,10 @@ class MDComponent {
 
 // text components:
 class MDText extends MDComponent {
+  constructor() {
+    super();
+    this.prematchFilters.push(new TokenFilter(TEXT));
+  }
   toHtml() {
     if (this.value) return this.value;
     return super.toHtml();
@@ -215,6 +288,10 @@ class MDText extends MDComponent {
 }
 
 class MDTextBold extends MDText {
+  constructor() {
+    super();
+    this.prematchFilters.push(new TokenFilter(BOLD));
+  }
   toHtml() {
     return `<strong>${super.toHtml()}</strong>`;
   }
@@ -234,6 +311,10 @@ class MDTextBold extends MDText {
   }
 }
 class MDTextItalics extends MDText {
+  constructor() {
+    super();
+    this.prematchFilters.push(new TokenFilter(ITALICS));
+  }
   toHtml() {
     return `<em>${super.toHtml()}</em>`;
   }
@@ -253,6 +334,10 @@ class MDTextItalics extends MDText {
   }
 }
 class MDTextCode extends MDText {
+  constructor() {
+    super();
+    this.prematchFilters.push(new TokenFilter(CODE));
+  }
   toHtml() {
     return `<code>${this.value}</code>`;
   }
@@ -263,7 +348,11 @@ class MDTextCode extends MDText {
     return `\`${this.value}\``;
   }
 }
-class MDTextMath extends MDText {
+class MDTextLaTeX extends MDText {
+  constructor() {
+    super();
+    this.prematchFilters.push(new TokenFilter(LATEX));
+  }
   toHtml() {
     return `<span>${super.toHtml()}</span>`;
   }
@@ -284,6 +373,10 @@ class MDTextMath extends MDText {
 }
 
 class MDLink extends MDComponent {
+  constructor() {
+    super();
+    this.prematchFilters.push(new TokenFilter(LINK));
+  }
   toHtml() {
     if (this.title) {
       return `<a href="${this.destination}" title="${
@@ -300,6 +393,10 @@ class MDLink extends MDComponent {
 }
 
 class MDImage extends MDComponent {
+  constructor() {
+    super();
+    this.prematchFilters.push(new TokenFilter(IMAGE));
+  }
   toHtml() {
     if (this.id) {
       return `<img src="${this.destination}" id="${
@@ -327,7 +424,50 @@ class MDSoftBreak extends MDComponent {
 
 // per line components:
 
+class MDHeader extends MDComponent {
+  constructor() {
+    super();
+    this.prematchFilters = [
+      new TokenFilter(NEWLINE, BOF),
+      new TokenFilter(HEADER)
+    ];
+    this.unmatchers = [];
+    this.matchFinisher = [new TokenFilter(NEWLINE, EOF)];
+  }
+  toHtml() {
+    if (this.id) {
+      return `<h${this.level} id="${this.id}">${super.toHtml()}</h${
+        this.level
+      }>`;
+    }
+    return `<h${this.level}>${super.toHtml()}</h${this.level}>`;
+  }
+  toMarkDown() {
+    return `${'#'.repeat(this.level)} ${super.toMarkDown()}`;
+  }
+}
+
 class MDParagraph extends MDComponent {
+  constructor() {
+    super();
+    this.prematchFilters.push(new TokenFilter(NEWLINE, BOF));
+    this.unmatchers = [];
+    this.matchFinisher = [
+      new TokenFilter(NEWLINE, EOF),
+      new TokenFilter(
+        NEWLINE,
+        EOF,
+        CODEBLOCK,
+        HEADER,
+        TOC,
+        TOF,
+        PAGEBREAK,
+        LATEXBLOCK,
+        NUMBEREDLIST,
+        UNNUMBEREDLIST
+      )
+    ];
+  }
   _parseReplace() {
     var obj = this;
     obj = MDTOC._test(this.toString()) ? MDTOC._parse(this) : obj;
@@ -342,20 +482,6 @@ class MDParagraph extends MDComponent {
   }
   toMarkDown() {
     return super.toMarkDown();
-  }
-}
-
-class MDHeader extends MDComponent {
-  toHtml() {
-    if (this.id) {
-      return `<h${this.level} id="${this.id}">${super.toHtml()}</h${
-        this.level
-      }>`;
-    }
-    return `<h${this.level}>${super.toHtml()}</h${this.level}>`;
-  }
-  toMarkDown() {
-    return `${'#'.repeat(this.level)} ${super.toMarkDown()}`;
   }
 }
 
@@ -377,6 +503,27 @@ class MDListBase extends MDComponent {
 }
 
 class MDOrderedList extends MDListBase {
+  constructor() {
+    super();
+    this.prematchFilters = [
+      new TokenFilter(NEWLINE, BOF, INDENT),
+      new TokenFilter(NUMBEREDLIST)
+    ];
+    this.unmatchers = [];
+    this.matchFinisher = [
+      new TokenFilter(NEWLINE, EOF).except(ESCAPE),
+      new TokenFilter(
+        NEWLINE,
+        EOF,
+        CODEBLOCK,
+        HEADER,
+        TOC,
+        TOF,
+        PAGEBREAK,
+        LATEXBLOCK
+      )
+    ];
+  }
   toHtml() {
     if (this.start != 1) {
       return `<ol start="${this.start}">${super.toHtml()}</ol>`;
@@ -408,6 +555,27 @@ class MDOrderedList extends MDListBase {
 }
 
 class MDBulletList extends MDListBase {
+  constructor() {
+    super();
+    this.prematchFilters = [
+      new TokenFilter(NEWLINE, BOF, INDENT),
+      new TokenFilter(UNNUMBEREDLIST)
+    ];
+    this.unmatchers = [];
+    this.matchFinisher = [
+      new TokenFilter(NEWLINE, EOF).except(ESCAPE),
+      new TokenFilter(
+        NEWLINE,
+        EOF,
+        CODEBLOCK,
+        HEADER,
+        TOC,
+        TOF,
+        PAGEBREAK,
+        LATEXBLOCK
+      )
+    ];
+  }
   toHtml() {
     return `<ul>${super.toHtml()}</ul>`;
   }
@@ -430,12 +598,42 @@ class MDBulletList extends MDListBase {
 }
 
 class MDItem extends MDComponent {
+  constructor() {
+    super();
+    this.prematchFilters = [
+      new TokenFilter(NEWLINE, BOF, INDENT),
+      new TokenFilter(NUMBEREDLIST, UNNUMBEREDLIST)
+    ];
+    this.unmatchers = [];
+    this.matchFinisher = [new TokenFilter(NEWLINE, EOF)];
+  }
   toHtml() {
     return `<li>${super.toHtml()}</li>`;
   }
 }
 
 class MDBlockQuote extends MDComponent {
+  constructor() {
+    super();
+    this.prematchFilters = [
+      new TokenFilter(NEWLINE, BOF),
+      new TokenFilter(BLOCKQUOTE)
+    ];
+    this.unmatchers = [];
+    this.matchFinisher = [
+      new TokenFilter(NEWLINE, EOF).except(ESCAPE),
+      new TokenFilter(
+        NEWLINE,
+        EOF,
+        CODEBLOCK,
+        HEADER,
+        TOC,
+        TOF,
+        PAGEBREAK,
+        LATEXBLOCK
+      )
+    ];
+  }
   toHtml() {
     return `<blockquote>${super.toHtml()}</blockquote>`;
   }
@@ -756,6 +954,7 @@ class SourcePosition {
 // console.log(dom.toHtml());
 
 var tokens = Lexer.tokenize('# **Header!**');
+console.log(Parser.parse(tokens));
 
 module.exports = {
   Lexer: Lexer,
@@ -766,7 +965,7 @@ module.exports = {
   MDTextBold: MDTextBold,
   MDTextItalics: MDTextItalics,
   MDTextCode: MDTextCode,
-  MDTextMath: MDTextMath,
+  MDTextLaTeX: MDTextLaTeX,
   MDParagraph: MDParagraph,
   MDHeader: MDHeader,
   MDTOC: MDTOC,

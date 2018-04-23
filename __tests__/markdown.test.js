@@ -5,7 +5,7 @@ const { MDDOM, MDTOC, Lexer, Parser } = MD;
 describe('Lexer', () => {
   it('should tokenize correctly', () => {
     var tokens = Lexer.tokenize('Test `this`!');
-    expect(tokens.length).toEqual(5);
+    expect(tokens.length).toEqual(7);
   });
 });
 
