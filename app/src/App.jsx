@@ -75,6 +75,7 @@ class App extends React.Component {
   _getHTMLContent(event, data) {
     var currentWindow = require('electron').remote.getCurrentWindow().id;
     var currentFilePath = this.state.filePath;
+    //TODO: generate valid HTML and apply CSS from the preview
     var currentContent = PageStore.getHTML();
     ipcRenderer.send(GET_HTML_CONTENT, {
       currentFilePath,
@@ -97,6 +98,7 @@ class App extends React.Component {
     });
   }
 
+  // prepare document content: adds markdown metadata from the sidebar & content from editor
   _prepareMDOC() {
     return (
       '---\n' +
@@ -142,7 +144,9 @@ class App extends React.Component {
   }
 
   _setDocumentContent(event, data) {
+    //TODO: fix opening/rendering
     Actions.setHTML(data.currentContent);
+    //TODO: parse markdown metadata
     this.setState({
       filePath: data.currentFilePath
     });
