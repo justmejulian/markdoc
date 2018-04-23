@@ -9,8 +9,14 @@ class Footer extends React.Component {
       footerLeft: Store.getFooterLeft(),
       footerMiddle: Store.getFooterMiddle(),
       footerRight: Store.getFooterRight(),
-      pageNumber: props.pageNumber + 1
+      pageNumber: ''
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      pageNumber: nextProps.pageNumber + 1
+    });
   }
 
   componentWillMount() {
@@ -39,7 +45,7 @@ class Footer extends React.Component {
     return (
       <div className="footer" style={this.getStyle()}>
         <div className="hfLeft"> {this.state.footerLeft} </div>
-        <div className="hfCenter"> {this.props.pageNumber + 1} </div>
+        <div className="hfCenter"> {this.state.pageNumber} </div>
         <div className="hfRight"> {this.state.footerRight} </div>
       </div>
     );
