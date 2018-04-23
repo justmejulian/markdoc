@@ -1,9 +1,8 @@
 import dispatcher from '../dispatcher';
 
-export function setHTML(text) {
+export function setHTML() {
   dispatcher.dispatch({
-    type: 'SET_HTML',
-    text
+    type: 'SET_HTML'
   });
 }
 

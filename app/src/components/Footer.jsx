@@ -2,15 +2,21 @@ import React, { Component } from 'react';
 import Store from '../stores/Store.js';
 
 class Footer extends React.Component {
-  constructor(props) {
+  constructor() {
     super();
     this.getFooterInfo = this.getFooterInfo.bind(this);
     this.state = {
-      headerLeft: '',
-      headerMiddle: '',
-      headerRight: '',
-      pageNumber: props.pageNumber + 1
+      footerLeft: Store.getFooterLeft(),
+      footerMiddle: Store.getFooterMiddle(),
+      footerRight: Store.getFooterRight(),
+      pageNumber: ''
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      pageNumber: nextProps.pageNumber + 1
+    });
   }
 
   componentWillMount() {

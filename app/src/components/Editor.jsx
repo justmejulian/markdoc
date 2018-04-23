@@ -25,7 +25,7 @@ class Editor extends React.Component {
     this.setState({
       value: target.value
     });
-    Actions.setHTML(target.value);
+    Actions.setMarkdown(target.value);
   }
 
   handleKeyUp(e) {
