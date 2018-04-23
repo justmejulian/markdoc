@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import Store from '../stores/Store.js';
+
+import PagesStore from '../stores/PagesStore.js';
 import { WordCounter } from '../js/wordcounter.js';
 
 class TitleBar extends React.Component {
@@ -8,16 +9,17 @@ class TitleBar extends React.Component {
     this.state = {
       words: 0
     };
+
     this.getWords = this.getWords.bind(this);
   }
 
   componentWillMount() {
-    Store.on('HTML_changed', this.getWords);
+    PagesStore.on('HTML_changed', this.getWords);
   }
 
   getWords() {
-    var markdown = Store.getMarkdown();
-    var countedWords = countWords(markdown);
+    var markdown = PagesStore.getMarkdown();
+    var countedWords = WordCounter.countWords(markdown);
 
     this.setState({
       words: countedWords

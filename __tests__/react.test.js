@@ -12,6 +12,24 @@ Enzyme.configure({ adapter: new Adapter() });
 
 jest.mock('../app/src/dispatcher.js');
 
+//describe('Test Titlepage', () => {
+//it('should set the title in the titlepage', () => {
+//const header = shallow(<Header pageNumber="1" />);
+//header.setState({ hfLeft: 'Zusammenfassung' });
+//expect(header.find('.hfLeft').text()).toEqual(' Zusammenfassung ');
+//});
+//it('should set the author in the titlepage', () => {
+//const header = shallow(<Header pageNumber="1" />);
+//header.setState({ hfLeft: 'Zusammenfassung' });
+//expect(header.find('.hfLeft').text()).toEqual(' Zusammenfassung ');
+//});
+//it('should set the date in the titlepage', () => {
+//const header = shallow(<Header pageNumber="1" />);
+//header.setState({ hfLeft: 'Zusammenfassung' });
+//expect(header.find('.hfLeft').text()).toEqual(' Zusammenfassung ');
+//});
+//});
+
 describe('Test Header', () => {
   it('should set left text in header', () => {
     const header = shallow(<Header pageNumber="1" />);
