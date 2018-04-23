@@ -89,8 +89,6 @@ class App extends React.Component {
   _getPDFContent(event, data) {
     var currentWindow = require('electron').remote.getCurrentWindow().id;
     var currentFilePath = this.state.filePath;
-    // TODO: change to generate markup from pages divs only -> how? I don't know.
-    // refs on pages are set, I just need a way to access them and pass them to the ReactDOMServer
     var currentPages = document.getElementsByClassName('page');
     var pagesAsString = '';
     for (var div of currentPages) {
@@ -153,27 +151,71 @@ class App extends React.Component {
   }
 
   _setDocumentContent(event, data) {
-    //TODO: fix opening/rendering
-    var splitContent = data.currentContent.split('---\n');
+    //check if fileType is .mdoc
+    if (this._isMdoc(data.currentFilePath)) {
+      this._processMdocContent(data.currentContent, data.currentFilePath);
+      this._processMdocMetadata(data.currentContent);
+      this._setFilePath(SET_FILE_PATH, data.currentFilePath);
+    } else {
+      // does not set/clears filePath to avoid metadata conflicts when saving,
+      // otherwise the markdoc metadata would be saved to any text file
+      this._showContent(data.currentContent);
+      this._setFilePath(SET_FILE_PATH, '');
+    }
+  }
+
+  _processMdocContent(currentContent, currentFilePath) {
+    // prepare editor content
+    var editorContent = currentContent.slice(4, currentContent.size);
+    console.log(editorContent);
+    var indexOfMetadataEnd = editorContent.indexOf('---\n');
+
+    // slice off metadata to get editor Content
+    editorContent = editorContent.slice(
+      indexOfMetadataEnd + 4,
+      editorContent.size
+    );
+    this._showContent(editorContent);
+  }
+
+  _processMdocMetadata(currentContent) {
+    // split metadata off currentContent
+    var splitContent = currentContent.split('---\n');
     console.log(splitContent);
+
+    // split metadata lines
     var splitMetadata = splitContent[1].split('\n');
     console.log(splitMetadata);
-    var editorContent = '';
-    for (var i = 2; i < splitContent.length; i++) {
-      editorContent = editorContent.concat(splitContent[i]);
-    }
-    console.log(editorContent);
+
+    // set sidebar Content
+    this._setSidebarContent(splitMetadata);
+  }
+
+  _showContent(editorContent) {
     Actions.setMarkdown(editorContent);
     Actions.setHTML();
-    this.setState({
-      filePath: data.currentFilePath
-    });
+  }
+
+  _setSidebarContent(splitMetadata) {
+    //TODO:
   }
 
   _setFilePath(event, data) {
     this.setState({
       filePath: data
     });
+  }
+
+  _isMdoc(currentFilePath) {
+    var fileExtension = currentFilePath.slice(
+      currentFilePath.indexOf('.'),
+      currentFilePath.size
+    );
+    if (fileExtension === '.mdoc') {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   render() {

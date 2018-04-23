@@ -38,7 +38,6 @@ function openFileDialog() {
           return;
         }
 
-        setFilePath(currentFilePath, currentWindow.id);
         currentWindow.send(OPEN_FILE_FROM_PATH, {
           currentFilePath,
           currentContent
