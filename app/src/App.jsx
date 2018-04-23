@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { ipcRenderer } from 'electron';
+import moment from 'moment';
 import './styles/App.sass';
 import './styles/Preview.scss';
 import './styles/reset.scss';
@@ -23,6 +24,7 @@ import TitleBar from './components/Titlebar.jsx';
 import Store from './stores/Store.js';
 import PageStore from './stores/PagesStore.js';
 import * as Actions from './actions/Actions';
+import * as SidebarActions from './actions/SidebarActions';
 
 // Old
 //var marked = require('marked');
@@ -180,11 +182,13 @@ class App extends React.Component {
 
   _processMdocMetadata(currentContent) {
     // split metadata off currentContent
-    var splitContent = currentContent.split('---\n');
-    console.log(splitContent);
+    var splitContent = currentContent.replace(/[\"\']/g, '').split('---\n');
+    console.log(splitContent[1]);
 
     // split metadata lines
     var splitMetadata = splitContent[1].split('\n');
+    // remove last empty array element
+    splitMetadata.splice(splitMetadata.length - 1, 1);
     console.log(splitMetadata);
 
     // set sidebar Content
@@ -197,7 +201,62 @@ class App extends React.Component {
   }
 
   _setSidebarContent(splitMetadata) {
-    //TODO:
+    for (var metString of splitMetadata) {
+      var tempMetString = metString.split(': ');
+      console.log('tempMetString: ' + tempMetString);
+      switch (tempMetString[0]) {
+        case 'hasTitlepage':
+          console.log(tempMetString[1]);
+          SidebarActions.setHasTitlepage(tempMetString[1]);
+          break;
+        case 'hasHeader':
+          console.log(tempMetString[1]);
+          SidebarActions.setHasHeader(tempMetString[1]);
+          break;
+        case 'hasFooter':
+          console.log(tempMetString[1]);
+          SidebarActions.setHasFooter(tempMetString[1]);
+          break;
+        case 'title':
+          console.log(tempMetString[1]);
+          SidebarActions.setTitle(tempMetString[1]);
+          break;
+        case 'author':
+          console.log(tempMetString[1]);
+          SidebarActions.setAuthor(tempMetString[1]);
+          break;
+        case 'date':
+          console.log(tempMetString[1]);
+          SidebarActions.setDate(moment(tempMetString[1]));
+          break;
+        case 'headerLeft':
+          console.log(tempMetString[1]);
+          SidebarActions.setHeaderLeft(tempMetString[1]);
+          break;
+        case 'headerMiddle':
+          console.log(tempMetString[1]);
+          SidebarActions.setHeaderMiddle(tempMetString[1]);
+          break;
+        case 'headerRight':
+          console.log(tempMetString[1]);
+          SidebarActions.setHeaderRight(tempMetString[1]);
+          break;
+        case 'footerLeft':
+          console.log(tempMetString[1]);
+          SidebarActions.setFooterLeft(tempMetString[1]);
+          break;
+        case 'footerMiddle':
+          console.log(tempMetString[1]);
+          SidebarActions.setFooterMiddle(tempMetString[1]);
+          break;
+        case 'footerRight':
+          console.log(tempMetString[1]);
+          SidebarActions.setFooterRight(tempMetString[1]);
+          break;
+        default:
+          break;
+      }
+    }
   }
 
   _setFilePath(event, data) {
