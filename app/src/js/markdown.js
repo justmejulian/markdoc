@@ -41,12 +41,12 @@ class Lexer {
         /^(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
       ),
       new Token(IMAGE, /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/),
-      new Token(CODEBLOCK, /^```/),
+      new Token(CODEBLOCK, /^\n```/),
       new Token(CODE, /^`/).escapable(),
-      new Token(INDENT, /^(    |\t)/),
-      new Token(TOC, /^\[TOC\]/),
-      new Token(TOF, /^\[TOF\]/),
-      new Token(PAGEBREAK, /^\[PB\]/),
+      new Token(INDENT, /^\n(    |\t)+/),
+      new Token(TOC, /^\n\[TOC\]/),
+      new Token(TOF, /^\n\[TOF\]/),
+      new Token(PAGEBREAK, /\n^\[PB\]/),
       new Token(LATEX, /^\$/),
       new Token(LATEXBLOCK, /^\$\$/),
       new Token(ESCAPE, /^\\/)
