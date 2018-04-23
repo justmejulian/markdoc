@@ -60,7 +60,7 @@ ipcMain.on(GET_HTML_CONTENT, (event, arg) => {
 });
 
 ipcMain.on(GET_PDF_CONTENT, (event, arg) => {
-  exportAsPdf(arg.currentFilePath, arg.currentWindow, arg.currentPages);
+  exportAsPdf(arg.currentFilePath, arg.currentWindow, arg.pagesAsString);
 });
 
 // Quit when all windows are closed => non-macOS only

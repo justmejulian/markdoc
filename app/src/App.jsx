@@ -91,12 +91,19 @@ class App extends React.Component {
     var currentFilePath = this.state.filePath;
     // TODO: change to generate markup from pages divs only -> how? I don't know.
     // refs on pages are set, I just need a way to access them and pass them to the ReactDOMServer
-    var currentPages = ReactDOMServer.renderToStaticMarkup(<Preview />);
-    console.log(currentPages);
+    var currentPages = document.getElementsByClassName('page');
+    var pagesAsString = '';
+    for (var div of currentPages) {
+      pagesAsString = pagesAsString.concat(
+        new XMLSerializer().serializeToString(div)
+      );
+    }
+
+    console.log('Test: ' + pagesAsString);
     ipcRenderer.send(GET_PDF_CONTENT, {
       currentWindow,
       currentFilePath,
-      currentPages
+      pagesAsString
     });
   }
 
@@ -147,8 +154,17 @@ class App extends React.Component {
 
   _setDocumentContent(event, data) {
     //TODO: fix opening/rendering
-    Actions.setHTML(data.currentContent);
-    //TODO: parse markdown metadata
+    var splitContent = data.currentContent.split('---\n');
+    console.log(splitContent);
+    var splitMetadata = splitContent[1].split('\n');
+    console.log(splitMetadata);
+    var editorContent = '';
+    for (var i = 2; i < splitContent.length; i++) {
+      editorContent = editorContent.concat(splitContent[i]);
+    }
+    console.log(editorContent);
+    Actions.setMarkdown(editorContent);
+    Actions.setHTML();
     this.setState({
       filePath: data.currentFilePath
     });

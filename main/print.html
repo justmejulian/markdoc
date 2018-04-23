@@ -1,9 +1,10 @@
 <head>
+  <link rel="stylesheet" href="../app/build/style.css">
 </head>
 <body>
-<div id="preview">
+<div id="content">
   <script>
-    var preview = document.getElementById("preview");
+    var preview = document.getElementById("content");
     const ipcRenderer = require('electron').ipcRenderer;
     ipcRenderer.on('printPDF', (event, currentPages) => {
       preview.innerHTML = currentPages;
