@@ -64,7 +64,7 @@ class App extends React.Component {
   _getDocumentContent(event, data) {
     var currentWindow = require('electron').remote.getCurrentWindow().id;
     var currentFilePath = this.state.filePath;
-    var currentContent = PageStore.getMarkdown();
+    var currentContent = this._prepareMDOC();
     ipcRenderer.send(GET_DOCUMENT_CONTENT, {
       currentWindow,
       currentFilePath,
@@ -95,6 +95,50 @@ class App extends React.Component {
       currentFilePath,
       currentPages
     });
+  }
+
+  _prepareMDOC() {
+    return (
+      '---\n' +
+      'hasTitlepage: "' +
+      Store.getHasTitlepage() +
+      '"\n' +
+      'hasHeader: "' +
+      Store.getHasHeader() +
+      '"\n' +
+      'hasFooter: "' +
+      Store.getHasFooter() +
+      '"\n' +
+      'title: "' +
+      Store.getTitle() +
+      '"\n' +
+      'author: "' +
+      Store.getAuthor() +
+      '"\n' +
+      'date: "' +
+      Store.getDate() +
+      '"\n' +
+      'headerLeft: "' +
+      Store.getHeaderLeft() +
+      '"\n' +
+      'headerMiddle: "' +
+      Store.getHeaderMiddle() +
+      '"\n' +
+      'headerRight: "' +
+      Store.getHeaderRight() +
+      '"\n' +
+      'footerLeft: "' +
+      Store.getFooterLeft() +
+      '"\n' +
+      'footerMiddle: "' +
+      Store.getFooterMiddle() +
+      '"\n' +
+      'footerRight: "' +
+      Store.getFooterRight() +
+      '"\n' +
+      '---\n' +
+      PageStore.getMarkdown()
+    );
   }
 
   _setDocumentContent(event, data) {
