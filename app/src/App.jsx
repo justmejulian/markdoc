@@ -227,7 +227,7 @@ class App extends React.Component {
           break;
         case 'date':
           console.log(tempMetString[1]);
-          SidebarActions.setDate(moment(tempMetString[1]));
+          SidebarActions.setDate(moment(this._prepareDate(tempMetString[1])));
           break;
         case 'headerLeft':
           console.log(tempMetString[1]);
@@ -275,6 +275,11 @@ class App extends React.Component {
     } else {
       return false;
     }
+  }
+
+  _prepareDate(strDate) {
+    var splitDate = strDate.split('/');
+    return splitDate[2] + '-' + splitDate[1] + '-' + splitDate[0];
   }
 
   render() {
