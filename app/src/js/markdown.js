@@ -1,68 +1,203 @@
 'use strict';
 
-const BOF = 'BOF';
-const EOF = 'EOF';
-const NEWLINE = 'Newline';
 const HEADER = 'Header';
-const BOLD = 'Bold';
-const ITALICS = 'Italics';
-const STRIKETHROUGH = 'Strikethrough';
+const PARAGRAPH = 'Paragraph';
 const BLOCKQUOTE = 'Blockquote';
 const NUMBEREDLIST = 'NumberedList';
 const UNNUMBEREDLIST = 'UnnumberedList';
+const CODEBLOCKSTART = 'Codeblockstart';
+const CODEBLOCKEND = 'Codeblockend';
+const LATEXBLOCKSTART = 'LaTeXBlockStart';
+const LATEXBLOCKEND = 'LaTeXBlockEnd';
 const RULE = 'Rule';
-const LINK = 'Link';
-const IMAGE = 'Image';
-const CODE = 'Code';
-const CODEBLOCK = 'Codeblock';
-const INDENT = 'Indentation';
 const TOC = 'TOC';
 const TOF = 'TOF';
 const PAGEBREAK = 'Pagebreak';
-const LATEX = 'LaTeX';
-const LATEXBLOCK = 'LaTeXBlock';
-const ESCAPE = 'Escape';
+const NEWLINE = 'Newline';
 const TEXT = 'Text';
+const BOLD = 'Bold';
+const ITALICS = 'Italics';
+const STRIKETHROUGH = 'Strikethrough';
+const LATEXTOGGLE = 'LaTeX';
+const CODETOGGLE = 'Code';
+const LINK = 'Link';
+const IMAGE = 'Image';
+
+class InputStream {
+  constructor(string) {
+    this.input = string;
+    this.line = 0;
+    this.col = 0;
+  }
+  next() {
+    var ch = this.input.charAt(pos++);
+    if (ch == '\n') {
+      this.line++;
+      this.col = 0;
+    } else {
+      this.col++;
+    }
+    return ch;
+  }
+  peek() {
+    return this.input.charAt(pos);
+  }
+  eof() {
+    return peek() == '';
+  }
+  croak(msg) {
+    throw new Error(msg + ' (' + this.line + ':' + this.col + ')');
+  }
+}
+
+class TokenStream {
+  constructor(inputStream) {
+    this.input = inputStream;
+  }
+  is_keyword(x) {
+    return keywords.indexOf(' ' + x + ' ') >= 0;
+  }
+  is_digit(ch) {
+    return /[0-9]/i.test(ch);
+  }
+  is_id_start(ch) {
+    return /[a-zλ_]/i.test(ch);
+  }
+  is_id(ch) {
+    return is_id_start(ch) || '?!-<>=0123456789'.indexOf(ch) >= 0;
+  }
+  is_op_char(ch) {
+    return '+-*/%=&|<>!'.indexOf(ch) >= 0;
+  }
+  is_punc(ch) {
+    return ',;(){}[]'.indexOf(ch) >= 0;
+  }
+  is_whitespace(ch) {
+    return ' \t\n'.indexOf(ch) >= 0;
+  }
+  read_while(predicate) {
+    var str = '';
+    while (!input.eof() && predicate(input.peek())) str += input.next();
+    return str;
+  }
+  read_number() {
+    var has_dot = false;
+    var number = read_while(function(ch) {
+      if (ch == '.') {
+        if (has_dot) return false;
+        has_dot = true;
+        return true;
+      }
+      return is_digit(ch);
+    });
+    return { type: 'num', value: parseFloat(number) };
+  }
+  read_ident() {
+    var id = read_while(is_id);
+    return {
+      type: is_keyword(id) ? 'kw' : 'var',
+      value: id
+    };
+  }
+  read_escaped(end) {
+    var escaped = false,
+      str = '';
+    input.next();
+    while (!input.eof()) {
+      var ch = input.next();
+      if (escaped) {
+        str += ch;
+        escaped = false;
+      } else if (ch == '\\') {
+        escaped = true;
+      } else if (ch == end) {
+        break;
+      } else {
+        str += ch;
+      }
+    }
+    return str;
+  }
+  read_string() {
+    return { type: 'str', value: read_escaped('"') };
+  }
+  skip_comment() {
+    read_while(function(ch) {
+      return ch != '\n';
+    });
+    input.next();
+  }
+  read_next() {
+    if (input.eof()) return null;
+    var ch = input.peek();
+    if (ch == '$') {
+      skip_comment();
+      return read_next();
+    }
+    if (ch == '"') return read_string();
+    if (is_digit(ch)) return read_number();
+    if (is_id_start(ch)) return read_ident();
+    if (is_punc(ch))
+      return {
+        type: 'punc',
+        value: input.next()
+      };
+    if (is_op_char(ch))
+      return {
+        type: 'op',
+        value: read_while(is_op_char)
+      };
+    input.croak("Can't handle character: " + ch);
+  }
+  peek() {
+    return current || (current = read_next());
+  }
+  next() {
+    var tok = current;
+    current = null;
+    return tok || read_next();
+  }
+  eof() {
+    return peek() == null;
+  }
+}
 
 class Lexer {
   static tokenize(string) {
     var tokens = [
-      new Token(NEWLINE, /^\n/),
-      new Token(HEADER, /^#{1,6}\s/),
-      new Token(BOLD, /^\*\*/).escapable(),
-      new Token(ITALICS, /^_/).escapable(),
-      new Token(STRIKETHROUGH, /^~~/).escapable(),
-      new Token(BLOCKQUOTE, /^> /),
-      new Token(NUMBEREDLIST, /^\d+?\. /),
-      new Token(UNNUMBEREDLIST, /^\* /),
-      new Token(RULE, /^(\*\*\*|---|___)\s*/).escapable(),
+      new Token(HEADER, /^\n#{1,6}\s/),
+      new Token(BOLD, /^\*\*/),
+      new Token(ITALICS, /^_/),
+      new Token(STRIKETHROUGH, /^~~/),
+      new Token(BLOCKQUOTE, /^\n> /),
+      new Token(NUMBEREDLIST, /^\n(    |\t)*\d+?\.\s/),
+      new Token(UNNUMBEREDLIST, /^\n(    |\t)*\*\s/),
+      new Token(RULE, /^\n(\*\*\*|---|___)\n*/),
       new Token(
         LINK,
         /^(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
       ),
       new Token(IMAGE, /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/),
-      new Token(CODEBLOCK, /^\n```/),
-      new Token(CODE, /^`/).escapable(),
-      new Token(INDENT, /^\n(    |\t)+/),
-      new Token(TOC, /^\n\[TOC\]/),
-      new Token(TOF, /^\n\[TOF\]/),
-      new Token(PAGEBREAK, /\n^\[PB\]/),
-      new Token(LATEX, /^\$/),
-      new Token(LATEXBLOCK, /^\$\$/),
-      new Token(ESCAPE, /^\\/)
+      new Token(CODEBLOCKSTART, /^\n```/),
+      new Token(CODEBLOCKEND, /^```\n/),
+      new Token(CODETOGGLE, /^`/),
+      new Token(TOC, /^\n\[TOC\]\n/),
+      new Token(TOF, /^\n\[TOF\]\n/),
+      new Token(PAGEBREAK, /^\n\[PB\]\n/),
+      new Token(LATEXTOGGLE, /^\$/),
+      new Token(LATEXBLOCKSTART, /^\n\$\$/),
+      new Token(LATEXBLOCKEND, /^\$\$\n/),
+      new Token(PARAGRAPH, /^\n(?=[^\s])/),
+      new Token(NEWLINE, /^\n/)
     ];
-    var out = [new Token(BOF)];
+    var out = [];
     var foundToken = false;
     var escaped = false;
+    string = '\n' + string + '\n';
     while (string.length) {
       for (const token of tokens) {
         if (token.test(string, escaped)) {
           var newToken = token.createNew();
-          if (token.type === ESCAPE) {
-            escaped = true;
-            break;
-          }
-          escaped = false;
           string = newToken.apply(string);
           out.push(newToken);
           foundToken = true;
@@ -81,7 +216,7 @@ class Lexer {
         }
       }
     }
-    out.push(new Token(EOF));
+    if (out[out.length - 1].type == NEWLINE) out.pop();
     return out;
   }
 }
@@ -108,11 +243,27 @@ class Token {
   createNew() {
     return new Token(this.type, this.pattern);
   }
+  getRows() {
+    return this.value.match(/\n/).length;
+  }
+  getColumns() {
+    var split = this.value.split('\n');
+    return split[split.length - 1].length;
+  }
+  containsNewline() {
+    return this.value.test(/\n/);
+  }
 }
 
 class Parser {
   static parse(tokens) {
     var availableComponents = [
+      new MDHeader(),
+      new MDParagraph(),
+      new MDBlockQuote(),
+      new MDCodeBlock(),
+      new MDOrderedList(),
+      new MDBulletList(),
       new MDText(),
       new MDTextBold(),
       new MDTextItalics(),
@@ -120,33 +271,31 @@ class Parser {
       new MDTextLaTeX(),
       new MDLink(),
       new MDImage(),
-      new MDHeader(),
-      new MDParagraph(),
-      new MDOrderedList(),
-      new MDBulletList(),
       new MDItem(),
-      new MDBlockQuote(),
-      new MDCodeBlock(),
       new MDThematicBreak(),
       new MDTOC(),
       new MDTOF(),
       new MDPageBreak()
     ];
-    var column = 0;
+    const header = new MDHeader();
     var row = 0;
+    var column = 0;
+    var out = [];
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
-      if (token.type == NEWLINE) {
-        row++;
+      var newRows = token.getRows();
+      if (newRows != 0) {
+        row += newRows;
         column = 0;
-      } else {
-        column += token.value.length;
       }
-      for (const component of availableComponents) {
-        if (component.match(tokens, index)) {
-          // Found beginning of a new component
-          var matched = component.createNew();
-        }
+      column += token.getColumns();
+      switch (token.type) {
+        case HEADER:
+          out.push(header.createNew());
+          break;
+
+        default:
+          break;
       }
     }
   }
