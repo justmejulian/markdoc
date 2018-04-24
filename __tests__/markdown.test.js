@@ -93,7 +93,7 @@ describe('Markdown parser', () => {
     expect(header.to.row).toEqual(1);
     expect(header.to.column).toEqual(14);
   });
-  if (
+  it(
     ('should parse one TOC and only one',
     () => {
       var dom = MDDOM.parse('# Header\n' + '[TOC]\n' + '\n' + '[TOC]');
@@ -106,7 +106,7 @@ describe('Markdown parser', () => {
       expect(dom.toc.children.length).toEqual(1);
     })
   );
-  if (
+  it(
     ('should parse one TOF and only one',
     () => {
       var dom = MDDOM.parse(
@@ -121,4 +121,11 @@ describe('Markdown parser', () => {
       expect(dom.tof.children.length).toEqual(1);
     })
   );
+  it('should parse LaTeX code directly to HTML', () => {
+    var dom = MDDOM.parse(
+      'Inline math: $x=a\\cdot\\dot{x}$ as well as:\n\n' +
+        '$$\\mathcal L\\left(\\int_a^\\infty f(g)\\right)$$'
+    );
+    expect(dom.children[1].toHtml()).toContain('katex');
+  });
 });

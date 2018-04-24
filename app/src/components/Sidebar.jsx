@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
 
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 import * as SidebarActions from '../actions/SidebarActions';
 
 export default class Sidebar extends Component {
@@ -16,11 +16,19 @@ export default class Sidebar extends Component {
     this.handleFieldChange = target => this._handleFieldChange(target);
     this.handleExpandOrCollapse = () => this._handleExpandOrCollapse();
     this.handleMouseHover = () => this._handleMouseHover();
+
+    // Setter
+    this.setHasTitlepage = this._setHasTitlepage.bind(this);
+    this.setHasHeader = this._setHasHeader.bind(this);
+    this.setHasFooter = this._setHasFooter.bind(this);
+    this.setHeaderInfo = this._setHeaderInfo.bind(this);
+    this.setFooterInfo = this._setFooterInfo.bind(this);
+
     this.state = {
       isCollapsed: true,
-      hasTitlepage: Store.getHasTitlepage(),
-      hasHeader: Store.getHasHeader(),
-      hasFooter: Store.getHasFooter(),
+      hasTitlepage: SidebarStore.getHasTitlepage(),
+      hasHeader: SidebarStore.getHasHeader(),
+      hasFooter: SidebarStore.getHasFooter(),
       title: '',
       author: '',
       date: moment(),
@@ -32,6 +40,57 @@ export default class Sidebar extends Component {
       footerRight: '',
       isHovering: false
     };
+  }
+
+  componentWillMount() {
+    SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
+    SidebarStore.on('hasHeader_changed', this.setHasHeader);
+    SidebarStore.on('hasFooter_changed', this.setHasFooter);
+    SidebarStore.on('Header_changed', this.setHeaderInfo);
+    SidebarStore.on('Footer_changed', this.setFooterInfo);
+  }
+
+  // Unbind change listener
+  componentWillUnmount() {
+    SidebarStore.removeListener('hasTitlepage_changed', this.setHasTitlepage);
+    SidebarStore.removeListener('hasHeader_changed', this.setHasHeader);
+    SidebarStore.removeListener('hasFooter_changed', this.setHasFooter);
+    SidebarStore.removeListener('Header_changed', this.setHeaderInfo);
+    SidebarStore.removeListener('Footer_changed', this.setFooterInfo);
+  }
+
+  _setHasTitlepage() {
+    this.setState({
+      setHasTitlepage: SidebarStore.getHasTitlepage()
+    });
+  }
+
+  _setHasHeader() {
+    this.setState({
+      hasHeader: SidebarStore.getHasHeader()
+    });
+  }
+
+  _setHasFooter() {
+    this.setState({
+      hasFooter: SidebarStore.getHasFooter()
+    });
+  }
+
+  _setHeaderInfo() {
+    this.setState({
+      headerLeft: SidebarStore.getHeaderLeft(),
+      headerMiddle: SidebarStore.getHeaderMiddle(),
+      headerRight: SidebarStore.getHeaderRight()
+    });
+  }
+
+  _setFooterInfo() {
+    this.setState({
+      footerLeft: SidebarStore.getFooterLeft(),
+      footerMiddle: SidebarStore.getFooterMiddle(),
+      footerRight: SidebarStore.getFooterRight()
+    });
   }
 
   _handleDateChange(date) {

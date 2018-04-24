@@ -21,7 +21,7 @@ import Sidebar from './components/Sidebar.jsx';
 import Editor from './components/Editor.jsx';
 import Preview from './components/Preview.jsx';
 import TitleBar from './components/Titlebar.jsx';
-import Store from './stores/Store.js';
+import SidebarStore from './stores/SidebarStore.js';
 import PageStore from './stores/PagesStore.js';
 import * as Actions from './actions/Actions';
 import * as SidebarActions from './actions/SidebarActions';
