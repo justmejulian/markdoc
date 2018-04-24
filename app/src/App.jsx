@@ -14,7 +14,7 @@ import {
 } from '../utils/constants';
 
 import Sidebar from './components/Sidebar.jsx';
-import MyEditor from './components/MyEditor.jsx';
+import Editor from './components/Editor.jsx';
 import Preview from './components/Preview.jsx';
 import TitleBar from './components/Titlebar.jsx';
 import SidebarStore from './stores/SidebarStore.js';
@@ -83,7 +83,7 @@ class App extends React.Component {
       <div>
         <Sidebar />
         <TitleBar />
-        <MyEditor />
+        <Editor />
         <Preview />
       </div>
     );
