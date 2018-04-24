@@ -14,10 +14,10 @@ import {
 } from '../utils/constants';
 
 import Sidebar from './components/Sidebar.jsx';
-import Editor from './components/Editor.jsx';
+import MyEditor from './components/MyEditor.jsx';
 import Preview from './components/Preview.jsx';
 import TitleBar from './components/Titlebar.jsx';
-import Store from './stores/Store.js';
+import SidebarStore from './stores/SidebarStore.js';
 import PageStore from './stores/PagesStore.js';
 import * as Actions from './actions/Actions';
 
@@ -83,7 +83,7 @@ class App extends React.Component {
       <div>
         <Sidebar />
         <TitleBar />
-        <Editor />
+        <MyEditor />
         <Preview />
       </div>
     );

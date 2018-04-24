@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 
 class Header extends React.Component {
   constructor(props) {
     super();
     this.getHeaderInfo = this.getHeaderInfo.bind(this);
     this.state = {
-      headerLeft: Store.getHeaderLeft(),
-      headerMiddle: Store.getHeaderMiddle(),
-      headerRight: Store.getHeaderRight(),
+      headerLeft: SidebarStore.getHeaderLeft(),
+      headerMiddle: SidebarStore.getHeaderMiddle(),
+      headerRight: SidebarStore.getHeaderRight(),
       pageNumber: props.pageNumber + 1
     };
   }
@@ -20,19 +20,19 @@ class Header extends React.Component {
   }
 
   componentWillMount() {
-    Store.on('Header_changed', this.getHeaderInfo);
+    SidebarStore.on('Header_changed', this.getHeaderInfo);
   }
 
   // Unbind change listener
   componentWillUnmount() {
-    Store.removeListener('Header_changed', this.getHeaderInfo);
+    SidebarStore.removeListener('Header_changed', this.getHeaderInfo);
   }
 
   getHeaderInfo() {
     this.setState({
-      headerLeft: Store.getHeaderLeft(),
-      headerMiddle: Store.getHeaderMiddle(),
-      headerRight: Store.getHeaderRight()
+      headerLeft: SidebarStore.getHeaderLeft(),
+      headerMiddle: SidebarStore.getHeaderMiddle(),
+      headerRight: SidebarStore.getHeaderRight()
     });
   }
 

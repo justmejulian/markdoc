@@ -1,35 +1,35 @@
 import React, { Component } from 'react';
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/Store.js';
 
 class Titlepage extends React.Component {
   constructor() {
     super();
     this.setInfo = this.setInfo.bind(this);
     this.state = {
-      title: Store.getTitle(),
-      author: Store.getAuthor(),
-      date: Store.getDate()
+      title: SidebarStore.getTitle(),
+      author: SidebarStore.getAuthor(),
+      date: SidebarStore.getDate()
     };
   }
 
   componentWillMount() {
-    Store.on('Title_changed', this.setInfo);
-    Store.on('Author_changed', this.setInfo);
-    Store.on('Date_changed', this.setInfo);
+    SidebarStore.on('Title_changed', this.setInfo);
+    SidebarStore.on('Author_changed', this.setInfo);
+    SidebarStore.on('Date_changed', this.setInfo);
   }
 
   setInfo() {
     this.setState({
-      title: Store.getTitle(),
-      author: Store.getAuthor(),
-      date: Store.getDate()
+      title: SidebarStore.getTitle(),
+      author: SidebarStore.getAuthor(),
+      date: SidebarStore.getDate()
     });
   }
 
   componentWillUnmount() {
-    Store.removeListener('Title_changed', this.setInfo);
-    Store.removeListener('Author_changed', this.setInfo);
-    Store.removeListener('Date_changed', this.setInfo);
+    SidebarStore.removeListener('Title_changed', this.setInfo);
+    SidebarStore.removeListener('Author_changed', this.setInfo);
+    SidebarStore.removeListener('Date_changed', this.setInfo);
   }
 
   getStyle() {

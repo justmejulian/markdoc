@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 
 class Footer extends React.Component {
   constructor() {
     super();
     this.getFooterInfo = this.getFooterInfo.bind(this);
     this.state = {
-      footerLeft: Store.getFooterLeft(),
-      footerMiddle: Store.getFooterMiddle(),
-      footerRight: Store.getFooterRight(),
+      footerLeft: SidebarStore.getFooterLeft(),
+      footerMiddle: SidebarStore.getFooterMiddle(),
+      footerRight: SidebarStore.getFooterRight(),
       pageNumber: ''
     };
   }
@@ -20,18 +20,18 @@ class Footer extends React.Component {
   }
 
   componentWillMount() {
-    Store.on('Footer_changed', this.getFooterInfo);
+    SidebarStore.on('Footer_changed', this.getFooterInfo);
   }
 
   componentWillUnmount() {
-    Store.removeListener('Footer_changed', this.getFooterInfo);
+    SidebarStore.removeListener('Footer_changed', this.getFooterInfo);
   }
 
   getFooterInfo() {
     this.setState({
-      footerLeft: Store.getFooterLeft(),
-      footerMiddle: Store.getFooterMiddle(),
-      footerRight: Store.getFooterRight()
+      footerLeft: SidebarStore.getFooterLeft(),
+      footerMiddle: SidebarStore.getFooterMiddle(),
+      footerRight: SidebarStore.getFooterRight()
     });
   }
 

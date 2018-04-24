@@ -21,6 +21,7 @@
     "babel-preset-react": "^6.23.0",
     "commonmark": "^0.28.1",
     "css-loader": "^0.28.10",
+    "draft-js": "^0.10.5",
     "electron": "^1.4.15",
     "electron-devtools-installer": "^2.2.3",
     "electron-reload": "^1.1.0",

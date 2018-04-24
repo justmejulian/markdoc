@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Page from './Page.jsx';
 import Titlepage from './Titlepage.jsx';
 import PagesStore from '../stores/PagesStore.js';
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 
 class Preview extends React.Component {
   constructor(props) {
@@ -16,24 +16,24 @@ class Preview extends React.Component {
       words: [],
       currentWord: 0,
       currentPage: 0,
-      hasTitlepage: Store.getHasTitlepage(),
+      hasTitlepage: SidebarStore.getHasTitlepage(),
       zoom: 1
     };
   }
 
   componentWillMount() {
     PagesStore.on('HTML_changed', this.setPreview);
-    Store.on('hasTitlepage_changed', this.setHasTitlepage);
+    SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
   }
 
   componentWillUnmount() {
     PagesStore.removeListener('HTML_changed', this.setPreview);
-    Store.removeListener('hasTitlepage_changed', this.setHasTitlepage);
+    SidebarStore.removeListener('hasTitlepage_changed', this.setHasTitlepage);
   }
 
   setHasTitlepage() {
     this.setState({
-      hasTitlepage: Store.getHasTitlepage()
+      hasTitlepage: SidebarStore.getHasTitlepage()
     });
   }
 
