@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import SidebarStore from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 
 class Titlepage extends React.Component {
   constructor() {
@@ -18,18 +18,18 @@ class Titlepage extends React.Component {
     SidebarStore.on('Date_changed', this.setInfo);
   }
 
+  componentWillUnmount() {
+    SidebarStore.removeListener('Title_changed', this.setInfo);
+    SidebarStore.removeListener('Author_changed', this.setInfo);
+    SidebarStore.removeListener('Date_changed', this.setInfo);
+  }
+
   setInfo() {
     this.setState({
       title: SidebarStore.getTitle(),
       author: SidebarStore.getAuthor(),
       date: SidebarStore.getDate()
     });
-  }
-
-  componentWillUnmount() {
-    SidebarStore.removeListener('Title_changed', this.setInfo);
-    SidebarStore.removeListener('Author_changed', this.setInfo);
-    SidebarStore.removeListener('Date_changed', this.setInfo);
   }
 
   getStyle() {

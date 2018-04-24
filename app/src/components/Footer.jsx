@@ -4,7 +4,7 @@ import SidebarStore from '../stores/SidebarStore.js';
 class Footer extends React.Component {
   constructor() {
     super();
-    this.getFooterInfo = this.getFooterInfo.bind(this);
+    this.setFooterInfo = this.setFooterInfo.bind(this);
     this.state = {
       footerLeft: SidebarStore.getFooterLeft(),
       footerMiddle: SidebarStore.getFooterMiddle(),
@@ -20,14 +20,14 @@ class Footer extends React.Component {
   }
 
   componentWillMount() {
-    SidebarStore.on('Footer_changed', this.getFooterInfo);
+    SidebarStore.on('Footer_changed', this.setFooterInfo);
   }
 
   componentWillUnmount() {
-    SidebarStore.removeListener('Footer_changed', this.getFooterInfo);
+    SidebarStore.removeListener('Footer_changed', this.setFooterInfo);
   }
 
-  getFooterInfo() {
+  setFooterInfo() {
     this.setState({
       footerLeft: SidebarStore.getFooterLeft(),
       footerMiddle: SidebarStore.getFooterMiddle(),

@@ -18,9 +18,11 @@ export default class Sidebar extends Component {
     this.handleMouseHover = () => this._handleMouseHover();
 
     // Setter
-    this.setHasTitlepage = this._setHasTitlepage();
-    this.setHasHeader = this.setHasHeader.bind(this);
-    this.setHasFooter = this.setHasFooter.bind(this);
+    this.setHasTitlepage = this._setHasTitlepage.bind(this);
+    this.setHasHeader = this._setHasHeader.bind(this);
+    this.setHasFooter = this._setHasFooter.bind(this);
+    this.setHeaderInfo = this._setHeaderInfo.bind(this);
+    this.setFooterInfo = this._setFooterInfo.bind(this);
 
     this.state = {
       isCollapsed: true,
@@ -42,31 +44,50 @@ export default class Sidebar extends Component {
 
   componentWillMount() {
     SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
-    SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
-    SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
     SidebarStore.on('hasHeader_changed', this.setHasHeader);
     SidebarStore.on('hasFooter_changed', this.setHasFooter);
+    SidebarStore.on('Header_changed', this.setHeaderInfo);
+    SidebarStore.on('Footer_changed', this.setFooterInfo);
   }
 
   // Unbind change listener
   componentWillUnmount() {
+    SidebarStore.removeListener('hasTitlepage_changed', this.setHasTitlepage);
     SidebarStore.removeListener('hasHeader_changed', this.setHasHeader);
     SidebarStore.removeListener('hasFooter_changed', this.setHasFooter);
+    SidebarStore.removeListener('Header_changed', this.setHeaderInfo);
+    SidebarStore.removeListener('Footer_changed', this.setFooterInfo);
   }
 
   _setHasTitlepage() {
     this.setState({ [field]: [data] });
   }
 
-  setHasHeader() {
+  _setHasHeader() {
     this.setState({
       hasHeader: SidebarStore.getHasHeader()
     });
   }
 
-  setHasFooter() {
+  _setHasFooter() {
     this.setState({
       hasFooter: SidebarStore.getHasFooter()
+    });
+  }
+
+  _setHeaderInfo() {
+    this.setState({
+      headerLeft: SidebarStore.getHeaderLeft(),
+      headerMiddle: SidebarStore.getHeaderMiddle(),
+      headerRight: SidebarStore.getHeaderRight()
+    });
+  }
+
+  _setFooterInfo() {
+    this.setState({
+      footerLeft: SidebarStore.getFooterLeft(),
+      footerMiddle: SidebarStore.getFooterMiddle(),
+      footerRight: SidebarStore.getFooterRight()
     });
   }
 

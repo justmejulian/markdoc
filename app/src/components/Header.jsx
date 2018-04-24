@@ -4,7 +4,7 @@ import SidebarStore from '../stores/SidebarStore.js';
 class Header extends React.Component {
   constructor(props) {
     super();
-    this.getHeaderInfo = this.getHeaderInfo.bind(this);
+    this.setHeaderInfo = this.setHeaderInfo.bind(this);
     this.state = {
       headerLeft: SidebarStore.getHeaderLeft(),
       headerMiddle: SidebarStore.getHeaderMiddle(),
@@ -20,15 +20,15 @@ class Header extends React.Component {
   }
 
   componentWillMount() {
-    SidebarStore.on('Header_changed', this.getHeaderInfo);
+    SidebarStore.on('Header_changed', this.setHeaderInfo);
   }
 
   // Unbind change listener
   componentWillUnmount() {
-    SidebarStore.removeListener('Header_changed', this.getHeaderInfo);
+    SidebarStore.removeListener('Header_changed', this.setHeaderInfo);
   }
 
-  getHeaderInfo() {
+  setHeaderInfo() {
     this.setState({
       headerLeft: SidebarStore.getHeaderLeft(),
       headerMiddle: SidebarStore.getHeaderMiddle(),
