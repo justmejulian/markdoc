@@ -1,15 +1,19 @@
 import React, { Component } from 'react';
 import Popup from 'reactjs-popup';
 import PagesStore from '../stores/PagesStore.js';
+import * as Actions from '../actions/Actions';
 
 export default class TableMaker extends Component {
   constructor(props) {
     super(props);
     this.handleFieldChange = target => this._handleFieldChange(target);
+    this.handleCheckboxChange = target => this._handleCheckboxChange(target);
     this.createTable = () => this._createTable();
+    this.resetState = () => this._resetState();
     this.state = {
       rows: 3,
-      columns: 4
+      columns: 3,
+      topRowIsHeader: false
     };
   }
 
@@ -17,19 +21,34 @@ export default class TableMaker extends Component {
     this.setState({ [target.name]: [target.value] });
   }
 
+  _handleCheckboxChange(target) {
+    this.setState({ [target.name]: [target.checked] });
+  }
+
+  _resetState() {
+    this.setState({
+      rows: 3,
+      columns: 3,
+      topRowIsHeader: false
+    });
+  }
+
   _createTable() {
     var tableHTML = '<table>';
     for (var i = 0; i < this.state.rows; i++) {
       tableHTML = tableHTML + '<tr>';
       for (var j = 0; j < this.state.columns; j++) {
-        tableHTML =
-          tableHTML + '<td>' + 'Row ' + (i + 1) + ' Column ' + (j + 1);
+        if (this.state.topRowIsHeader && i == 0) {
+          tableHTML = tableHTML + '<th>' + (i + 1) + ':' + (j + 1) + '</th>';
+        } else {
+          tableHTML = tableHTML + '<td>' + (i + 1) + ':' + (j + 1) + '</td>';
+        }
       }
       tableHTML = tableHTML + '</tr>';
     }
     tableHTML = tableHTML + '</table>';
-    PagesStore.setMarkdown(PagesStore.getMarkdown() + tableHTML);
-    console.log(tableHTML);
+    Actions.setMarkdown(PagesStore.getMarkdown() + tableHTML);
+    this.resetState();
   }
 
   render() {
@@ -56,6 +75,13 @@ export default class TableMaker extends Component {
                 value={this.state.columns}
                 name="columns"
                 onChange={evt => this.handleFieldChange(evt.target)}
+              />
+              <p> Use top row as header </p>
+              <input
+                type="checkbox"
+                checked={this.state.topRowIsHeader}
+                name="topRowIsHeader"
+                onChange={evt => this.handleCheckboxChange(evt.target)}
               />
             </div>
             <div className="actions">
