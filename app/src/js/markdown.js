@@ -60,7 +60,7 @@ class InputStream {
 
 class TokenStream {
   constructor(inputStream) {
-    this.input = inputStream;
+    this.inputStream = inputStream;
     this.tokens = [
       new Token(HEADER, /^\n#{1,6}\s/),
       new Token(BOLD, /^\*\*/),
@@ -70,12 +70,12 @@ class TokenStream {
       new Token(NUMBEREDLIST, /^\n(    |\t)*\d+?\.\s/),
       new Token(UNNUMBEREDLIST, /^\n(    |\t)*\*\s/),
       new Token(RULE, /^\n(\*\*\*|---|___)\n*/),
+      new Token(IMAGE, /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/),
       new Token(
         LINK,
         /^(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
       ),
-      new Token(IMAGE, /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/),
-      new Token(CODEBLOCKSTART, /^\n```/),
+      new Token(CODEBLOCKSTART, /^\n```(.+?)\n/),
       new Token(CODEBLOCKEND, /^```\n/),
       new Token(CODETOGGLE, /^`/),
       new Token(TOC, /^\n\[TOC\]\n/),
@@ -89,14 +89,14 @@ class TokenStream {
     ];
   }
   _read_next() {
-    if (this.input.eof()) return null;
+    if (this.inputStream.eof()) return null;
     var match = null;
     for (const token of this.tokens) {
-      if ((match = this.input.match(token.pattern))) {
+      if ((match = this.inputStream.match(token.pattern))) {
         var newToken = token.createNew();
         newToken.match = match;
         newToken.value = match[0];
-        this.input.skip(token.pattern);
+        this.inputStream.skip(token.pattern);
         return newToken;
       }
     }
@@ -106,10 +106,10 @@ class TokenStream {
     textToken.value = '';
     var foundToken = false;
     while (!foundToken) {
-      if (this.input.eof()) break;
-      textToken.value += this.input.next();
+      if (this.inputStream.eof()) break;
+      textToken.value += this.inputStream.next();
       for (const token of this.tokens) {
-        foundToken = this.input.match(token.pattern);
+        foundToken = this.inputStream.match(token.pattern);
         if (foundToken) break;
       }
     }
@@ -126,6 +126,9 @@ class TokenStream {
   eof() {
     return this.peek() == null;
   }
+  croak(msg) {
+    this.inputStream.croak(msg);
+  }
 }
 
 class Parser {
@@ -138,19 +141,55 @@ class Parser {
   }
   parse() {
     var out = [];
-    var firstToken = this.tokenStream.peek();
-    if (firstToken == null) return out;
-    firstToken.value = firstToken.value.substr(1);
-    var token;
+    // Fix prepended newline
+    var token = this.tokenStream.peek();
+    if (token == null) return out;
+    token.value = token.value.substr(1);
+
+    var comp = null;
     while ((token = this.tokenStream.next())) {
       switch (token.type) {
         case HEADER:
-          out.push(this._parse_header(token));
+          comp = this._parse_header(token);
           break;
-
+        case PARAGRAPH:
+          comp = this._parse_paragraph(token);
+          break;
+        case BLOCKQUOTE:
+          comp = this._parse_blockquote(token);
+          break;
+        case NUMBEREDLIST:
+          comp = this._parse_numberedlist(token);
+          break;
+        case UNNUMBEREDLIST:
+          comp = this._parse_unnumberedlist(token);
+          break;
+        case CODEBLOCKSTART:
+          comp = this._parse_codeblock(token);
+          break;
+        case LATEXBLOCKSTART:
+          comp = this._parse_latexblock(token);
+          break;
+        case RULE:
+          comp = this._parse_rule(token);
+          break;
+        case TOC:
+          comp = this._parse_toc(token);
+          break;
+        case TOF:
+          comp = this._parse_tof(token);
+          break;
+        case PAGEBREAK:
+          comp = this._parse_pagebreak(token);
+          break;
+        case NEWLINE:
+          // Ignore
+          break;
         default:
+          error('Unexpected Token: ' + token.type);
           break;
       }
+      out.push(comp);
     }
     return out;
   }
@@ -158,14 +197,12 @@ class Parser {
   _parse_header(token) {
     var header = new MDHeader();
     header.level = token.value.split('#').length - 1;
-    token = this.tokenStream.next();
-    for (const sub of this._parse_text()) {
+    for (const sub of this._parse_text_line()) {
       header.add(sub);
     }
     return header;
   }
-
-  _parse_text() {
+  _parse_text_line() {
     var out = [];
     var conditions = [
       TEXT,
@@ -175,70 +212,271 @@ class Parser {
       LATEXTOGGLE,
       CODETOGGLE,
       LINK,
-      IMAGE,
-      NEWLINE
+      IMAGE
     ];
     var finished = false;
-    var daddy = null;
-    while (
-      !finished &&
-      conditions.findIndex(this.InputStream.peek().type) >= 0
-    ) {
-      var token = this.InputStream.next();
+    while (!finished && conditions.indexOf(this.tokenStream.peek().type) >= 0) {
+      var token = this.tokenStream.next();
+      var comp = null;
       switch (token.type) {
         case TEXT:
-          var comp = new MDText();
-          comp.value = token.value;
-          if (daddy) {
-            daddy.add(comp);
-          } else {
-            out.push(comp);
-          }
+          comp = this._parse_text(token);
           break;
         case BOLD:
-          var comp = this._parse_bold();
+          comp = this._parse_bold(token);
           break;
         case ITALICS:
-          var comp = this._parse_italics();
+          comp = this._parse_italics(token);
           break;
         case STRIKETHROUGH:
-          var comp = this._parse_strikethrough();
+          comp = this._parse_strikethrough(token);
           break;
         case LATEXTOGGLE:
-          var comp = this._parse_latex();
+          comp = this._parse_latex(token);
           break;
         case CODETOGGLE:
-          var comp = this._parse_inline_code();
+          comp = this._parse_inline_code(token);
           break;
         case LINK:
-          var comp = this._parse_link();
+          comp = this._parse_link(token);
           break;
         case IMAGE:
-          var comp = this._parse_image(token);
-          break;
-        case NEWLINE:
-          var comp = this._parse_newline();
+          comp = this._parse_image(token);
           break;
         default:
           finished = true;
           break;
       }
+      out.push(comp);
+      if (this.tokenStream.peek() == null) break;
     }
+    return out;
   }
-
-  _parse_bold() {}
-  _parse_italics() {}
-  _parse_strikethrough() {}
-  _parse_latex() {}
-  _parse_inline_code() {}
-  _parse_link() {}
+  _parse_text(token) {
+    var comp = new MDText();
+    comp.value = token.value;
+    return comp;
+  }
+  _parse_bold(token) {
+    var bold = new MDTextBold();
+    while ((token = this.tokenStream.peek())) {
+      var comp = null;
+      switch (token.type) {
+        case TEXT:
+          comp = this._parse_text(this.tokenStream.next());
+          break;
+        case BOLD:
+          this.tokenStream.next();
+          return bold;
+          break;
+        case ITALICS:
+          comp = this._parse_italics(this.tokenStream.next());
+          break;
+        case STRIKETHROUGH:
+          comp = this._parse_strikethrough(this.tokenStream.next());
+          break;
+        case LATEXTOGGLE:
+          comp = this._parse_latex(this.tokenStream.next());
+          break;
+        case CODETOGGLE:
+          comp = this._parse_inline_code(this.tokenStream.next());
+          break;
+        case LINK:
+          comp = this._parse_link(this.tokenStream.next());
+          break;
+        case IMAGE:
+          comp = this._parse_image(this.tokenStream.next());
+          break;
+        default:
+          error('Unexpected Token: ' + token.type);
+          break;
+      }
+      bold.add(comp);
+    }
+    this.tokenStream.croak('Unexpected end of string');
+  }
+  _parse_italics(token) {
+    var italics = new MDTextItalics();
+    while ((token = this.tokenStream.peek())) {
+      var comp = null;
+      switch (token.type) {
+        case TEXT:
+          comp = this._parse_text(this.tokenStream.next());
+          break;
+        case BOLD:
+          comp = this._parse_bold(this.tokenStream.next());
+          break;
+        case ITALICS:
+          this.tokenStream.next();
+          return italics;
+        case STRIKETHROUGH:
+          comp = this._parse_strikethrough(this.tokenStream.next());
+          break;
+        case LATEXTOGGLE:
+          comp = this._parse_latex(this.tokenStream.next());
+          break;
+        case CODETOGGLE:
+          comp = this._parse_inline_code(this.tokenStream.next());
+          break;
+        case LINK:
+          comp = this._parse_link(this.tokenStream.next());
+          break;
+        case IMAGE:
+          comp = this._parse_image(this.tokenStream.next());
+          break;
+        default:
+          this.tokenStream.croak('Unexpected Token: ' + token.type);
+          break;
+      }
+      italics.add(comp);
+    }
+    this.tokenStream.croak('Unexpected end of string');
+  }
+  _parse_strikethrough(token) {
+    var strike = new MDTextStrikethrough();
+    while ((token = this.tokenStream.peek())) {
+      var comp = null;
+      switch (token.type) {
+        case TEXT:
+          comp = this._parse_text(this.tokenStream.next());
+          break;
+        case BOLD:
+          comp = this._parse_bold(this.tokenStream.next());
+          break;
+        case ITALICS:
+          comp = this._parse_italics(this.tokenStream.next());
+          break;
+        case STRIKETHROUGH:
+          this.tokenStream.next();
+          return strike;
+        case LATEXTOGGLE:
+          comp = this._parse_latex(this.tokenStream.next());
+          break;
+        case CODETOGGLE:
+          comp = this._parse_inline_code(this.tokenStream.next());
+          break;
+        case LINK:
+          comp = this._parse_link(this.tokenStream.next());
+          break;
+        case IMAGE:
+          comp = this._parse_image(this.tokenStream.next());
+          break;
+        default:
+          this.tokenStream.croak('Unexpected Token: ' + token.type);
+          break;
+      }
+      strike.add(comp);
+    }
+    this.tokenStream.croak('Unexpected end of string');
+  }
+  _parse_latex(token) {
+    var latex = new MDTextLaTeX();
+    var text = new MDText();
+    latex.add(text);
+    while ((token = this.tokenStream.peek())) {
+      switch (token.type) {
+        case LATEXTOGGLE:
+          this.tokenStream.next();
+          return latex;
+        case (HEADER,
+        PARAGRAPH,
+        BLOCKQUOTE,
+        NUMBEREDLIST,
+        UNNUMBEREDLIST,
+        CODEBLOCKSTART,
+        CODEBLOCKEND,
+        LATEXBLOCKSTART,
+        LATEXBLOCKEND,
+        RULE,
+        TOC,
+        TOF,
+        PAGEBREAK,
+        NEWLINE):
+          this.tokenStream.croak('Unexpected Token: ' + token.type);
+          break;
+        default:
+          text += this.tokenStream.next().value;
+          break;
+      }
+    }
+    this.tokenStream.croak('Unexpected end of string');
+  }
+  _parse_inline_code(token) {
+    var code = new MDTextCode();
+    var text = new MDText();
+    latex.add(text);
+    while ((token = this.tokenStream.peek())) {
+      switch (token.type) {
+        case CODETOGGLE:
+          this.tokenStream.next();
+          return code;
+        case (HEADER,
+        PARAGRAPH,
+        BLOCKQUOTE,
+        NUMBEREDLIST,
+        UNNUMBEREDLIST,
+        CODEBLOCKSTART,
+        CODEBLOCKEND,
+        LATEXBLOCKSTART,
+        LATEXBLOCKEND,
+        RULE,
+        TOC,
+        TOF,
+        PAGEBREAK,
+        NEWLINE):
+          this.tokenStream.croak('Unexpected Token: ' + token.type);
+          break;
+        default:
+          text += this.tokenStream.next().value;
+          break;
+      }
+    }
+    this.tokenStream.croak('Unexpected end of string');
+  }
+  _parse_link(token) {
+    var link = new MDLink();
+    link.destination = token.match[4].value;
+    link.add(this._parse_text(token.match[4]));
+    if (token.match.length - 1 > 4 && token.match[5]) {
+      link.title = token.match[5];
+    }
+    return link;
+  }
   _parse_image(token) {
     var img = new MDImage();
-    img.link = token.match[3];
     if (token.match[1].startsWith('[')) {
       img.alt = token.match[2];
+      img.link = token.match[3];
+      if (token.match[4].length > 0) {
+        img.text = token.match[5];
+      }
+    } else {
+      img.link = token.match[2];
+      if (token.match[3].length > 0) {
+        img.text = token.match[4];
+      }
     }
-    if (token.match.length) img.text = token.match[5];
+    return img;
+  }
+  _parse_paragraph(token) {
+    var paragraph = new MDParagraph();
+    while ((token = this.tokenStream.peek())) {
+      for (const sub of this._parse_text_line()) {
+        paragraph.add(sub);
+      }
+      token = this.tokenStream.peek();
+      if (token && token.type == NEWLINE) {
+        // Still going
+        this.tokenStream.next();
+        paragraph.add(new MDSoftBreak());
+      } else {
+        break;
+      }
+    }
+    if (paragraph.last() instanceof MDSoftBreak) {
+      paragraph.remove(paragraph.last());
+    }
+    return paragraph;
   }
   _parse_newline() {
     return new MDSoftBreak();
@@ -338,52 +576,6 @@ class Token {
   }
 }
 
-// class Parser {
-//   static parse(tokens) {
-//     var availableComponents = [
-//       new MDHeader(),
-//       new MDParagraph(),
-//       new MDBlockQuote(),
-//       new MDCodeBlock(),
-//       new MDOrderedList(),
-//       new MDBulletList(),
-//       new MDText(),
-//       new MDTextBold(),
-//       new MDTextItalics(),
-//       new MDTextCode(),
-//       new MDTextLaTeX(),
-//       new MDLink(),
-//       new MDImage(),
-//       new MDItem(),
-//       new MDThematicBreak(),
-//       new MDTOC(),
-//       new MDTOF(),
-//       new MDPageBreak()
-//     ];
-//     const header = new MDHeader();
-//     var row = 0;
-//     var column = 0;
-//     var out = [];
-//     for (let i = 0; i < tokens.length; i++) {
-//       const token = tokens[i];
-//       var newRows = token.getRows();
-//       if (newRows != 0) {
-//         row += newRows;
-//         column = 0;
-//       }
-//       column += token.getColumns();
-//       switch (token.type) {
-//         case HEADER:
-//           out.push(header.createNew());
-//           break;
-
-//         default:
-//           break;
-//       }
-//     }
-//   }
-// }
-
 class TokenArray {}
 class TokenFilter {
   constructor() {}
@@ -401,7 +593,6 @@ class MDComponent {
   constructor() {
     this.parent = null;
     this.children = [];
-    this.prematchFilters = [];
   }
 
   add(component) {
@@ -422,9 +613,17 @@ class MDComponent {
 
   removeAt(index) {
     if (this.children[index]) {
+      this.children[index].parent = null;
       this.children.splice(index);
-      component.parent = null;
     }
+  }
+  first() {
+    if (this.children.length == 0) return null;
+    return this.children[0];
+  }
+  last() {
+    if (this.children.length == 0) return null;
+    return this.children[this.children.length - 1];
   }
 
   // Consume token to check for a prematch
@@ -503,10 +702,6 @@ class MDComponent {
 
 // text components:
 class MDText extends MDComponent {
-  constructor() {
-    super();
-    this.prematchFilters.push(new TokenFilter(TEXT));
-  }
   toHtml() {
     if (this.value) return this.value;
     return super.toHtml();
@@ -520,10 +715,6 @@ class MDText extends MDComponent {
 }
 
 class MDTextBold extends MDText {
-  constructor() {
-    super();
-    this.prematchFilters.push(new TokenFilter(BOLD));
-  }
   toHtml() {
     return `<strong>${super.toHtml()}</strong>`;
   }
@@ -542,11 +733,8 @@ class MDTextBold extends MDText {
     return `**${tags.join('')}**`;
   }
 }
+
 class MDTextItalics extends MDText {
-  constructor() {
-    super();
-    this.prematchFilters.push(new TokenFilter(ITALICS));
-  }
   toHtml() {
     return `<em>${super.toHtml()}</em>`;
   }
@@ -565,11 +753,28 @@ class MDTextItalics extends MDText {
     return `_${tags.join('')}_`;
   }
 }
-class MDTextCode extends MDText {
-  constructor() {
-    super();
-    this.prematchFilters.push(new TokenFilter(CODE));
+
+class MDTextStrikethrough extends MDText {
+  toHtml() {
+    return `<s>${super.toHtml()}</s>`;
   }
+  toString() {
+    var tags = [];
+    for (var component of this.children) {
+      tags.push(component.toString());
+    }
+    return tags.join('');
+  }
+  toMarkDown() {
+    var tags = [];
+    for (var component of this.children) {
+      tags.push(component.toMarkDown());
+    }
+    return `~~${tags.join('')}~~`;
+  }
+}
+
+class MDTextCode extends MDText {
   toHtml() {
     return `<code>${this.value}</code>`;
   }
@@ -580,11 +785,8 @@ class MDTextCode extends MDText {
     return `\`${this.value}\``;
   }
 }
+
 class MDTextLaTeX extends MDText {
-  constructor() {
-    super();
-    this.prematchFilters.push(new TokenFilter(LATEX));
-  }
   toHtml() {
     return `<span>${super.toHtml()}</span>`;
   }
@@ -605,10 +807,6 @@ class MDTextLaTeX extends MDText {
 }
 
 class MDLink extends MDComponent {
-  constructor() {
-    super();
-    this.prematchFilters.push(new TokenFilter(LINK));
-  }
   toHtml() {
     if (this.title) {
       return `<a href="${this.destination}" title="${
@@ -625,10 +823,6 @@ class MDLink extends MDComponent {
 }
 
 class MDImage extends MDComponent {
-  constructor() {
-    super();
-    this.prematchFilters.push(new TokenFilter(IMAGE));
-  }
   toHtml() {
     if (this.id) {
       return `<img src="${this.destination}" id="${
@@ -657,12 +851,6 @@ class MDSoftBreak extends MDComponent {
 // per line components:
 
 class MDHeader extends MDComponent {
-  constructor() {
-    super();
-    this.prematchFilters = [new TokenFilter(NEWLINE), new TokenFilter(HEADER)];
-    this.unmatchers = [];
-    this.matchFinisher = [new TokenFilter(NEWLINE)];
-  }
   toHtml() {
     if (this.id) {
       return `<h${this.level} id="${this.id}">${super.toHtml()}</h${
@@ -677,12 +865,6 @@ class MDHeader extends MDComponent {
 }
 
 class MDParagraph extends MDComponent {
-  constructor() {
-    super();
-    this.prematchFilters.push(new TokenFilter(NEWLINE));
-    this.unmatchers = [];
-    this.matchFinisher = [];
-  }
   _parseReplace() {
     var obj = this;
     obj = MDTOC._test(this.toString()) ? MDTOC._parse(this) : obj;
@@ -704,7 +886,6 @@ class MDListBase extends MDComponent {
   _aftermath(dom) {
     this._scoutNestedLevels(0);
   }
-
   _scoutNestedLevels(level) {
     this.level = level;
     for (const child of this.children) {
@@ -718,27 +899,6 @@ class MDListBase extends MDComponent {
 }
 
 class MDOrderedList extends MDListBase {
-  constructor() {
-    super();
-    this.prematchFilters = [
-      new TokenFilter(NEWLINE, BOF, INDENT),
-      new TokenFilter(NUMBEREDLIST)
-    ];
-    this.unmatchers = [];
-    this.matchFinisher = [
-      new TokenFilter(NEWLINE, EOF).except(ESCAPE),
-      new TokenFilter(
-        NEWLINE,
-        EOF,
-        CODEBLOCK,
-        HEADER,
-        TOC,
-        TOF,
-        PAGEBREAK,
-        LATEXBLOCK
-      )
-    ];
-  }
   toHtml() {
     if (this.start != 1) {
       return `<ol start="${this.start}">${super.toHtml()}</ol>`;
@@ -770,27 +930,6 @@ class MDOrderedList extends MDListBase {
 }
 
 class MDBulletList extends MDListBase {
-  constructor() {
-    super();
-    this.prematchFilters = [
-      new TokenFilter(NEWLINE, BOF, INDENT),
-      new TokenFilter(UNNUMBEREDLIST)
-    ];
-    this.unmatchers = [];
-    this.matchFinisher = [
-      new TokenFilter(NEWLINE, EOF).except(ESCAPE),
-      new TokenFilter(
-        NEWLINE,
-        EOF,
-        CODEBLOCK,
-        HEADER,
-        TOC,
-        TOF,
-        PAGEBREAK,
-        LATEXBLOCK
-      )
-    ];
-  }
   toHtml() {
     return `<ul>${super.toHtml()}</ul>`;
   }
@@ -813,42 +952,12 @@ class MDBulletList extends MDListBase {
 }
 
 class MDItem extends MDComponent {
-  constructor() {
-    super();
-    this.prematchFilters = [
-      new TokenFilter(NEWLINE, BOF, INDENT),
-      new TokenFilter(NUMBEREDLIST, UNNUMBEREDLIST)
-    ];
-    this.unmatchers = [];
-    this.matchFinisher = [new TokenFilter(NEWLINE, EOF)];
-  }
   toHtml() {
     return `<li>${super.toHtml()}</li>`;
   }
 }
 
 class MDBlockQuote extends MDComponent {
-  constructor() {
-    super();
-    this.prematchFilters = [
-      new TokenFilter(NEWLINE, BOF),
-      new TokenFilter(BLOCKQUOTE)
-    ];
-    this.unmatchers = [];
-    this.matchFinisher = [
-      new TokenFilter(NEWLINE, EOF).except(ESCAPE),
-      new TokenFilter(
-        NEWLINE,
-        EOF,
-        CODEBLOCK,
-        HEADER,
-        TOC,
-        TOF,
-        PAGEBREAK,
-        LATEXBLOCK
-      )
-    ];
-  }
   toHtml() {
     return `<blockquote>${super.toHtml()}</blockquote>`;
   }
@@ -1156,13 +1265,6 @@ class MDDOM extends MDComponent {
   }
 }
 
-class SourcePosition {
-  constructor(array) {
-    this.row = array[0];
-    this.column = array[1];
-  }
-}
-
 // var dom = MDDOM.parse(
 //   '![alt text*](./img.png)\n\n' + '[TOF]\n' + '\n' + '[TOF]\n'
 // );
@@ -1171,6 +1273,7 @@ class SourcePosition {
 var tokens = Lexer.tokenize('# **Header!**');
 var input = new InputStream('\nHi there!\n\n# **Header!**');
 var ast = Parser.parse('# **Header!**');
+ast = Parser.parse('Hi there!\n\n# **Header!**');
 
 module.exports = {
   Lexer: Lexer,
@@ -1192,6 +1295,5 @@ module.exports = {
   MDImage: MDImage,
   MDSoftBreak: MDSoftBreak,
   MDBlockQuote: MDBlockQuote,
-  MDCodeBlock: MDCodeBlock,
-  SourcePosition: SourcePosition
+  MDCodeBlock: MDCodeBlock
 };
