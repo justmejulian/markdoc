@@ -50,7 +50,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'hasTitlepage',
         () => {
-          Store.getHasTitlepage();
+          SidebarStore.getHasTitlepage();
         },
         val => {
           SidebarActions.setHasTitlepage(val);
@@ -59,7 +59,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'hasHeader',
         () => {
-          Store.getHasHeader();
+          SidebarStore.getHasHeader();
         },
         val => {
           SidebarActions.setHasHeader(val);
@@ -68,7 +68,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'hasFooter',
         () => {
-          Store.getHasFooter();
+          SidebarStore.getHasFooter();
         },
         val => {
           SidebarActions.setHasFooter(val);
@@ -77,7 +77,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'title',
         () => {
-          Store.getTitle();
+          SidebarStore.getTitle();
         },
         val => {
           SidebarActions.setTitle(val);
@@ -86,7 +86,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'author',
         () => {
-          Store.getAuthor();
+          SidebarStore.getAuthor();
         },
         val => {
           SidebarActions.setAuthor(val);
@@ -95,7 +95,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'date',
         () => {
-          Store.getDate();
+          SidebarStore.getDate();
         },
         value => {
           SidebarActions.setDate(moment(this._prepareDate(value)));
@@ -104,7 +104,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'headerLeft',
         () => {
-          Store.getHeaderLeft();
+          SidebarStore.getHeaderLeft();
         },
         val => {
           SidebarActions.setHeaderLeft(val);
@@ -113,7 +113,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'headerMiddle',
         () => {
-          Store.getHeaderMiddle();
+          SidebarStore.getHeaderMiddle();
         },
         val => {
           SidebarActions.setHeaderMiddle(val);
@@ -122,7 +122,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'headerRight',
         () => {
-          Store.getHeaderRight();
+          SidebarStore.getHeaderRight();
         },
         val => {
           SidebarActions.setHeaderRight(val);
@@ -131,7 +131,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'footerLeft',
         () => {
-          Store.getFooterLeft();
+          SidebarStore.getFooterLeft();
         },
         val => {
           SidebarActions.setFooterLeft(val);
@@ -140,7 +140,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'footerMiddle',
         () => {
-          Store.getFooterMiddle();
+          SidebarStore.getFooterMiddle();
         },
         val => {
           SidebarActions.setFooterMiddle(val);
@@ -149,7 +149,7 @@ class App extends React.Component {
       new MetaDataHelper(
         'footerRight',
         () => {
-          Store.getFooterRight();
+          SidebarStore.getFooterRight();
         },
         val => {
           SidebarActions.setFooterRight(val);
@@ -223,6 +223,7 @@ class App extends React.Component {
   _prepareMDOC() {
     var out = ['---'];
     for (const metaDataHelper of this.metaDataHelpers) {
+      console.log(metaDataHelper.toString());
       out.push(metaDataHelper.toString());
     }
     out.push('---');
@@ -247,7 +248,6 @@ class App extends React.Component {
   _processMdocContent(currentContent, currentFilePath) {
     // prepare editor content
     var editorContent = currentContent.slice(4, currentContent.size);
-    console.log(editorContent);
     var indexOfMetadataEnd = editorContent.indexOf('---\n');
 
     // slice off metadata to get editor Content
@@ -315,6 +315,7 @@ class MetaDataHelper {
     this.default = 'default';
   }
   toString() {
+    console.log(this.getter());
     return '\t' + this.name + ': "' + this.getter() + '"';
   }
   consume(string) {
