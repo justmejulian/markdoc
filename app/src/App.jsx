@@ -44,6 +44,65 @@ class App extends React.Component {
     this.setFilePath = (event, data) => this._setFilePath(event, data);
     this.getHTMLContent = (event, data) => this._getHTMLContent(event, data);
     this.getPDFContent = (event, data) => this._getPDFContent(event, data);
+
+    // prepare metadata helpers
+    this.metaDataHelpers = [
+      new MetaDataHelper(
+        'hasTitlepage',
+        SidebarActions.getHasTitlepage,
+        SidebarActions.setHasTitlepage
+      ),
+      new MetaDataHelper(
+        'hasHeader',
+        SidebarActions.getHasHeader,
+        SidebarActions.setHasHeader
+      ),
+      new MetaDataHelper(
+        'hasFooter',
+        SidebarActions.getHasFooter,
+        SidebarActions.setHasFooter
+      ),
+      new MetaDataHelper(
+        'title',
+        SidebarActions.getTitle,
+        SidebarActions.setTitle
+      ),
+      new MetaDataHelper(
+        'author',
+        SidebarActions.getAuthor,
+        SidebarActions.setAuthor
+      ),
+      new MetaDataHelper(
+        'headerLeft',
+        SidebarActions.getHeaderLeft,
+        SidebarActions.setHeaderLeft
+      ),
+      new MetaDataHelper(
+        'headerMiddle',
+        SidebarActions.getHeaderMiddle,
+        SidebarActions.setHeaderMiddle
+      ),
+      new MetaDataHelper(
+        'headerRight',
+        SidebarActions.getHeaderRight,
+        SidebarActions.setHeaderRight
+      ),
+      new MetaDataHelper(
+        'footerLeft',
+        SidebarActions.getFooterLeft,
+        SidebarActions.setFooterLeft
+      ),
+      new MetaDataHelper(
+        'footerMiddle',
+        SidebarActions.getFooterMiddle,
+        SidebarActions.setFooterMiddle
+      ),
+      new MetaDataHelper(
+        'footerRight',
+        SidebarActions.getFooterRight,
+        SidebarActions.setFooterRight
+      )
+    ];
   }
 
   // IPC event listeners
@@ -109,47 +168,13 @@ class App extends React.Component {
 
   // prepare document content: adds markdown metadata from the sidebar & content from editor
   _prepareMDOC() {
-    return (
-      '---\n' +
-      'hasTitlepage: "' +
-      Store.getHasTitlepage() +
-      '"\n' +
-      'hasHeader: "' +
-      Store.getHasHeader() +
-      '"\n' +
-      'hasFooter: "' +
-      Store.getHasFooter() +
-      '"\n' +
-      'title: "' +
-      Store.getTitle() +
-      '"\n' +
-      'author: "' +
-      Store.getAuthor() +
-      '"\n' +
-      'date: "' +
-      Store.getDate() +
-      '"\n' +
-      'headerLeft: "' +
-      Store.getHeaderLeft() +
-      '"\n' +
-      'headerMiddle: "' +
-      Store.getHeaderMiddle() +
-      '"\n' +
-      'headerRight: "' +
-      Store.getHeaderRight() +
-      '"\n' +
-      'footerLeft: "' +
-      Store.getFooterLeft() +
-      '"\n' +
-      'footerMiddle: "' +
-      Store.getFooterMiddle() +
-      '"\n' +
-      'footerRight: "' +
-      Store.getFooterRight() +
-      '"\n' +
-      '---\n' +
-      PageStore.getMarkdown()
-    );
+    var out = ['---'];
+    for (const metaDataHelper of this.metaDataHelpers) {
+      out.push(metaDataHelper.toString());
+    }
+    out.push('---');
+    out.push(PageStore.getMarkdown());
+    return out.join('\n');
   }
 
   _setDocumentContent(event, data) {
@@ -202,59 +227,8 @@ class App extends React.Component {
 
   _setSidebarContent(splitMetadata) {
     for (var metString of splitMetadata) {
-      var tempMetString = metString.split(': ');
-      console.log('tempMetString: ' + tempMetString);
-      switch (tempMetString[0]) {
-        case 'hasTitlepage':
-          console.log(tempMetString[1]);
-          SidebarActions.setHasTitlepage(tempMetString[1]);
-          break;
-        case 'hasHeader':
-          console.log(tempMetString[1]);
-          SidebarActions.setHasHeader(tempMetString[1]);
-          break;
-        case 'hasFooter':
-          console.log(tempMetString[1]);
-          SidebarActions.setHasFooter(tempMetString[1]);
-          break;
-        case 'title':
-          console.log(tempMetString[1]);
-          SidebarActions.setTitle(tempMetString[1]);
-          break;
-        case 'author':
-          console.log(tempMetString[1]);
-          SidebarActions.setAuthor(tempMetString[1]);
-          break;
-        case 'date':
-          console.log(tempMetString[1]);
-          SidebarActions.setDate(moment(this._prepareDate(tempMetString[1])));
-          break;
-        case 'headerLeft':
-          console.log(tempMetString[1]);
-          SidebarActions.setHeaderLeft(tempMetString[1]);
-          break;
-        case 'headerMiddle':
-          console.log(tempMetString[1]);
-          SidebarActions.setHeaderMiddle(tempMetString[1]);
-          break;
-        case 'headerRight':
-          console.log(tempMetString[1]);
-          SidebarActions.setHeaderRight(tempMetString[1]);
-          break;
-        case 'footerLeft':
-          console.log(tempMetString[1]);
-          SidebarActions.setFooterLeft(tempMetString[1]);
-          break;
-        case 'footerMiddle':
-          console.log(tempMetString[1]);
-          SidebarActions.setFooterMiddle(tempMetString[1]);
-          break;
-        case 'footerRight':
-          console.log(tempMetString[1]);
-          SidebarActions.setFooterRight(tempMetString[1]);
-          break;
-        default:
-          break;
+      for (const metaDataHelper of this.metaDataHelpers) {
+        metaDataHelper.consume(metString);
       }
     }
   }
@@ -291,6 +265,27 @@ class App extends React.Component {
         <Preview />
       </div>
     );
+  }
+}
+
+class MetaDataHelper {
+  constructor(name, getter, setter) {
+    this.name = name;
+    this.getter = getter;
+    this.setter = setter;
+  }
+  toString() {
+    return '\t' + this.name + ': "' + getter() + '"';
+  }
+  consume(string) {
+    var regex = new RegExp('^\t' + this.name + ': "([^"]+)"$');
+    var match = regex.compile().exec(string);
+    if (match == null)
+      error('Expected key value pair "' + this.name + '" - found: ' + string);
+    var value = match[1];
+    if (this.name == 'date') value = moment(this._prepareDate(value));
+    setter(value);
+    return true;
   }
 }
 
