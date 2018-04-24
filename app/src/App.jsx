@@ -49,61 +49,111 @@ class App extends React.Component {
     this.metaDataHelpers = [
       new MetaDataHelper(
         'hasTitlepage',
-        SidebarActions.getHasTitlepage,
-        SidebarActions.setHasTitlepage
+        () => {
+          Store.getHasTitlepage();
+        },
+        val => {
+          SidebarActions.setHasTitlepage(val);
+        }
       ),
       new MetaDataHelper(
         'hasHeader',
-        SidebarActions.getHasHeader,
-        SidebarActions.setHasHeader
+        () => {
+          Store.getHasHeader();
+        },
+        val => {
+          SidebarActions.setHasHeader(val);
+        }
       ),
       new MetaDataHelper(
         'hasFooter',
-        SidebarActions.getHasFooter,
-        SidebarActions.setHasFooter
+        () => {
+          Store.getHasFooter();
+        },
+        val => {
+          SidebarActions.setHasFooter(val);
+        }
       ),
       new MetaDataHelper(
         'title',
-        SidebarActions.getTitle,
-        SidebarActions.setTitle
+        () => {
+          Store.getTitle();
+        },
+        val => {
+          SidebarActions.setTitle(val);
+        }
       ),
       new MetaDataHelper(
         'author',
-        SidebarActions.getAuthor,
-        SidebarActions.setAuthor
+        () => {
+          Store.getAuthor();
+        },
+        val => {
+          SidebarActions.setAuthor(val);
+        }
       ),
-      new MetaDataHelper('date', SidebarActions.getDate, val => {
-        SidebarActions.setDate(moment(this._prepareDate(val)));
-      }),
+      new MetaDataHelper(
+        'date',
+        () => {
+          Store.getDate();
+        },
+        value => {
+          SidebarActions.setDate(moment(this._prepareDate(value)));
+        }
+      ),
       new MetaDataHelper(
         'headerLeft',
-        SidebarActions.getHeaderLeft,
-        SidebarActions.setHeaderLeft
+        () => {
+          Store.getHeaderLeft();
+        },
+        val => {
+          SidebarActions.setHeaderLeft(val);
+        }
       ),
       new MetaDataHelper(
         'headerMiddle',
-        SidebarActions.getHeaderMiddle,
-        SidebarActions.setHeaderMiddle
+        () => {
+          Store.getHeaderMiddle();
+        },
+        val => {
+          SidebarActions.setHeaderMiddle(val);
+        }
       ),
       new MetaDataHelper(
         'headerRight',
-        SidebarActions.getHeaderRight,
-        SidebarActions.setHeaderRight
+        () => {
+          Store.getHeaderRight();
+        },
+        val => {
+          SidebarActions.setHeaderRight(val);
+        }
       ),
       new MetaDataHelper(
         'footerLeft',
-        SidebarActions.getFooterLeft,
-        SidebarActions.setFooterLeft
+        () => {
+          Store.getFooterLeft();
+        },
+        val => {
+          SidebarActions.setFooterLeft(val);
+        }
       ),
       new MetaDataHelper(
         'footerMiddle',
-        SidebarActions.getFooterMiddle,
-        SidebarActions.setFooterMiddle
+        () => {
+          Store.getFooterMiddle();
+        },
+        val => {
+          SidebarActions.setFooterMiddle(val);
+        }
       ),
       new MetaDataHelper(
         'footerRight',
-        SidebarActions.getFooterRight,
-        SidebarActions.setFooterRight
+        () => {
+          Store.getFooterRight();
+        },
+        val => {
+          SidebarActions.setFooterRight(val);
+        }
       )
     ];
   }
