@@ -26,11 +26,12 @@ const IMAGE = 'Image';
 class InputStream {
   constructor(string) {
     this.input = string;
+    this.pos = 0;
     this.line = 0;
     this.col = 0;
   }
   next() {
-    var ch = this.input.charAt(pos++);
+    var ch = this.input.charAt(this.pos++);
     if (ch == '\n') {
       this.line++;
       this.col = 0;
@@ -39,11 +40,18 @@ class InputStream {
     }
     return ch;
   }
+  match(regex) {
+    return this.input.substr(this.pos).match(regex);
+  }
+  skip(regex) {
+    var match = this.input.substr(this.pos).match(regex);
+    this.pos += match[0].length;
+  }
   peek() {
-    return this.input.charAt(pos);
+    return this.input.charAt(this.pos);
   }
   eof() {
-    return peek() == '';
+    return this.peek() == '';
   }
   croak(msg) {
     throw new Error(msg + ' (' + this.line + ':' + this.col + ')');
@@ -53,112 +61,70 @@ class InputStream {
 class TokenStream {
   constructor(inputStream) {
     this.input = inputStream;
+    this.tokens = [
+      new Token(HEADER, /^\n#{1,6}\s/),
+      new Token(BOLD, /^\*\*/),
+      new Token(ITALICS, /^_/),
+      new Token(STRIKETHROUGH, /^~~/),
+      new Token(BLOCKQUOTE, /^\n> /),
+      new Token(NUMBEREDLIST, /^\n(    |\t)*\d+?\.\s/),
+      new Token(UNNUMBEREDLIST, /^\n(    |\t)*\*\s/),
+      new Token(RULE, /^\n(\*\*\*|---|___)\n*/),
+      new Token(
+        LINK,
+        /^(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
+      ),
+      new Token(IMAGE, /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/),
+      new Token(CODEBLOCKSTART, /^\n```/),
+      new Token(CODEBLOCKEND, /^```\n/),
+      new Token(CODETOGGLE, /^`/),
+      new Token(TOC, /^\n\[TOC\]\n/),
+      new Token(TOF, /^\n\[TOF\]\n/),
+      new Token(PAGEBREAK, /^\n\[PB\]\n/),
+      new Token(LATEXTOGGLE, /^\$/),
+      new Token(LATEXBLOCKSTART, /^\n\$\$/),
+      new Token(LATEXBLOCKEND, /^\$\$\n/),
+      new Token(PARAGRAPH, /^\n(?=[^\s])/),
+      new Token(NEWLINE, /^\n/)
+    ];
   }
-  is_keyword(x) {
-    return keywords.indexOf(' ' + x + ' ') >= 0;
-  }
-  is_digit(ch) {
-    return /[0-9]/i.test(ch);
-  }
-  is_id_start(ch) {
-    return /[a-zλ_]/i.test(ch);
-  }
-  is_id(ch) {
-    return is_id_start(ch) || '?!-<>=0123456789'.indexOf(ch) >= 0;
-  }
-  is_op_char(ch) {
-    return '+-*/%=&|<>!'.indexOf(ch) >= 0;
-  }
-  is_punc(ch) {
-    return ',;(){}[]'.indexOf(ch) >= 0;
-  }
-  is_whitespace(ch) {
-    return ' \t\n'.indexOf(ch) >= 0;
-  }
-  read_while(predicate) {
-    var str = '';
-    while (!input.eof() && predicate(input.peek())) str += input.next();
-    return str;
-  }
-  read_number() {
-    var has_dot = false;
-    var number = read_while(function(ch) {
-      if (ch == '.') {
-        if (has_dot) return false;
-        has_dot = true;
-        return true;
-      }
-      return is_digit(ch);
-    });
-    return { type: 'num', value: parseFloat(number) };
-  }
-  read_ident() {
-    var id = read_while(is_id);
-    return {
-      type: is_keyword(id) ? 'kw' : 'var',
-      value: id
-    };
-  }
-  read_escaped(end) {
-    var escaped = false,
-      str = '';
-    input.next();
-    while (!input.eof()) {
-      var ch = input.next();
-      if (escaped) {
-        str += ch;
-        escaped = false;
-      } else if (ch == '\\') {
-        escaped = true;
-      } else if (ch == end) {
-        break;
-      } else {
-        str += ch;
+  _read_next() {
+    if (this.input.eof()) return null;
+    var match = null;
+    for (const token of this.tokens) {
+      if ((match = this.input.match(token.pattern))) {
+        var newToken = token.createNew();
+        newToken.match = match;
+        newToken.value = match[0];
+        this.input.skip(token.pattern);
+        return newToken;
       }
     }
-    return str;
-  }
-  read_string() {
-    return { type: 'str', value: read_escaped('"') };
-  }
-  skip_comment() {
-    read_while(function(ch) {
-      return ch != '\n';
-    });
-    input.next();
-  }
-  read_next() {
-    if (input.eof()) return null;
-    var ch = input.peek();
-    if (ch == '$') {
-      skip_comment();
-      return read_next();
+    // No match => Assume text until next match
+    // TODO: Make this sexier
+    var textToken = new Token(TEXT, /^./);
+    textToken.value = '';
+    var foundToken = false;
+    while (!foundToken) {
+      if (this.input.eof()) break;
+      textToken.value += this.input.next();
+      for (const token of this.tokens) {
+        foundToken = this.input.match(token.pattern);
+        if (foundToken) break;
+      }
     }
-    if (ch == '"') return read_string();
-    if (is_digit(ch)) return read_number();
-    if (is_id_start(ch)) return read_ident();
-    if (is_punc(ch))
-      return {
-        type: 'punc',
-        value: input.next()
-      };
-    if (is_op_char(ch))
-      return {
-        type: 'op',
-        value: read_while(is_op_char)
-      };
-    input.croak("Can't handle character: " + ch);
+    return textToken;
   }
   peek() {
-    return current || (current = read_next());
+    return this.current || (this.current = _read_next());
   }
   next() {
-    var tok = current;
-    current = null;
-    return tok || read_next();
+    var tok = this.current;
+    this.current = null;
+    return tok || this._read_next();
   }
   eof() {
-    return peek() == null;
+    return this.peek() == null;
   }
 }
 
@@ -228,8 +194,8 @@ class Token {
     this.value = '';
     this.escapable = false;
   }
-  test(string, escaped) {
-    return !(this.escapable && escaped) && this.pattern.test(string);
+  test(string) {
+    return this.pattern.test(string);
   }
   apply(string) {
     this.match = string.match(this.pattern);
@@ -576,12 +542,9 @@ class MDSoftBreak extends MDComponent {
 class MDHeader extends MDComponent {
   constructor() {
     super();
-    this.prematchFilters = [
-      new TokenFilter(NEWLINE, BOF),
-      new TokenFilter(HEADER)
-    ];
+    this.prematchFilters = [new TokenFilter(NEWLINE), new TokenFilter(HEADER)];
     this.unmatchers = [];
-    this.matchFinisher = [new TokenFilter(NEWLINE, EOF)];
+    this.matchFinisher = [new TokenFilter(NEWLINE)];
   }
   toHtml() {
     if (this.id) {
@@ -599,23 +562,9 @@ class MDHeader extends MDComponent {
 class MDParagraph extends MDComponent {
   constructor() {
     super();
-    this.prematchFilters.push(new TokenFilter(NEWLINE, BOF));
+    this.prematchFilters.push(new TokenFilter(NEWLINE));
     this.unmatchers = [];
-    this.matchFinisher = [
-      new TokenFilter(NEWLINE, EOF),
-      new TokenFilter(
-        NEWLINE,
-        EOF,
-        CODEBLOCK,
-        HEADER,
-        TOC,
-        TOF,
-        PAGEBREAK,
-        LATEXBLOCK,
-        NUMBEREDLIST,
-        UNNUMBEREDLIST
-      )
-    ];
+    this.matchFinisher = [];
   }
   _parseReplace() {
     var obj = this;
@@ -1103,7 +1052,12 @@ class SourcePosition {
 // console.log(dom.toHtml());
 
 var tokens = Lexer.tokenize('# **Header!**');
-console.log(Parser.parse(tokens));
+var input = new InputStream('\n# **Header!**');
+var tokens = new TokenStream(input);
+var token;
+while ((token = tokens.next())) {
+  console.log(token);
+}
 
 module.exports = {
   Lexer: Lexer,
