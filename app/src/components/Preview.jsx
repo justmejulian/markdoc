@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import * as Actions from '../actions/Actions';
 import Page from './Page.jsx';
 import Titlepage from './Titlepage.jsx';
 import PagesStore from '../stores/PagesStore.js';
@@ -11,23 +12,26 @@ class Preview extends React.Component {
     this.setHasTitlepage = this.setHasTitlepage.bind(this);
     this.handleZoomIn = this._handleZoomIn.bind(this);
     this.handleZoomOut = this._handleZoomOut.bind(this);
+    this.setZoom = this._setZoom.bind(this);
     this.state = {
       pages: [{ key: 0, html: PagesStore.getMarkdown(), height: 0 }],
       words: [],
       currentWord: 0,
       currentPage: 0,
       hasTitlepage: SidebarStore.getHasTitlepage(),
-      zoom: 1
+      zoom: PagesStore.getZoom()
     };
   }
 
   componentWillMount() {
     PagesStore.on('HTML_changed', this.setPreview);
+    PagesStore.on('Zoom_changed', this.setZoom);
     SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
   }
 
   componentWillUnmount() {
     PagesStore.removeListener('HTML_changed', this.setPreview);
+    PagesStore.removeListener('Zoom_changed', this.setZoom);
     SidebarStore.removeListener('hasTitlepage_changed', this.setHasTitlepage);
   }
 
@@ -55,22 +59,8 @@ class Preview extends React.Component {
     );
   }
 
-  _handleZoomIn() {
-    if (this.state.zoom < 1.7) {
-      //If not: Silently do nothing.
-      var newState = this.state;
-      newState.zoom += 0.1;
-      this.setState(newState);
-    }
-  }
-
-  _handleZoomOut() {
-    if (this.state.zoom > 0.5) {
-      //If not: Silently do nothing.
-      var newState = this.state;
-      newState.zoom -= 0.1;
-      this.setState(newState);
-    }
+  _setZoom() {
+    this.setState({ zoom: PagesStore.getZoom() });
   }
 
   handleHeight(height, id) {
@@ -116,6 +106,14 @@ class Preview extends React.Component {
       }
     }
     //console.log(this.state.pages);
+  }
+
+  _handleZoomIn() {
+    Actions.zoomIn();
+  }
+
+  _handleZoomOut() {
+    Actions.zoomOut();
   }
 
   render() {
