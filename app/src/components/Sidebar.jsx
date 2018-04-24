@@ -60,7 +60,9 @@ export default class Sidebar extends Component {
   }
 
   _setHasTitlepage() {
-    this.setState({ [field]: [data] });
+    this.setState({
+      setHasTitlepage: SidebarStore.getHasTitlepage()
+    });
   }
 
   _setHasHeader() {
