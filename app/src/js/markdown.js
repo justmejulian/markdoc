@@ -116,7 +116,7 @@ class TokenStream {
     return textToken;
   }
   peek() {
-    return this.current || (this.current = _read_next());
+    return this.current || (this.current = this._read_next());
   }
   next() {
     var tok = this.current;
@@ -125,6 +125,123 @@ class TokenStream {
   }
   eof() {
     return this.peek() == null;
+  }
+}
+
+class Parser {
+  constructor(tokenStream) {
+    this.tokenStream = tokenStream;
+  }
+  static parse(string) {
+    string = '\n' + string;
+    return new Parser(new TokenStream(new InputStream(string))).parse();
+  }
+  parse() {
+    var out = [];
+    var firstToken = this.tokenStream.peek();
+    if (firstToken == null) return out;
+    firstToken.value = firstToken.value.substr(1);
+    var token;
+    while ((token = this.tokenStream.next())) {
+      switch (token.type) {
+        case HEADER:
+          out.push(this._parse_header(token));
+          break;
+
+        default:
+          break;
+      }
+    }
+    return out;
+  }
+
+  _parse_header(token) {
+    var header = new MDHeader();
+    header.level = token.value.split('#').length - 1;
+    token = this.tokenStream.next();
+    for (const sub of this._parse_text()) {
+      header.add(sub);
+    }
+    return header;
+  }
+
+  _parse_text() {
+    var out = [];
+    var conditions = [
+      TEXT,
+      BOLD,
+      ITALICS,
+      STRIKETHROUGH,
+      LATEXTOGGLE,
+      CODETOGGLE,
+      LINK,
+      IMAGE,
+      NEWLINE
+    ];
+    var finished = false;
+    var daddy = null;
+    while (
+      !finished &&
+      conditions.findIndex(this.InputStream.peek().type) >= 0
+    ) {
+      var token = this.InputStream.next();
+      switch (token.type) {
+        case TEXT:
+          var comp = new MDText();
+          comp.value = token.value;
+          if (daddy) {
+            daddy.add(comp);
+          } else {
+            out.push(comp);
+          }
+          break;
+        case BOLD:
+          var comp = this._parse_bold();
+          break;
+        case ITALICS:
+          var comp = this._parse_italics();
+          break;
+        case STRIKETHROUGH:
+          var comp = this._parse_strikethrough();
+          break;
+        case LATEXTOGGLE:
+          var comp = this._parse_latex();
+          break;
+        case CODETOGGLE:
+          var comp = this._parse_inline_code();
+          break;
+        case LINK:
+          var comp = this._parse_link();
+          break;
+        case IMAGE:
+          var comp = this._parse_image(token);
+          break;
+        case NEWLINE:
+          var comp = this._parse_newline();
+          break;
+        default:
+          finished = true;
+          break;
+      }
+    }
+  }
+
+  _parse_bold() {}
+  _parse_italics() {}
+  _parse_strikethrough() {}
+  _parse_latex() {}
+  _parse_inline_code() {}
+  _parse_link() {}
+  _parse_image(token) {
+    var img = new MDImage();
+    img.link = token.match[3];
+    if (token.match[1].startsWith('[')) {
+      img.alt = token.match[2];
+    }
+    if (token.match.length) img.text = token.match[5];
+  }
+  _parse_newline() {
+    return new MDSoftBreak();
   }
 }
 
@@ -221,51 +338,51 @@ class Token {
   }
 }
 
-class Parser {
-  static parse(tokens) {
-    var availableComponents = [
-      new MDHeader(),
-      new MDParagraph(),
-      new MDBlockQuote(),
-      new MDCodeBlock(),
-      new MDOrderedList(),
-      new MDBulletList(),
-      new MDText(),
-      new MDTextBold(),
-      new MDTextItalics(),
-      new MDTextCode(),
-      new MDTextLaTeX(),
-      new MDLink(),
-      new MDImage(),
-      new MDItem(),
-      new MDThematicBreak(),
-      new MDTOC(),
-      new MDTOF(),
-      new MDPageBreak()
-    ];
-    const header = new MDHeader();
-    var row = 0;
-    var column = 0;
-    var out = [];
-    for (let i = 0; i < tokens.length; i++) {
-      const token = tokens[i];
-      var newRows = token.getRows();
-      if (newRows != 0) {
-        row += newRows;
-        column = 0;
-      }
-      column += token.getColumns();
-      switch (token.type) {
-        case HEADER:
-          out.push(header.createNew());
-          break;
+// class Parser {
+//   static parse(tokens) {
+//     var availableComponents = [
+//       new MDHeader(),
+//       new MDParagraph(),
+//       new MDBlockQuote(),
+//       new MDCodeBlock(),
+//       new MDOrderedList(),
+//       new MDBulletList(),
+//       new MDText(),
+//       new MDTextBold(),
+//       new MDTextItalics(),
+//       new MDTextCode(),
+//       new MDTextLaTeX(),
+//       new MDLink(),
+//       new MDImage(),
+//       new MDItem(),
+//       new MDThematicBreak(),
+//       new MDTOC(),
+//       new MDTOF(),
+//       new MDPageBreak()
+//     ];
+//     const header = new MDHeader();
+//     var row = 0;
+//     var column = 0;
+//     var out = [];
+//     for (let i = 0; i < tokens.length; i++) {
+//       const token = tokens[i];
+//       var newRows = token.getRows();
+//       if (newRows != 0) {
+//         row += newRows;
+//         column = 0;
+//       }
+//       column += token.getColumns();
+//       switch (token.type) {
+//         case HEADER:
+//           out.push(header.createNew());
+//           break;
 
-        default:
-          break;
-      }
-    }
-  }
-}
+//         default:
+//           break;
+//       }
+//     }
+//   }
+// }
 
 class TokenArray {}
 class TokenFilter {
@@ -1052,12 +1169,8 @@ class SourcePosition {
 // console.log(dom.toHtml());
 
 var tokens = Lexer.tokenize('# **Header!**');
-var input = new InputStream('\n# **Header!**');
-var tokens = new TokenStream(input);
-var token;
-while ((token = tokens.next())) {
-  console.log(token);
-}
+var input = new InputStream('\nHi there!\n\n# **Header!**');
+var ast = Parser.parse('# **Header!**');
 
 module.exports = {
   Lexer: Lexer,
