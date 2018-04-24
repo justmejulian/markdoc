@@ -73,6 +73,13 @@ class App extends React.Component {
         SidebarActions.setAuthor
       ),
       new MetaDataHelper(
+        'date',
+        value => {
+          SidebarActions.setDate(moment(this._prepareDate(value)));
+        },
+        SidebarActions.setAuthor
+      ),
+      new MetaDataHelper(
         'headerLeft',
         SidebarActions.getHeaderLeft,
         SidebarActions.setHeaderLeft
@@ -283,7 +290,6 @@ class MetaDataHelper {
     if (match == null)
       error('Expected key value pair "' + this.name + '" - found: ' + string);
     var value = match[1];
-    if (this.name == 'date') value = moment(this._prepareDate(value));
     setter(value);
     return true;
   }
