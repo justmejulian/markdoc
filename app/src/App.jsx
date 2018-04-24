@@ -286,10 +286,8 @@ class MetaDataHelper {
     return '\t' + this.name + ': "' + value + '"';
   }
   consume(string) {
-    console.log(string);
     var regex = new RegExp('^s*' + this.name + ': "(.*)"$', 'm');
     var match = regex.exec(string);
-    console.log(match);
     if (match == null) return false;
     var value = match[1];
     this.setter(value);
