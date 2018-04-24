@@ -49,65 +49,111 @@ class App extends React.Component {
     this.metaDataHelpers = [
       new MetaDataHelper(
         'hasTitlepage',
-        SidebarActions.getHasTitlepage,
-        SidebarActions.setHasTitlepage
+        () => {
+          SidebarActions.getHasTitlepage();
+        },
+        val => {
+          SidebarActions.setHasTitlepage(val);
+        }
       ),
       new MetaDataHelper(
         'hasHeader',
-        SidebarActions.getHasHeader,
-        SidebarActions.setHasHeader
+        () => {
+          SidebarActions.getHasHeader();
+        },
+        val => {
+          SidebarActions.setHasHeader(val);
+        }
       ),
       new MetaDataHelper(
         'hasFooter',
-        SidebarActions.getHasFooter,
-        SidebarActions.setHasFooter
+        () => {
+          SidebarActions.getHasFooter();
+        },
+        val => {
+          SidebarActions.setHasFooter(val);
+        }
       ),
       new MetaDataHelper(
         'title',
-        SidebarActions.getTitle,
-        SidebarActions.setTitle
+        () => {
+          SidebarActions.getTitle();
+        },
+        val => {
+          SidebarActions.setTitle(val);
+        }
       ),
       new MetaDataHelper(
         'author',
-        SidebarActions.getAuthor,
-        SidebarActions.setAuthor
+        () => {
+          SidebarActions.getAuthor();
+        },
+        val => {
+          SidebarActions.setAuthor(val);
+        }
       ),
       new MetaDataHelper(
         'date',
+        () => {
+          SidebarActions.getDate();
+        },
         value => {
           SidebarActions.setDate(moment(this._prepareDate(value)));
-        },
-        SidebarActions.setAuthor
+        }
       ),
       new MetaDataHelper(
         'headerLeft',
-        SidebarActions.getHeaderLeft,
-        SidebarActions.setHeaderLeft
+        () => {
+          SidebarActions.getHeaderLeft();
+        },
+        val => {
+          SidebarActions.setHeaderLeft(val);
+        }
       ),
       new MetaDataHelper(
         'headerMiddle',
-        SidebarActions.getHeaderMiddle,
-        SidebarActions.setHeaderMiddle
+        () => {
+          SidebarActions.getHeaderMiddle();
+        },
+        val => {
+          SidebarActions.setHeaderMiddle(val);
+        }
       ),
       new MetaDataHelper(
         'headerRight',
-        SidebarActions.getHeaderRight,
-        SidebarActions.setHeaderRight
+        () => {
+          SidebarActions.getHeaderRight();
+        },
+        val => {
+          SidebarActions.setHeaderRight(val);
+        }
       ),
       new MetaDataHelper(
         'footerLeft',
-        SidebarActions.getFooterLeft,
-        SidebarActions.setFooterLeft
+        () => {
+          SidebarActions.getFooterLeft();
+        },
+        val => {
+          SidebarActions.setFooterLeft(val);
+        }
       ),
       new MetaDataHelper(
         'footerMiddle',
-        SidebarActions.getFooterMiddle,
-        SidebarActions.setFooterMiddle
+        () => {
+          SidebarActions.getFooterMiddle();
+        },
+        val => {
+          SidebarActions.setFooterMiddle(val);
+        }
       ),
       new MetaDataHelper(
         'footerRight',
-        SidebarActions.getFooterRight,
-        SidebarActions.setFooterRight
+        () => {
+          SidebarActions.getFooterRight();
+        },
+        val => {
+          SidebarActions.setFooterRight(val);
+        }
       )
     ];
   }
@@ -214,7 +260,7 @@ class App extends React.Component {
 
   _processMdocMetadata(currentContent) {
     // split metadata off currentContent
-    var splitContent = currentContent.replace(/[\"\']/g, '').split('---\n');
+    var splitContent = currentContent.split('---\n');
     console.log(splitContent[1]);
 
     // split metadata lines
@@ -233,10 +279,9 @@ class App extends React.Component {
   }
 
   _setSidebarContent(splitMetadata) {
-    for (var metString of splitMetadata) {
-      for (const metaDataHelper of this.metaDataHelpers) {
-        metaDataHelper.consume(metString);
-      }
+    var index = 0;
+    for (const metaDataHelper of this.metaDataHelpers) {
+      metaDataHelper.consume(splitMetadata[index++]);
     }
   }
 
@@ -282,15 +327,20 @@ class MetaDataHelper {
     this.setter = setter;
   }
   toString() {
-    return '\t' + this.name + ': "' + getter() + '"';
+    return '\t' + this.name + ': "' + this.getter() + '"';
   }
   consume(string) {
-    var regex = new RegExp('^\t' + this.name + ': "([^"]+)"$');
-    var match = regex.compile().exec(string);
+    var regex = new RegExp('^s*' + this.name + ': "(.*)"$', 'm');
+    console.log('Regex: ' + regex);
+    var match = regex.exec(string);
+    console.log('String: ' + string);
+    console.log(match);
     if (match == null)
       error('Expected key value pair "' + this.name + '" - found: ' + string);
+    console.log('group 0: ' + match[0]);
+    console.log('group 1: ' + match[1]);
     var value = match[1];
-    setter(value);
+    this.setter(value);
     return true;
   }
 }
