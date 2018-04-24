@@ -61,7 +61,7 @@ export default class Sidebar extends Component {
 
   _setHasTitlepage() {
     this.setState({
-      setHasTitlepage: SidebarStore.getHasTitlepage()
+      hasTitlepage: SidebarStore.getHasTitlepage()
     });
   }
 
