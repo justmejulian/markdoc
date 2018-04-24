@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import Popup from 'reactjs-popup';
+import PagesStore from '../stores/PagesStore.js';
 
 export default class TableMaker extends Component {
   constructor(props) {
     super(props);
     this.handleFieldChange = target => this._handleFieldChange(target);
+    this.createTable = () => this._createTable();
     this.state = {
       rows: 3,
       columns: 4
@@ -13,6 +15,21 @@ export default class TableMaker extends Component {
 
   _handleFieldChange(target) {
     this.setState({ [target.name]: [target.value] });
+  }
+
+  _createTable() {
+    var tableHTML = '<table>';
+    for (var i = 0; i < this.state.rows; i++) {
+      tableHTML = tableHTML + '<tr>';
+      for (var j = 0; j < this.state.columns; j++) {
+        tableHTML =
+          tableHTML + '<td>' + 'Row ' + (i + 1) + ' Column ' + (j + 1);
+      }
+      tableHTML = tableHTML + '</tr>';
+    }
+    tableHTML = tableHTML + '</table>';
+    PagesStore.setMarkdown(PagesStore.getMarkdown() + tableHTML);
+    console.log(tableHTML);
   }
 
   render() {
@@ -45,6 +62,7 @@ export default class TableMaker extends Component {
               <button
                 className="button"
                 onClick={() => {
+                  this.createTable();
                   close();
                 }}
               >
