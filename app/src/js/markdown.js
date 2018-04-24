@@ -1,6 +1,7 @@
 'use strict';
 
 const commonmark = require('commonmark');
+const katex = require('katex');
 var toc_found = false;
 var tof_found = false;
 
@@ -486,6 +487,19 @@ class MDDOM extends MDComponent {
   static parse(source) {
     var dom = new MDDOM();
 
+    // Parse LaTeX
+    var match;
+    while ((match = /\$\$.+?\$\$/gm.exec(source))) {
+      var math = match[0].substring(2, match[0].length - 2);
+      var rendered = katex.renderToString(math);
+      source = source.replace(match[0], rendered);
+    }
+    while ((match = /\$.+?\$/gm.exec(source))) {
+      var math = match[0].substring(1, match[0].length - 1);
+      var rendered = katex.renderToString(math);
+      source = source.replace(match[0], rendered);
+    }
+
     toc_found = false;
     dom.toc = null;
     tof_found = false;
@@ -512,6 +526,9 @@ class MDDOM extends MDComponent {
     var translated;
     switch (node.type) {
       case 'text':
+        translated = new MDText();
+        break;
+      case 'html_inline':
         translated = new MDText();
         break;
       case 'strong':
