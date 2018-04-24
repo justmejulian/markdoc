@@ -23,8 +23,8 @@ import Preview from './components/Preview.jsx';
 import TitleBar from './components/Titlebar.jsx';
 import SidebarStore from './stores/SidebarStore.js';
 import PageStore from './stores/PagesStore.js';
-import * as Actions from './actions/Actions';
-import * as SidebarActions from './actions/SidebarActions';
+import * as Actions from './actions/Actions.js';
+import * as SidebarActions from './actions/SidebarActions.js';
 
 // Old
 //var marked = require('marked');
@@ -47,114 +47,42 @@ class App extends React.Component {
 
     // prepare metadata helpers
     this.metaDataHelpers = [
-      new MetaDataHelper(
-        'hasTitlepage',
-        () => {
-          SidebarStore.getHasTitlepage();
-        },
-        val => {
-          SidebarActions.setHasTitlepage(val);
-        }
-      ),
-      new MetaDataHelper(
-        'hasHeader',
-        () => {
-          SidebarStore.getHasHeader();
-        },
-        val => {
-          SidebarActions.setHasHeader(val);
-        }
-      ),
-      new MetaDataHelper(
-        'hasFooter',
-        () => {
-          SidebarStore.getHasFooter();
-        },
-        val => {
-          SidebarActions.setHasFooter(val);
-        }
-      ),
-      new MetaDataHelper(
-        'title',
-        () => {
-          SidebarStore.getTitle();
-        },
-        val => {
-          SidebarActions.setTitle(val);
-        }
-      ),
-      new MetaDataHelper(
-        'author',
-        () => {
-          SidebarStore.getAuthor();
-        },
-        val => {
-          SidebarActions.setAuthor(val);
-        }
-      ),
-      new MetaDataHelper(
-        'date',
-        () => {
-          SidebarStore.getDate();
-        },
-        value => {
-          SidebarActions.setDate(moment(this._prepareDate(value)));
-        }
-      ),
-      new MetaDataHelper(
-        'headerLeft',
-        () => {
-          SidebarStore.getHeaderLeft();
-        },
-        val => {
-          SidebarActions.setHeaderLeft(val);
-        }
-      ),
-      new MetaDataHelper(
-        'headerMiddle',
-        () => {
-          SidebarStore.getHeaderMiddle();
-        },
-        val => {
-          SidebarActions.setHeaderMiddle(val);
-        }
-      ),
-      new MetaDataHelper(
-        'headerRight',
-        () => {
-          SidebarStore.getHeaderRight();
-        },
-        val => {
-          SidebarActions.setHeaderRight(val);
-        }
-      ),
-      new MetaDataHelper(
-        'footerLeft',
-        () => {
-          SidebarStore.getFooterLeft();
-        },
-        val => {
-          SidebarActions.setFooterLeft(val);
-        }
-      ),
-      new MetaDataHelper(
-        'footerMiddle',
-        () => {
-          SidebarStore.getFooterMiddle();
-        },
-        val => {
-          SidebarActions.setFooterMiddle(val);
-        }
-      ),
-      new MetaDataHelper(
-        'footerRight',
-        () => {
-          SidebarStore.getFooterRight();
-        },
-        val => {
-          SidebarActions.setFooterRight(val);
-        }
-      )
+      new MetaDataHelper('hasTitlepage', val => {
+        SidebarActions.setHasTitlepage(val);
+      }),
+      new MetaDataHelper('hasHeader', val => {
+        SidebarActions.setHasHeader(val);
+      }),
+      new MetaDataHelper('hasFooter', val => {
+        SidebarActions.setHasFooter(val);
+      }),
+      new MetaDataHelper('title', val => {
+        SidebarActions.setTitle(val);
+      }),
+      new MetaDataHelper('author', val => {
+        SidebarActions.setAuthor(val);
+      }),
+      new MetaDataHelper('date', value => {
+        SidebarActions.setDate(moment(this._prepareDate(value)));
+      }),
+      new MetaDataHelper('headerLeft', val => {
+        SidebarActions.setHeaderLeft(val);
+      }),
+      new MetaDataHelper('headerMiddle', val => {
+        SidebarActions.setHeaderMiddle(val);
+      }),
+      new MetaDataHelper('headerRight', val => {
+        SidebarActions.setHeaderRight(val);
+      }),
+      new MetaDataHelper('footerLeft', val => {
+        SidebarActions.setFooterLeft(val);
+      }),
+      new MetaDataHelper('footerMiddle', val => {
+        SidebarActions.setFooterMiddle(val);
+      }),
+      new MetaDataHelper('footerRight', val => {
+        SidebarActions.setFooterRight(val);
+      })
     ];
   }
 
@@ -223,7 +151,6 @@ class App extends React.Component {
   _prepareMDOC() {
     var out = ['---'];
     for (const metaDataHelper of this.metaDataHelpers) {
-      console.log(metaDataHelper.toString());
       out.push(metaDataHelper.toString());
     }
     out.push('---');
@@ -265,6 +192,7 @@ class App extends React.Component {
 
   _setSidebarContent(currentContent) {
     var splitContent = currentContent.split('---\n');
+    console.log(splitContent[1]);
     for (const metaDataHelper of this.metaDataHelpers) {
       if (!metaDataHelper.consume(splitContent[1])) {
         metaDataHelper.setDefault();
@@ -308,19 +236,60 @@ class App extends React.Component {
 }
 
 class MetaDataHelper {
-  constructor(name, getter, setter) {
+  constructor(name, setter) {
     this.name = name;
-    this.getter = getter;
     this.setter = setter;
     this.default = 'default';
   }
   toString() {
-    console.log(this.getter());
-    return '\t' + this.name + ': "' + this.getter() + '"';
+    var value = '';
+    switch (this.name) {
+      case 'hasTitlepage':
+        value = SidebarStore.getHasTitlepage();
+        break;
+      case 'hasHeader':
+        value = SidebarStore.getHasHeader();
+        break;
+      case 'hasFooter':
+        value = SidebarStore.getHasFooter();
+        break;
+      case 'title':
+        value = SidebarStore.getTitle();
+        break;
+      case 'author':
+        value = SidebarStore.getAuthor();
+        break;
+      case 'date':
+        value = SidebarStore.getDate();
+        break;
+      case 'headerLeft':
+        value = SidebarStore.getHeaderLeft();
+        break;
+      case 'headerMiddle':
+        value = SidebarStore.getHeaderMiddle();
+        break;
+      case 'headerRight':
+        value = SidebarStore.getHeaderRight();
+        break;
+      case 'footerLeft':
+        value = SidebarStore.getFooterLeft();
+        break;
+      case 'footerMiddle':
+        value = SidebarStore.getFooterMiddle();
+        break;
+      case 'footerRight':
+        value = SidebarStore.getFooterRight();
+        break;
+      default:
+        break;
+    }
+    return '\t' + this.name + ': "' + value + '"';
   }
   consume(string) {
+    console.log(string);
     var regex = new RegExp('^s*' + this.name + ': "(.*)"$', 'm');
     var match = regex.exec(string);
+    console.log(match);
     if (match == null) return false;
     var value = match[1];
     this.setter(value);
