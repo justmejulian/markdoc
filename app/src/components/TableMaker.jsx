@@ -15,8 +15,12 @@ export default class TableMaker extends Component {
       rows: 3,
       columns: 3,
       topRowIsHeader: false,
-      popupClosed: true
+      popupClosed: true,
+      tableHTML: '' //This is a huge waste of space, but required for testing. Also, we live in 2018 and the space this wastes is negligible.
     };
+    if (!(undefined === props.popupClosed)) {
+      this.state.popupClosed = props.popupClosed;
+    }
   }
 
   _handleFieldChange(target) {
@@ -63,6 +67,7 @@ export default class TableMaker extends Component {
         tableHTML = tableHTML + '</tr>';
       }
       tableHTML = tableHTML + '</table>';
+      this.setState({ tableHTML: tableHTML });
       Actions.setMarkdown(PagesStore.getMarkdown() + tableHTML);
       Actions.setHTML();
     }
@@ -75,6 +80,7 @@ export default class TableMaker extends Component {
         modal
         closeOnDocumentClick
         id="tableMaker"
+        open={!this.state.popupClosed}
       >
         {close => (
           <div className="modal">
@@ -84,6 +90,7 @@ export default class TableMaker extends Component {
               <input
                 type="number"
                 value={this.state.rows}
+                min="1"
                 name="rows"
                 onChange={evt => this.handleFieldChange(evt.target)}
                 ref={input => {
@@ -101,6 +108,7 @@ export default class TableMaker extends Component {
               <input
                 type="number"
                 value={this.state.columns}
+                min="1"
                 name="columns"
                 onChange={evt => this.handleFieldChange(evt.target)}
                 onKeyPress={evt => {
