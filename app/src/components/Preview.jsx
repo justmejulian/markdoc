@@ -44,9 +44,11 @@ class Preview extends React.Component {
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
     var html = PagesStore.getHTML();
-    var words = html.split(' ');
+    var words = html.replace(' <br/> ', '<br/> ').split(' ');
 
     copyArray[0].html = words[0];
+
+    console.log(words);
 
     this.setState(
       {
@@ -80,17 +82,33 @@ class Preview extends React.Component {
     if (currentWord < this.state.words.length - 1) {
       if (copyArray[currentPage].height < 700) {
         currentWord = currentWord + 1;
-        //console.log("Current Word: " + currentWord);
-        //console.log("The word: " + this.state.words[currentWord]);
-        copyArray[currentPage].html =
-          copyArray[currentPage].html + ' ' + this.state.words[currentWord];
-        this.setState(
-          {
-            pages: copyArray,
-            currentWord: currentWord
-          },
-          this.nextWord
-        );
+        //console.log('Current Word: ' + currentWord);
+        console.log('The word: ' + this.state.words[currentWord]);
+        if (
+          this.state.words[currentWord] == '[newpage]' ||
+          this.state.words[currentWord] == '<p>[newpage]' ||
+          this.state.words[currentWord] == '[newpage]</p>' ||
+          this.state.words[currentWord] == '<p>[newpage]</p>'
+        ) {
+          copyArray[currentPage].height = 701;
+          this.setState(
+            {
+              pages: copyArray,
+              currentWord: currentWord
+            },
+            this.nextWord
+          );
+        } else {
+          copyArray[currentPage].html =
+            copyArray[currentPage].html + ' ' + this.state.words[currentWord];
+          this.setState(
+            {
+              pages: copyArray,
+              currentWord: currentWord
+            },
+            this.nextWord
+          );
+        }
       } else {
         currentPage = currentPage + 1;
         copyArray[currentPage] = { key: currentPage, html: '', height: 0 };
