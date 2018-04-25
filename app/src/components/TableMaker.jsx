@@ -33,6 +33,13 @@ export default class TableMaker extends Component {
     this.state.popupClosed = true;
   }
 
+  _handleKeyPress(e) {
+    if (e.key === 'Enter') {
+      close();
+      this.handlePopupClose();
+    }
+  }
+
   _resetState() {
     this.setState({
       rows: 3,
@@ -83,6 +90,12 @@ export default class TableMaker extends Component {
                   this.state.popupClosed && input && input.focus();
                   this.state.popUpClosed = false;
                 }}
+                onKeyPress={evt => {
+                  if (evt.key === 'Enter') {
+                    close();
+                    this.handlePopupClose();
+                  }
+                }}
               />
               <p> Columns: </p>
               <input
@@ -90,6 +103,12 @@ export default class TableMaker extends Component {
                 value={this.state.columns}
                 name="columns"
                 onChange={evt => this.handleFieldChange(evt.target)}
+                onKeyPress={evt => {
+                  if (evt.key === 'Enter') {
+                    close();
+                    this.handlePopupClose();
+                  }
+                }}
               />
               <p> Use top row as header </p>
               <input
