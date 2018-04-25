@@ -1,28 +1,5 @@
 'use strict';
 
-const HEADER = 'Header';
-const PARAGRAPH = 'Paragraph';
-const BLOCKQUOTE = 'Blockquote';
-const NUMBEREDLIST = 'NumberedList';
-const UNNUMBEREDLIST = 'UnnumberedList';
-const CODEBLOCKSTART = 'Codeblockstart';
-const CODEBLOCKEND = 'Codeblockend';
-const LATEXBLOCKSTART = 'LaTeXBlockStart';
-const LATEXBLOCKEND = 'LaTeXBlockEnd';
-const RULE = 'Rule';
-const TOC = 'TOC';
-const TOF = 'TOF';
-const PAGEBREAK = 'Pagebreak';
-const NEWLINE = 'Newline';
-const TEXT = 'Text';
-const BOLD = 'Bold';
-const ITALICS = 'Italics';
-const STRIKETHROUGH = 'Strikethrough';
-const LATEXTOGGLE = 'LaTeX';
-const CODETOGGLE = 'Code';
-const LINK = 'Link';
-const IMAGE = 'Image';
-
 class InputStream {
   constructor(string) {
     this.input = string;
@@ -82,30 +59,33 @@ class TokenStream {
   constructor(inputStream) {
     this.inputStream = inputStream;
     this.tokens = [
-      new Token(HEADER, /^\n#{1,6}\s/),
-      new Token(BOLD, /^\*\*/),
-      new Token(ITALICS, /^_/),
-      new Token(STRIKETHROUGH, /^~~/),
-      new Token(BLOCKQUOTE, /^\n> /),
-      new Token(NUMBEREDLIST, /^\n(    |\t)*\d+?\.\s/),
-      new Token(UNNUMBEREDLIST, /^\n(    |\t)*\*\s/),
-      new Token(RULE, /^\n(\*\*\*|---|___)\n*/),
-      new Token(IMAGE, /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/),
+      new Token(TokenTypes.HEADER, /^\n#{1,6}\s/),
+      new Token(TokenTypes.BOLD, /^\*\*/),
+      new Token(TokenTypes.ITALICS, /^_/),
+      new Token(TokenTypes.STRIKETHROUGH, /^~~/),
+      new Token(TokenTypes.BLOCKQUOTE, /^\n> /),
+      new Token(TokenTypes.NUMBEREDLIST, /^\n(    |\t)*\d+?\.\s/),
+      new Token(TokenTypes.UNNUMBEREDLIST, /^\n(    |\t)*\*\s/),
+      new Token(TokenTypes.RULE, /^\n(\*\*\*|---|___)\n*/),
       new Token(
-        LINK,
+        TokenTypes.IMAGE,
+        /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/
+      ),
+      new Token(
+        TokenTypes.LINK,
         /^(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
       ),
-      new Token(CODEBLOCKSTART, /^\n```(.+?)\n/),
-      new Token(CODEBLOCKEND, /^```\n/),
-      new Token(CODETOGGLE, /^`/),
-      new Token(TOC, /^\n\[TOC\]\n/),
-      new Token(TOF, /^\n\[TOF\]\n/),
-      new Token(PAGEBREAK, /^\n\[PB\]\n/),
-      new Token(LATEXTOGGLE, /^\$/),
-      new Token(LATEXBLOCKSTART, /^\n\$\$/),
-      new Token(LATEXBLOCKEND, /^\$\$\n/),
-      new Token(PARAGRAPH, /^\n(?=[^\s])/),
-      new Token(NEWLINE, /^\n/)
+      new Token(TokenTypes.CODEBLOCKSTART, /^\n```(.+?)\n/),
+      new Token(TokenTypes.CODEBLOCKEND, /^```\n/),
+      new Token(TokenTypes.CODETOGGLE, /^`/),
+      new Token(TokenTypes.TOC, /^\n\[TOC\]\n/),
+      new Token(TokenTypes.TOF, /^\n\[TOF\]\n/),
+      new Token(TokenTypes.PAGEBREAK, /^\n\[PB\]\n/),
+      new Token(TokenTypes.LATEXTOGGLE, /^\$/),
+      new Token(TokenTypes.LATEXBLOCKSTART, /^\n\$\$/),
+      new Token(TokenTypes.LATEXBLOCKEND, /^\$\$\n/),
+      new Token(TokenTypes.PARAGRAPH, /^\n(?=[^\n])/),
+      new Token(TokenTypes.NEWLINE, /^\n/)
     ];
   }
   _read_next() {
@@ -118,13 +98,16 @@ class TokenStream {
         newToken.value = match[0];
         newToken.from = [this.inputStream.line, this.inputStream.col];
         this.inputStream.skip(token.pattern);
-        newToken.to = [this.inputStream.line, this.inputStream.col - 1];
+        newToken.to = [
+          this.inputStream.line,
+          Math.max(this.inputStream.col - 1, 0)
+        ];
         return newToken;
       }
     }
     // No match => Assume text until next match
     // TODO: Make this sexier
-    var textToken = new Token(TEXT, /^./);
+    var textToken = new Token(TokenTypes.TEXT, /^./);
     textToken.from = [this.inputStream.line, this.inputStream.col];
     textToken.value = '';
     var foundToken = false;
@@ -158,7 +141,6 @@ class TokenStream {
 class Parser {
   constructor(tokenStream) {
     this.tokenStream = tokenStream;
-    this.first = true;
   }
   static parse(string) {
     return new Parser(new TokenStream(new InputStream(string))).parse();
@@ -173,51 +155,49 @@ class Parser {
     var comp = null;
     while ((token = this.tokenStream.next())) {
       switch (token.type) {
-        case HEADER:
+        case TokenTypes.HEADER:
           comp = this._parse_header(token);
           break;
-        case PARAGRAPH:
+        case TokenTypes.PARAGRAPH:
           comp = this._parse_paragraph(token);
           break;
-        case BLOCKQUOTE:
+        case TokenTypes.BLOCKQUOTE:
           comp = this._parse_blockquote(token);
           break;
-        case NUMBEREDLIST:
+        case TokenTypes.NUMBEREDLIST:
           comp = this._parse_numberedlist(token);
           break;
-        case UNNUMBEREDLIST:
+        case TokenTypes.UNNUMBEREDLIST:
           comp = this._parse_unnumberedlist(token);
           break;
-        case CODEBLOCKSTART:
+        case TokenTypes.CODEBLOCKSTART:
           comp = this._parse_codeblock(token);
           break;
-        case LATEXBLOCKSTART:
+        case TokenTypes.LATEXBLOCKSTART:
           comp = this._parse_latexblock(token);
           break;
-        case RULE:
+        case TokenTypes.RULE:
           comp = this._parse_rule(token);
           break;
-        case TOC:
+        case TokenTypes.TOC:
           comp = this._parse_toc(token);
           break;
-        case TOF:
+        case TokenTypes.TOF:
           comp = this._parse_tof(token);
           break;
-        case PAGEBREAK:
+        case TokenTypes.PAGEBREAK:
           comp = this._parse_pagebreak(token);
           break;
-        case NEWLINE:
+        case TokenTypes.NEWLINE:
           // Ignore
           break;
         default:
           error('Unexpected Token: ' + token.type);
           break;
       }
-      if (!this.first) {
-        comp.from[0]++;
-        comp.from[1] = 0;
-        this.first = false;
-      }
+      // These components require a leading newline. Fix the coordinates:
+      comp.from[0]++;
+      comp.from[1] = 0;
       out.push(comp);
     }
     return out;
@@ -236,42 +216,42 @@ class Parser {
   _parse_text_line() {
     var out = [];
     var conditions = [
-      TEXT,
-      BOLD,
-      ITALICS,
-      STRIKETHROUGH,
-      LATEXTOGGLE,
-      CODETOGGLE,
-      LINK,
-      IMAGE
+      TokenTypes.TEXT,
+      TokenTypes.BOLD,
+      TokenTypes.ITALICS,
+      TokenTypes.STRIKETHROUGH,
+      TokenTypes.LATEXTOGGLE,
+      TokenTypes.CODETOGGLE,
+      TokenTypes.LINK,
+      TokenTypes.IMAGE
     ];
     var finished = false;
     while (!finished && conditions.indexOf(this.tokenStream.peek().type) >= 0) {
       var token = this.tokenStream.next();
       var comp = null;
       switch (token.type) {
-        case TEXT:
+        case TokenTypes.TEXT:
           comp = this._parse_text(token);
           break;
-        case BOLD:
+        case TokenTypes.BOLD:
           comp = this._parse_bold(token);
           break;
-        case ITALICS:
+        case TokenTypes.ITALICS:
           comp = this._parse_italics(token);
           break;
-        case STRIKETHROUGH:
+        case TokenTypes.STRIKETHROUGH:
           comp = this._parse_strikethrough(token);
           break;
-        case LATEXTOGGLE:
-          comp = this._parse_latex(token);
+        case TokenTypes.LATEXTOGGLE:
+          comp = this._parse_inline_latex(token);
           break;
-        case CODETOGGLE:
+        case TokenTypes.CODETOGGLE:
           comp = this._parse_inline_code(token);
           break;
-        case LINK:
+        case TokenTypes.LINK:
           comp = this._parse_link(token);
           break;
-        case IMAGE:
+        case TokenTypes.IMAGE:
           comp = this._parse_image(token);
           break;
         default:
@@ -296,30 +276,30 @@ class Parser {
     while ((token = this.tokenStream.peek())) {
       var comp = null;
       switch (token.type) {
-        case TEXT:
+        case TokenTypes.TEXT:
           comp = this._parse_text(this.tokenStream.next());
           break;
-        case BOLD:
+        case TokenTypes.BOLD:
           bold.to = token.to;
           this.tokenStream.next();
           return bold;
           break;
-        case ITALICS:
+        case TokenTypes.ITALICS:
           comp = this._parse_italics(this.tokenStream.next());
           break;
-        case STRIKETHROUGH:
+        case TokenTypes.STRIKETHROUGH:
           comp = this._parse_strikethrough(this.tokenStream.next());
           break;
-        case LATEXTOGGLE:
-          comp = this._parse_latex(this.tokenStream.next());
+        case TokenTypes.LATEXTOGGLE:
+          comp = this._parse_inline_latex(this.tokenStream.next());
           break;
-        case CODETOGGLE:
+        case TokenTypes.CODETOGGLE:
           comp = this._parse_inline_code(this.tokenStream.next());
           break;
-        case LINK:
+        case TokenTypes.LINK:
           comp = this._parse_link(this.tokenStream.next());
           break;
-        case IMAGE:
+        case TokenTypes.IMAGE:
           comp = this._parse_image(this.tokenStream.next());
           break;
         default:
@@ -336,29 +316,29 @@ class Parser {
     while ((token = this.tokenStream.peek())) {
       var comp = null;
       switch (token.type) {
-        case TEXT:
+        case TokenTypes.TEXT:
           comp = this._parse_text(this.tokenStream.next());
           break;
-        case BOLD:
+        case TokenTypes.BOLD:
           comp = this._parse_bold(this.tokenStream.next());
           break;
-        case ITALICS:
+        case TokenTypes.ITALICS:
           italics.to = token.to;
           this.tokenStream.next();
           return italics;
-        case STRIKETHROUGH:
+        case TokenTypes.STRIKETHROUGH:
           comp = this._parse_strikethrough(this.tokenStream.next());
           break;
-        case LATEXTOGGLE:
-          comp = this._parse_latex(this.tokenStream.next());
+        case TokenTypes.LATEXTOGGLE:
+          comp = this._parse_inline_latex(this.tokenStream.next());
           break;
-        case CODETOGGLE:
+        case TokenTypes.CODETOGGLE:
           comp = this._parse_inline_code(this.tokenStream.next());
           break;
-        case LINK:
+        case TokenTypes.LINK:
           comp = this._parse_link(this.tokenStream.next());
           break;
-        case IMAGE:
+        case TokenTypes.IMAGE:
           comp = this._parse_image(this.tokenStream.next());
           break;
         default:
@@ -375,29 +355,29 @@ class Parser {
     while ((token = this.tokenStream.peek())) {
       var comp = null;
       switch (token.type) {
-        case TEXT:
+        case TokenTypes.TEXT:
           comp = this._parse_text(this.tokenStream.next());
           break;
-        case BOLD:
+        case TokenTypes.BOLD:
           comp = this._parse_bold(this.tokenStream.next());
           break;
-        case ITALICS:
+        case TokenTypes.ITALICS:
           comp = this._parse_italics(this.tokenStream.next());
           break;
-        case STRIKETHROUGH:
+        case TokenTypes.STRIKETHROUGH:
           strike.to = token.to;
           this.tokenStream.next();
           return strike;
-        case LATEXTOGGLE:
-          comp = this._parse_latex(this.tokenStream.next());
+        case TokenTypes.LATEXTOGGLE:
+          comp = this._parse_inline_latex(this.tokenStream.next());
           break;
-        case CODETOGGLE:
+        case TokenTypes.CODETOGGLE:
           comp = this._parse_inline_code(this.tokenStream.next());
           break;
-        case LINK:
+        case TokenTypes.LINK:
           comp = this._parse_link(this.tokenStream.next());
           break;
-        case IMAGE:
+        case TokenTypes.IMAGE:
           comp = this._parse_image(this.tokenStream.next());
           break;
         default:
@@ -408,35 +388,36 @@ class Parser {
     }
     this.tokenStream.croak('Unexpected end of string');
   }
-  _parse_latex(token) {
+  _parse_inline_latex(token) {
     var latex = new MDTextLaTeX();
     var text = new MDText();
+    text.value = '';
     latex.from = token.from;
     latex.add(text);
     while ((token = this.tokenStream.peek())) {
       switch (token.type) {
-        case LATEXTOGGLE:
+        case TokenTypes.LATEXTOGGLE:
           latex.to = token.to;
           this.tokenStream.next();
           return latex;
-        case (HEADER,
-        PARAGRAPH,
-        BLOCKQUOTE,
-        NUMBEREDLIST,
-        UNNUMBEREDLIST,
-        CODEBLOCKSTART,
-        CODEBLOCKEND,
-        LATEXBLOCKSTART,
-        LATEXBLOCKEND,
-        RULE,
-        TOC,
-        TOF,
-        PAGEBREAK,
-        NEWLINE):
+        case (TokenTypes.HEADER,
+        TokenTypes.PARAGRAPH,
+        TokenTypes.BLOCKQUOTE,
+        TokenTypes.NUMBEREDLIST,
+        TokenTypes.UNNUMBEREDLIST,
+        TokenTypes.CODEBLOCKSTART,
+        TokenTypes.CODEBLOCKEND,
+        TokenTypes.LATEXBLOCKSTART,
+        TokenTypes.LATEXBLOCKEND,
+        TokenTypes.RULE,
+        TokenTypes.TOC,
+        TokenTypes.TOF,
+        TokenTypes.PAGEBREAK,
+        TokenTypes.NEWLINE):
           this.tokenStream.croak('Unexpected Token: ' + token.type);
           break;
         default:
-          text += this.tokenStream.next().value;
+          text.value += this.tokenStream.next().value;
           break;
       }
     }
@@ -449,24 +430,24 @@ class Parser {
     code.add(text);
     while ((token = this.tokenStream.peek())) {
       switch (token.type) {
-        case CODETOGGLE:
+        case TokenTypes.CODETOGGLE:
           code.to = token.to;
           this.tokenStream.next();
           return code;
-        case (HEADER,
-        PARAGRAPH,
-        BLOCKQUOTE,
-        NUMBEREDLIST,
-        UNNUMBEREDLIST,
-        CODEBLOCKSTART,
-        CODEBLOCKEND,
-        LATEXBLOCKSTART,
-        LATEXBLOCKEND,
-        RULE,
-        TOC,
-        TOF,
-        PAGEBREAK,
-        NEWLINE):
+        case (TokenTypes.HEADER,
+        TokenTypes.PARAGRAPH,
+        TokenTypes.BLOCKQUOTE,
+        TokenTypes.NUMBEREDLIST,
+        TokenTypes.UNNUMBEREDLIST,
+        TokenTypes.CODEBLOCKSTART,
+        TokenTypes.CODEBLOCKEND,
+        TokenTypes.LATEXBLOCKSTART,
+        TokenTypes.LATEXBLOCKEND,
+        TokenTypes.RULE,
+        TokenTypes.TOC,
+        TokenTypes.TOF,
+        TokenTypes.PAGEBREAK,
+        TokenTypes.NEWLINE):
           this.tokenStream.croak('Unexpected Token: ' + token.type);
           break;
         default:
@@ -513,13 +494,14 @@ class Parser {
         paragraph.add(sub);
       }
       token = this.tokenStream.peek();
-      if (token && token.type == NEWLINE) {
+      if (token == null) break;
+      if (token.type == TokenTypes.NEWLINE) {
         // Still going
         this.tokenStream.next();
-        paragraph.add(this._parse_newline(token));
-      } else {
-        break;
+        paragraph.add(this._create_softbreak(paragraph.last().to));
+        continue;
       }
+      break;
     }
     // if (paragraph.last() instanceof MDSoftBreak) {
     //   paragraph.remove(paragraph.last());
@@ -528,68 +510,60 @@ class Parser {
     return paragraph;
   }
   _parse_newline(token) {
+    return this._create_softbreak(token.to);
+  }
+  _create_softbreak(from) {
     var softbreak = new MDSoftBreak();
-    softbreak.from = token.from;
-    softbreak.to = token.to;
+    softbreak.from = from;
+    softbreak.to = [from[0] + 1, 0];
     return softbreak;
+  }
+  _parse_blockquote(token) {
+    var quote = new MDBlockQuote();
+    quote.from = token.from;
+    while (token.type == TokenTypes.BLOCKQUOTE) {
+      for (const sub of this._parse_text_line()) {
+        quote.add(sub);
+      }
+      token = this.tokenStream.peek();
+      if (token == null) break;
+      var newline = new MDSoftBreak();
+      newline.from = quote.last().to;
+      newline.from[1]++;
+      newline.to = newline.from;
+      newline.to[0]++;
+      newline.from[1] = 0;
+      quote.add(new MDSoftBreak());
+      token = this.tokenStream.next();
+    }
+    quote.to = quote.last().to;
+    return quote;
+  }
+  _parse_codeblock(token) {
+    var code = new MDCodeBlock();
+    code.from = token.from;
+    while ((token = this.tokenStream.peek())) {
+      for (const sub of this._parse_text_line()) {
+        code.add(sub);
+      }
+      token = this.tokenStream.peek();
+      if (token && token.type == NEWLINE) {
+        // Still going
+        this.tokenStream.next();
+        code.add(this._parse_newline(token));
+      } else {
+        break;
+      }
+    }
   }
 }
 
 class Lexer {
   static tokenize(string) {
-    var tokens = [
-      new Token(HEADER, /^\n#{1,6}\s/),
-      new Token(BOLD, /^\*\*/),
-      new Token(ITALICS, /^_/),
-      new Token(STRIKETHROUGH, /^~~/),
-      new Token(BLOCKQUOTE, /^\n> /),
-      new Token(NUMBEREDLIST, /^\n(    |\t)*\d+?\.\s/),
-      new Token(UNNUMBEREDLIST, /^\n(    |\t)*\*\s/),
-      new Token(RULE, /^\n(\*\*\*|---|___)\n*/),
-      new Token(
-        LINK,
-        /^(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
-      ),
-      new Token(IMAGE, /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/),
-      new Token(CODEBLOCKSTART, /^\n```/),
-      new Token(CODEBLOCKEND, /^```\n/),
-      new Token(CODETOGGLE, /^`/),
-      new Token(TOC, /^\n\[TOC\]\n/),
-      new Token(TOF, /^\n\[TOF\]\n/),
-      new Token(PAGEBREAK, /^\n\[PB\]\n/),
-      new Token(LATEXTOGGLE, /^\$/),
-      new Token(LATEXBLOCKSTART, /^\n\$\$/),
-      new Token(LATEXBLOCKEND, /^\$\$\n/),
-      new Token(PARAGRAPH, /^\n(?=[^\s])/),
-      new Token(NEWLINE, /^\n/)
-    ];
     var out = [];
-    var foundToken = false;
-    var escaped = false;
-    string = '\n' + string + '\n';
-    while (string.length) {
-      for (const token of tokens) {
-        if (token.test(string, escaped)) {
-          var newToken = token.createNew();
-          string = newToken.apply(string);
-          out.push(newToken);
-          foundToken = true;
-        }
-      }
-      if (foundToken) {
-        foundToken = false;
-      } else {
-        if (out.length !== 0 && out[out.length - 1].type == TEXT) {
-          out[out.length - 1].value += string.substr(0, 1);
-          string = string.substr(1);
-        } else {
-          var textToken = new Token(TEXT, /^./);
-          string = textToken.apply(string);
-          out.push(textToken);
-        }
-      }
-    }
-    if (out[out.length - 1].type == NEWLINE) out.pop();
+    var tokenStream = new TokenStream(new InputStream(string));
+    var token;
+    while ((token = tokenStream.next())) out.push(token);
     return out;
   }
 }
@@ -627,6 +601,30 @@ class Token {
     return this.value.test(/\n/);
   }
 }
+const TokenTypes = Object.freeze({
+  HEADER: 'Header',
+  PARAGRAPH: 'Paragraph',
+  BLOCKQUOTE: 'Blockquote',
+  NUMBEREDLIST: 'NumberedList',
+  UNNUMBEREDLIST: 'UnnumberedList',
+  CODEBLOCKSTART: 'Codeblockstart',
+  CODEBLOCKEND: 'Codeblockend',
+  LATEXBLOCKSTART: 'LaTeXBlockStart',
+  LATEXBLOCKEND: 'LaTeXBlockEnd',
+  RULE: 'Rule',
+  TOC: 'TOC',
+  TOF: 'TOF',
+  PAGEBREAK: 'Pagebreak',
+  NEWLINE: 'Newline',
+  TEXT: 'Text',
+  BOLD: 'Bold',
+  ITALICS: 'Italics',
+  STRIKETHROUGH: 'Strikethrough',
+  LATEXTOGGLE: 'LaTeX',
+  CODETOGGLE: 'Code',
+  LINK: 'Link',
+  IMAGE: 'Image'
+});
 
 class TokenArray {}
 class TokenFilter {
@@ -637,7 +635,7 @@ class TokenFilter {
   noneOf(tokenArray) {}
 }
 
-// OLD SYSTEM:
+// old system:
 const commonmark = require('commonmark');
 var toc_found = false;
 var tof_found = false;
@@ -1318,6 +1316,13 @@ class MDDOM extends MDComponent {
   }
 }
 
+class SourcePosition {
+  constructor(array) {
+    this.row = array[0];
+    this.column = array[1];
+  }
+}
+
 // var dom = MDDOM.parse(
 //   '![alt text*](./img.png)\n\n' + '[TOF]\n' + '\n' + '[TOF]\n'
 // );
@@ -1326,11 +1331,17 @@ class MDDOM extends MDComponent {
 // var tokens = Lexer.tokenize('# **Header!**');
 // var input = new InputStream('\nHi there!\n\n# **Header!**');
 var ast = Parser.parse('# **Header!**');
-ast = Parser.parse('Hi there!\n\n# **Header!**');
+ast = Parser.parse(
+  'Hi there!\nnext line\n\nand another one\n\n# **Header!**\nMath be like: $\\int_0^\\infty f(x)\\mathrm dx = F(\\infity)$\n> May the heavens smite me if I ever let go!\n> This Lasagne belongs to me!\n> Badumm tzz!'
+);
 
 module.exports = {
   Lexer: Lexer,
   Parser: Parser,
+  InputStream: InputStream,
+  TokenStream: TokenStream,
+  Token: Token,
+  TokenTypes: TokenTypes,
   MDComponent: MDComponent,
   MDDOM: MDDOM,
   MDText: MDText,

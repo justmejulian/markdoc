@@ -1,11 +1,79 @@
 'use strict';
 const MD = require('../app/src/js/markdown');
-const { MDDOM, MDTOC, Lexer, Parser } = MD;
+const {
+  MDDOM,
+  MDTOC,
+  Lexer,
+  Parser,
+  Token,
+  TokenStream,
+  TokenTypes,
+  InputStream
+} = MD;
 
 describe('Lexer', () => {
   it('should tokenize correctly', () => {
     var tokens = Lexer.tokenize('Test `this`!');
-    expect(tokens.length).toEqual(7);
+    expect(tokens.length).toEqual(6);
+    expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
+    expect(tokens[1].type).toEqual(TokenTypes.TEXT);
+    expect(tokens[2].type).toEqual(TokenTypes.CODETOGGLE);
+    expect(tokens[3].type).toEqual(TokenTypes.TEXT);
+    expect(tokens[4].type).toEqual(TokenTypes.CODETOGGLE);
+    expect(tokens[5].type).toEqual(TokenTypes.TEXT);
+  });
+  it('should find proper header tokens', () => {
+    // Matches:
+    var tokens = Lexer.tokenize('# Header');
+    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 1]);
+    tokens = Lexer.tokenize('## Header');
+    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 2]);
+    tokens = Lexer.tokenize('### Header');
+    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 3]);
+    tokens = Lexer.tokenize('#### Header');
+    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 4]);
+    tokens = Lexer.tokenize('##### Header');
+    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 5]);
+    tokens = Lexer.tokenize('###### Header');
+    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 6]);
+
+    // No matches:
+    tokens = Lexer.tokenize('####### Header');
+    expect(tokens[0].type).not.toEqual(TokenTypes.HEADER);
+    tokens = Lexer.tokenize('\\# Header');
+    expect(tokens[0].type).not.toEqual(TokenTypes.HEADER);
+    tokens = Lexer.tokenize(' # Header');
+    expect(tokens[0].type).not.toEqual(TokenTypes.HEADER);
+
+    // Multiple:
+    //                       XX(text)()XXXXX( text  )
+    tokens = Lexer.tokenize('# Header\n\n## Subheader');
+    expect(tokens.length).toEqual(5);
+    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+    expect(tokens[3].type).toEqual(TokenTypes.HEADER);
+  });
+  it('should find proper paragraphs', () => {
+    // Matches:
+    var tokens = Lexer.tokenize('This is an example Paragraph');
+    expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 0]);
+    tokens = Lexer.tokenize('This is an example Paragraph');
+    expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 0]);
   });
 });
 
@@ -99,32 +167,26 @@ describe('Markdown parser', () => {
     expect(header.to.row).toEqual(1);
     expect(header.to.column).toEqual(14);
   });
-  if (
-    ('should parse one TOC and only one',
-    () => {
-      var dom = MDDOM.parse('# Header\n' + '[TOC]\n' + '\n' + '[TOC]');
-      var count = 0;
-      for (const child of dom.children) {
-        if (child instanceof MDTOC) count++;
-      }
-      expect(count).toEqual(1);
-      expect(dom.toc).toBeDefined();
-      expect(dom.toc.children.length).toEqual(1);
-    })
-  );
-  if (
-    ('should parse one TOF and only one',
-    () => {
-      var dom = MDDOM.parse(
-        '![alt text](./img.png)\n' + '[TOF]\n' + '\n' + '[TOF]'
-      );
-      var count = 0;
-      for (const child of dom.children) {
-        if (child instanceof MDTOC) count++;
-      }
-      expect(count).toEqual(1);
-      expect(dom.tof).toBeDefined();
-      expect(dom.tof.children.length).toEqual(1);
-    })
-  );
+  it('should parse one TOC and only one', () => {
+    var dom = MDDOM.parse('# Header\n' + '[TOC]\n' + '\n' + '[TOC]');
+    var count = 0;
+    for (const child of dom.children) {
+      if (child instanceof MDTOC) count++;
+    }
+    expect(count).toEqual(1);
+    expect(dom.toc).toBeDefined();
+    expect(dom.toc.children.length).toEqual(1);
+  });
+  // it('should parse one TOF and only one', () => {
+  //   var dom = MDDOM.parse(
+  //     '![alt text](./img.png)\n' + '[TOF]\n' + '\n' + '[TOF]'
+  //   );
+  //   var count = 0;
+  //   for (const child of dom.children) {
+  //     if (child instanceof MDTOC) count++;
+  //   }
+  //   expect(count).toEqual(1);
+  //   expect(dom.tof).toBeDefined();
+  //   expect(dom.tof.children.length).toEqual(1);
+  // });
 });
