@@ -44,8 +44,8 @@ class SidebarStore extends EventEmitter {
     this.date = date.format('DD/MM/YYYY');
   }
 
-  setHeaderLeft(tex) {
-    this.headerLeft = tex;
+  setHeaderLeft(text) {
+    this.headerLeft = text;
   }
 
   setHeaderMiddle(text) {

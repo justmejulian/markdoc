@@ -21,8 +21,11 @@ export default class Sidebar extends Component {
     this.setHasTitlepage = this._setHasTitlepage.bind(this);
     this.setHasHeader = this._setHasHeader.bind(this);
     this.setHasFooter = this._setHasFooter.bind(this);
+    this.setTitle = this._setTitle.bind(this);
+    this.setAuthor = this._setAuthor.bind(this);
     this.setHeaderInfo = this._setHeaderInfo.bind(this);
     this.setFooterInfo = this._setFooterInfo.bind(this);
+    this.setDate = this._setDate.bind(this);
 
     this.state = {
       isCollapsed: true,
@@ -48,6 +51,9 @@ export default class Sidebar extends Component {
     SidebarStore.on('hasFooter_changed', this.setHasFooter);
     SidebarStore.on('Header_changed', this.setHeaderInfo);
     SidebarStore.on('Footer_changed', this.setFooterInfo);
+    SidebarStore.on('Title_changed', this.setTitle);
+    SidebarStore.on('Author_changed', this.setAuthor);
+    SidebarStore.on('Date_changed', this.setDate);
   }
 
   // Unbind change listener
@@ -57,6 +63,21 @@ export default class Sidebar extends Component {
     SidebarStore.removeListener('hasFooter_changed', this.setHasFooter);
     SidebarStore.removeListener('Header_changed', this.setHeaderInfo);
     SidebarStore.removeListener('Footer_changed', this.setFooterInfo);
+    SidebarStore.removeListener('Title_changed', this.setTitle);
+    SidebarStore.removeListener('Author_changed', this.setAuthor);
+    SidebarStore.removeListener('Date_changed', this.setDate);
+  }
+
+  _setTitle() {
+    this.setState({
+      title: SidebarStore.getTitle()
+    });
+  }
+
+  _setAuthor() {
+    this.setState({
+      author: SidebarStore.getAuthor()
+    });
   }
 
   _setHasTitlepage() {
@@ -90,6 +111,12 @@ export default class Sidebar extends Component {
       footerLeft: SidebarStore.getFooterLeft(),
       footerMiddle: SidebarStore.getFooterMiddle(),
       footerRight: SidebarStore.getFooterRight()
+    });
+  }
+
+  _setDate() {
+    this.setState({
+      date: SidebarStore.getDate()
     });
   }
 
