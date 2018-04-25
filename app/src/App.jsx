@@ -192,7 +192,6 @@ class App extends React.Component {
 
   _setSidebarContent(currentContent) {
     var splitContent = currentContent.split('---\n');
-    console.log(splitContent[1]);
     for (const metaDataHelper of this.metaDataHelpers) {
       if (!metaDataHelper.consume(splitContent[1])) {
         metaDataHelper.setDefault();
@@ -286,7 +285,7 @@ class MetaDataHelper {
     return '\t' + this.name + ': "' + value + '"';
   }
   consume(string) {
-    var regex = new RegExp('^s*' + this.name + ': "(.*)"$', 'm');
+    var regex = new RegExp('^\\s*' + this.name + ':\\s"(.*)"$', 'm');
     var match = regex.exec(string);
     if (match == null) return false;
     var value = match[1];
