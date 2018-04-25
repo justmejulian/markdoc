@@ -63,7 +63,7 @@ class App extends React.Component {
         SidebarActions.setAuthor(val);
       }),
       new MetaDataHelper('date', value => {
-        SidebarActions.setDate(moment(this._prepareDate(value)));
+        SidebarActions.setDate(value);
       }),
       new MetaDataHelper('headerLeft', val => {
         SidebarActions.setHeaderLeft(val);
@@ -215,11 +215,6 @@ class App extends React.Component {
     } else {
       return false;
     }
-  }
-
-  _prepareDate(strDate) {
-    var splitDate = strDate.split('/');
-    return splitDate[2] + '-' + splitDate[1] + '-' + splitDate[0];
   }
 
   render() {
