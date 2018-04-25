@@ -7,6 +7,8 @@ import Preview from '../app/src/components/Preview.jsx';
 import Sidebar from '../app/src/components/Sidebar.jsx';
 import Header from '../app/src/components/Header.jsx';
 import Footer from '../app/src/components/Footer.jsx';
+import TableMaker from '../app/src/components/TableMaker.jsx';
+import PagesStore from '../app/src/stores/PagesStore.js';
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -186,5 +188,13 @@ describe('Test sidebar', () => {
       expect(sidebar.state(field)).toEqual(['Changed']);
       i++;
     });
+  });
+});
+
+describe('Test tableMaker', () => {
+  var tableMaker;
+
+  beforeEach(() => {
+    tableMaker = shallow('<TableMaker />');
   });
 });
