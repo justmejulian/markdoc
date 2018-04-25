@@ -10,10 +10,12 @@ export default class TableMaker extends Component {
     this.handleCheckboxChange = target => this._handleCheckboxChange(target);
     this.createTable = () => this._createTable();
     this.resetState = () => this._resetState();
+    this.handlePopupClose = () => this._handlePopupClose();
     this.state = {
       rows: 3,
       columns: 3,
-      topRowIsHeader: false
+      topRowIsHeader: false,
+      popupClosed: true
     };
   }
 
@@ -25,6 +27,12 @@ export default class TableMaker extends Component {
     this.setState({ [target.name]: [target.checked] });
   }
 
+  _handlePopupClose() {
+    this.createTable();
+    this.resetState();
+    this.state.popupClosed = true;
+  }
+
   _resetState() {
     this.setState({
       rows: 3,
@@ -34,21 +42,23 @@ export default class TableMaker extends Component {
   }
 
   _createTable() {
-    var tableHTML = '<table>';
-    for (var i = 0; i < this.state.rows; i++) {
-      tableHTML = tableHTML + '<tr>';
-      for (var j = 0; j < this.state.columns; j++) {
-        if (this.state.topRowIsHeader && i == 0) {
-          tableHTML = tableHTML + '<th>' + (i + 1) + ':' + (j + 1) + '</th>';
-        } else {
-          tableHTML = tableHTML + '<td>' + (i + 1) + ':' + (j + 1) + '</td>';
+    if (this.state.columns > 0 && this.state.rows > 0) {
+      var tableHTML = '<table>';
+      for (var i = 1; i <= this.state.rows; i++) {
+        tableHTML = tableHTML + '<tr>';
+        for (var j = 1; j <= this.state.columns; j++) {
+          if (this.state.topRowIsHeader && i == 0) {
+            tableHTML = tableHTML + '<th>' + i + ':' + j + '</th>';
+          } else {
+            tableHTML = tableHTML + '<td>' + i + ':' + j + '</td>';
+          }
         }
+        tableHTML = tableHTML + '</tr>';
       }
-      tableHTML = tableHTML + '</tr>';
+      tableHTML = tableHTML + '</table>';
+      Actions.setMarkdown(PagesStore.getMarkdown() + tableHTML);
+      Actions.setHTML();
     }
-    tableHTML = tableHTML + '</table>';
-    Actions.setMarkdown(PagesStore.getMarkdown() + tableHTML);
-    this.resetState();
   }
 
   render() {
@@ -57,21 +67,26 @@ export default class TableMaker extends Component {
         trigger={<button className="button"> Insert table </button>}
         modal
         closeOnDocumentClick
+        id="tableMaker"
       >
         {close => (
           <div className="modal">
-            <div className="header"> Choose table size </div>
-            <div className="content">
+            <div className="tablePopupHeader"> Choose table size </div>
+            <div className="tablePopupContent">
               <p>Rows: </p>
               <input
-                type="text"
+                type="number"
                 value={this.state.rows}
                 name="rows"
                 onChange={evt => this.handleFieldChange(evt.target)}
+                ref={input => {
+                  this.state.popupClosed && input && input.focus();
+                  this.state.popUpClosed = false;
+                }}
               />
               <p> Columns: </p>
               <input
-                type="text"
+                type="number"
                 value={this.state.columns}
                 name="columns"
                 onChange={evt => this.handleFieldChange(evt.target)}
@@ -84,12 +99,12 @@ export default class TableMaker extends Component {
                 onChange={evt => this.handleCheckboxChange(evt.target)}
               />
             </div>
-            <div className="actions">
+            <div className="tablePopupActions">
               <button
                 className="button"
                 onClick={() => {
-                  this.createTable();
                   close();
+                  this.handlePopupClose();
                 }}
               >
                 Confirm
