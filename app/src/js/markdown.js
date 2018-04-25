@@ -26,6 +26,7 @@ const IMAGE = 'Image';
 class InputStream {
   constructor(string) {
     this.input = string;
+    this.first = true;
     this.pos = 0;
     this.line = 0;
     this.col = 0;
@@ -41,11 +42,30 @@ class InputStream {
     return ch;
   }
   match(regex) {
-    return this.input.substr(this.pos).match(regex);
+    var substr = this.input.substr(this.pos);
+    if (this.first) {
+      substr = '\n' + substr;
+    }
+    return substr.match(regex);
   }
   skip(regex) {
-    var match = this.input.substr(this.pos).match(regex);
-    this.pos += match[0].length;
+    var substr = this.input.substr(this.pos);
+    if (this.first) substr = '\n' + substr;
+    var match = substr.match(regex);
+    var value = match[0];
+    if (this.first) {
+      this.first = false;
+      value = value.substr(1);
+    }
+    this.pos += value.length;
+    var lines = value.split('\n');
+    var newLines = lines.length - 1;
+    this.line += newLines;
+    if (newLines > 0) {
+      this.col = lines[newLines].length;
+    } else {
+      this.col += value.length;
+    }
   }
   peek() {
     return this.input.charAt(this.pos);
@@ -96,13 +116,16 @@ class TokenStream {
         var newToken = token.createNew();
         newToken.match = match;
         newToken.value = match[0];
+        newToken.from = [this.inputStream.line, this.inputStream.col];
         this.inputStream.skip(token.pattern);
+        newToken.to = [this.inputStream.line, this.inputStream.col - 1];
         return newToken;
       }
     }
     // No match => Assume text until next match
     // TODO: Make this sexier
     var textToken = new Token(TEXT, /^./);
+    textToken.from = [this.inputStream.line, this.inputStream.col];
     textToken.value = '';
     var foundToken = false;
     while (!foundToken) {
@@ -110,6 +133,7 @@ class TokenStream {
       textToken.value += this.inputStream.next();
       for (const token of this.tokens) {
         foundToken = this.inputStream.match(token.pattern);
+        textToken.to = [this.inputStream.line, this.inputStream.col - 1];
         if (foundToken) break;
       }
     }
@@ -134,9 +158,9 @@ class TokenStream {
 class Parser {
   constructor(tokenStream) {
     this.tokenStream = tokenStream;
+    this.first = true;
   }
   static parse(string) {
-    string = '\n' + string;
     return new Parser(new TokenStream(new InputStream(string))).parse();
   }
   parse() {
@@ -189,6 +213,11 @@ class Parser {
           error('Unexpected Token: ' + token.type);
           break;
       }
+      if (!this.first) {
+        comp.from[0]++;
+        comp.from[1] = 0;
+        this.first = false;
+      }
       out.push(comp);
     }
     return out;
@@ -197,9 +226,11 @@ class Parser {
   _parse_header(token) {
     var header = new MDHeader();
     header.level = token.value.split('#').length - 1;
+    header.from = token.from;
     for (const sub of this._parse_text_line()) {
       header.add(sub);
     }
+    header.to = header.last().to;
     return header;
   }
   _parse_text_line() {
@@ -254,11 +285,14 @@ class Parser {
   }
   _parse_text(token) {
     var comp = new MDText();
+    comp.from = token.from;
+    comp.to = token.to;
     comp.value = token.value;
     return comp;
   }
   _parse_bold(token) {
     var bold = new MDTextBold();
+    bold.from = token.from;
     while ((token = this.tokenStream.peek())) {
       var comp = null;
       switch (token.type) {
@@ -266,6 +300,7 @@ class Parser {
           comp = this._parse_text(this.tokenStream.next());
           break;
         case BOLD:
+          bold.to = token.to;
           this.tokenStream.next();
           return bold;
           break;
@@ -297,6 +332,7 @@ class Parser {
   }
   _parse_italics(token) {
     var italics = new MDTextItalics();
+    italics.from = token.from;
     while ((token = this.tokenStream.peek())) {
       var comp = null;
       switch (token.type) {
@@ -307,6 +343,7 @@ class Parser {
           comp = this._parse_bold(this.tokenStream.next());
           break;
         case ITALICS:
+          italics.to = token.to;
           this.tokenStream.next();
           return italics;
         case STRIKETHROUGH:
@@ -334,6 +371,7 @@ class Parser {
   }
   _parse_strikethrough(token) {
     var strike = new MDTextStrikethrough();
+    strike.from = token.from;
     while ((token = this.tokenStream.peek())) {
       var comp = null;
       switch (token.type) {
@@ -347,6 +385,7 @@ class Parser {
           comp = this._parse_italics(this.tokenStream.next());
           break;
         case STRIKETHROUGH:
+          strike.to = token.to;
           this.tokenStream.next();
           return strike;
         case LATEXTOGGLE:
@@ -372,10 +411,12 @@ class Parser {
   _parse_latex(token) {
     var latex = new MDTextLaTeX();
     var text = new MDText();
+    latex.from = token.from;
     latex.add(text);
     while ((token = this.tokenStream.peek())) {
       switch (token.type) {
         case LATEXTOGGLE:
+          latex.to = token.to;
           this.tokenStream.next();
           return latex;
         case (HEADER,
@@ -404,10 +445,12 @@ class Parser {
   _parse_inline_code(token) {
     var code = new MDTextCode();
     var text = new MDText();
-    latex.add(text);
+    code.from = token.from;
+    code.add(text);
     while ((token = this.tokenStream.peek())) {
       switch (token.type) {
         case CODETOGGLE:
+          code.to = token.to;
           this.tokenStream.next();
           return code;
         case (HEADER,
@@ -435,15 +478,19 @@ class Parser {
   }
   _parse_link(token) {
     var link = new MDLink();
+    link.from = token.from;
     link.destination = token.match[4].value;
     link.add(this._parse_text(token.match[4]));
     if (token.match.length - 1 > 4 && token.match[5]) {
       link.title = token.match[5];
     }
+    link.to = link.last().from;
     return link;
   }
   _parse_image(token) {
     var img = new MDImage();
+    img.from = token.from;
+    img.to = token.to;
     if (token.match[1].startsWith('[')) {
       img.alt = token.match[2];
       img.link = token.match[3];
@@ -460,6 +507,7 @@ class Parser {
   }
   _parse_paragraph(token) {
     var paragraph = new MDParagraph();
+    paragraph.from = token.from;
     while ((token = this.tokenStream.peek())) {
       for (const sub of this._parse_text_line()) {
         paragraph.add(sub);
@@ -468,18 +516,22 @@ class Parser {
       if (token && token.type == NEWLINE) {
         // Still going
         this.tokenStream.next();
-        paragraph.add(new MDSoftBreak());
+        paragraph.add(this._parse_newline(token));
       } else {
         break;
       }
     }
-    if (paragraph.last() instanceof MDSoftBreak) {
-      paragraph.remove(paragraph.last());
-    }
+    // if (paragraph.last() instanceof MDSoftBreak) {
+    //   paragraph.remove(paragraph.last());
+    // }
+    paragraph.to = paragraph.last().to;
     return paragraph;
   }
-  _parse_newline() {
-    return new MDSoftBreak();
+  _parse_newline(token) {
+    var softbreak = new MDSoftBreak();
+    softbreak.from = token.from;
+    softbreak.to = token.to;
+    return softbreak;
   }
 }
 
@@ -585,6 +637,7 @@ class TokenFilter {
   noneOf(tokenArray) {}
 }
 
+// OLD SYSTEM:
 const commonmark = require('commonmark');
 var toc_found = false;
 var tof_found = false;
@@ -1270,8 +1323,8 @@ class MDDOM extends MDComponent {
 // );
 // console.log(dom.toHtml());
 
-var tokens = Lexer.tokenize('# **Header!**');
-var input = new InputStream('\nHi there!\n\n# **Header!**');
+// var tokens = Lexer.tokenize('# **Header!**');
+// var input = new InputStream('\nHi there!\n\n# **Header!**');
 var ast = Parser.parse('# **Header!**');
 ast = Parser.parse('Hi there!\n\n# **Header!**');
 
