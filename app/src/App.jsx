@@ -63,7 +63,7 @@ class App extends React.Component {
         SidebarActions.setAuthor(val);
       }),
       new MetaDataHelper('date', value => {
-        SidebarActions.setDate(value);
+        return; //SidebarActions.setDate(value);
       }),
       new MetaDataHelper('headerLeft', val => {
         SidebarActions.setHeaderLeft(val);
