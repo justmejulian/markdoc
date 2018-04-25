@@ -134,7 +134,7 @@ class SidebarStore extends EventEmitter {
         this.setTitle(action.text);
         this.emit('Title_changed');
         break;
-      case 'SET_AUHTOR':
+      case 'SET_AUTHOR':
         this.setAuthor(action.text);
         this.emit('Author_changed');
         break;
