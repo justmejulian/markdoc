@@ -46,7 +46,7 @@ class Preview extends React.Component {
     var html = PagesStore.getHTML();
     var words = html.replace(' <br/> ', '<br/> ').split(' ');
 
-    copyArray[0].html = words[0];
+    copyArray[0].html = words[0].replace('<br/> ', ' <br/> ');
 
     console.log(words);
 
@@ -100,7 +100,9 @@ class Preview extends React.Component {
           );
         } else {
           copyArray[currentPage].html =
-            copyArray[currentPage].html + ' ' + this.state.words[currentWord];
+            copyArray[currentPage].html +
+            ' ' +
+            this.state.words[currentWord].replace('<br/> ', ' <br/> ');
           this.setState(
             {
               pages: copyArray,
