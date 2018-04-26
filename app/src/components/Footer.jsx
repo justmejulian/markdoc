@@ -1,28 +1,16 @@
 import React, { Component } from 'react';
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 
 class Footer extends React.Component {
   constructor() {
     super();
-    this.getFooterInfo = this.getFooterInfo.bind(this);
+    this.setFooterInfo = this.setFooterInfo.bind(this);
     this.state = {
-      headerLeft: '',
-      headerMiddle: '',
-      headerRight: '',
-      pageNumber: 0
+      footerLeft: SidebarStore.getFooterLeft(),
+      footerMiddle: SidebarStore.getFooterMiddle(),
+      footerRight: SidebarStore.getFooterRight(),
+      pageNumber: ''
     };
-  }
-
-  componentWillMount() {
-    Store.on('Footer_changed', this.getFooterInfo);
-  }
-
-  getFooterInfo() {
-    this.setState({
-      footerLeft: Store.getFooterLeft(),
-      footerMiddle: Store.getFooterMiddle(),
-      footerRight: Store.getFooterRight()
-    });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -31,9 +19,31 @@ class Footer extends React.Component {
     });
   }
 
+  componentWillMount() {
+    SidebarStore.on('Footer_changed', this.setFooterInfo);
+  }
+
+  componentWillUnmount() {
+    SidebarStore.removeListener('Footer_changed', this.setFooterInfo);
+  }
+
+  setFooterInfo() {
+    this.setState({
+      footerLeft: SidebarStore.getFooterLeft(),
+      footerMiddle: SidebarStore.getFooterMiddle(),
+      footerRight: SidebarStore.getFooterRight()
+    });
+  }
+
+  getStyle() {
+    return {
+      visibility: this.props.visibility ? 'visible' : 'hidden'
+    };
+  }
+
   render() {
     return (
-      <div className="footer">
+      <div className="footer" style={this.getStyle()}>
         <div className="hfLeft"> {this.state.footerLeft} </div>
         <div className="hfCenter"> {this.state.pageNumber} </div>
         <div className="hfRight"> {this.state.footerRight} </div>

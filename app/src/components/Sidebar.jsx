@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
-import '../styles/Sidebar.sass';
-import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 import * as SidebarActions from '../actions/SidebarActions';
 
 export default class Sidebar extends Component {
@@ -14,12 +12,26 @@ export default class Sidebar extends Component {
   constructor(props) {
     super(props);
     this.handleDateChange = date => this._handleDateChange(date);
+    this.handleCheckboxChange = target => this._handleCheckboxChange(target);
     this.handleFieldChange = target => this._handleFieldChange(target);
     this.handleExpandOrCollapse = () => this._handleExpandOrCollapse();
     this.handleMouseHover = () => this._handleMouseHover();
-    this.getTitle = this.getTitle.bind(this);
+
+    // Setter
+    this.setHasTitlepage = this._setHasTitlepage.bind(this);
+    this.setHasHeader = this._setHasHeader.bind(this);
+    this.setHasFooter = this._setHasFooter.bind(this);
+    this.setTitle = this._setTitle.bind(this);
+    this.setAuthor = this._setAuthor.bind(this);
+    this.setHeaderInfo = this._setHeaderInfo.bind(this);
+    this.setFooterInfo = this._setFooterInfo.bind(this);
+    this.setDate = this._setDate.bind(this);
+
     this.state = {
       isCollapsed: true,
+      hasTitlepage: SidebarStore.getHasTitlepage(),
+      hasHeader: SidebarStore.getHasHeader(),
+      hasFooter: SidebarStore.getHasFooter(),
       title: '',
       author: '',
       date: moment(),
@@ -34,17 +46,82 @@ export default class Sidebar extends Component {
   }
 
   componentWillMount() {
-    Store.on('Title_changed', this.getTitle);
+    SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
+    SidebarStore.on('hasHeader_changed', this.setHasHeader);
+    SidebarStore.on('hasFooter_changed', this.setHasFooter);
+    SidebarStore.on('Header_changed', this.setHeaderInfo);
+    SidebarStore.on('Footer_changed', this.setFooterInfo);
+    SidebarStore.on('Title_changed', this.setTitle);
+    SidebarStore.on('Author_changed', this.setAuthor);
+    SidebarStore.on('Date_changed', this.setDate);
   }
 
-  getTitle() {
+  // Unbind change listener
+  componentWillUnmount() {
+    SidebarStore.removeListener('hasTitlepage_changed', this.setHasTitlepage);
+    SidebarStore.removeListener('hasHeader_changed', this.setHasHeader);
+    SidebarStore.removeListener('hasFooter_changed', this.setHasFooter);
+    SidebarStore.removeListener('Header_changed', this.setHeaderInfo);
+    SidebarStore.removeListener('Footer_changed', this.setFooterInfo);
+    SidebarStore.removeListener('Title_changed', this.setTitle);
+    SidebarStore.removeListener('Author_changed', this.setAuthor);
+    SidebarStore.removeListener('Date_changed', this.setDate);
+  }
+
+  _setTitle() {
     this.setState({
-      title: Store.getTitle()
+      title: SidebarStore.getTitle()
+    });
+  }
+
+  _setAuthor() {
+    this.setState({
+      author: SidebarStore.getAuthor()
+    });
+  }
+
+  _setHasTitlepage() {
+    this.setState({
+      hasTitlepage: SidebarStore.getHasTitlepage()
+    });
+  }
+
+  _setHasHeader() {
+    this.setState({
+      hasHeader: SidebarStore.getHasHeader()
+    });
+  }
+
+  _setHasFooter() {
+    this.setState({
+      hasFooter: SidebarStore.getHasFooter()
+    });
+  }
+
+  _setHeaderInfo() {
+    this.setState({
+      headerLeft: SidebarStore.getHeaderLeft(),
+      headerMiddle: SidebarStore.getHeaderMiddle(),
+      headerRight: SidebarStore.getHeaderRight()
+    });
+  }
+
+  _setFooterInfo() {
+    this.setState({
+      footerLeft: SidebarStore.getFooterLeft(),
+      footerMiddle: SidebarStore.getFooterMiddle(),
+      footerRight: SidebarStore.getFooterRight()
+    });
+  }
+
+  _setDate() {
+    this.setState({
+      date: SidebarStore.getDate()
     });
   }
 
   _handleDateChange(date) {
-    Actions.setDate(date);
+    SidebarActions.setDate(date);
     this.setState({ date: date });
   }
 
@@ -80,6 +157,23 @@ export default class Sidebar extends Component {
         SidebarActions.setFooterRight(target.value);
         break;
       default:
+    }
+  }
+
+  _handleCheckboxChange(target) {
+    var name = target.name;
+    var isChecked = target.checked;
+    this.setState({ [name]: isChecked });
+    switch (name) {
+      case 'hasTitlepage':
+        SidebarActions.setHasTitlepage(isChecked);
+        break;
+      case 'hasHeader':
+        SidebarActions.setHasHeader(isChecked);
+        break;
+      case 'hasFooter':
+        SidebarActions.setHasFooter(isChecked);
+        break;
     }
   }
 
@@ -122,6 +216,31 @@ export default class Sidebar extends Component {
           <div style={sidebarContentStyle} id="sidebar-content">
             <div className="sidebar-header">
               <h1> Markdoc </h1>
+            </div>
+            <div className="form-group">
+              <div className="input-container">
+                <label>Titlepage:</label>
+                <input
+                  type="checkbox"
+                  onChange={evt => this.handleCheckboxChange(evt.target)}
+                  name="hasTitlepage"
+                  checked={this.state.hasTitlepage}
+                />
+                <label>Header:</label>
+                <input
+                  type="checkbox"
+                  onChange={evt => this.handleCheckboxChange(evt.target)}
+                  name="hasHeader"
+                  checked={this.state.hasHeader}
+                />
+                <label>Footer:</label>
+                <input
+                  type="checkbox"
+                  onChange={evt => this.handleCheckboxChange(evt.target)}
+                  name="hasFooter"
+                  checked={this.state.hasFooter}
+                />
+              </div>
             </div>
             <div className="form-group">
               <label>Title:</label>

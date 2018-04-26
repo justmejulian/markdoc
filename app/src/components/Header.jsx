@@ -1,26 +1,38 @@
 import React, { Component } from 'react';
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 
 class Header extends React.Component {
-  constructor() {
+  constructor(props) {
     super();
-    this.getHeaderInfo = this.getHeaderInfo.bind(this);
+    this.setHeaderInfo = this.setHeaderInfo.bind(this);
     this.state = {
-      headerLeft: Store.getHeaderLeft(),
-      headerMiddle: Store.getHeaderMiddle(),
-      headerRight: Store.getHeaderRight()
+      headerLeft: SidebarStore.getHeaderLeft(),
+      headerMiddle: SidebarStore.getHeaderMiddle(),
+      headerRight: SidebarStore.getHeaderRight(),
+      pageNumber: props.pageNumber + 1
     };
   }
 
-  componentWillMount() {
-    Store.on('Header_changed', this.getHeaderInfo);
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      pageNumber: nextProps.pageNumber + 1
+    });
   }
 
-  getHeaderInfo() {
+  componentWillMount() {
+    SidebarStore.on('Header_changed', this.setHeaderInfo);
+  }
+
+  // Unbind change listener
+  componentWillUnmount() {
+    SidebarStore.removeListener('Header_changed', this.setHeaderInfo);
+  }
+
+  setHeaderInfo() {
     this.setState({
-      headerLeft: Store.getHeaderLeft(),
-      headerMiddle: Store.getHeaderMiddle(),
-      headerRight: Store.getHeaderRight()
+      headerLeft: SidebarStore.getHeaderLeft(),
+      headerMiddle: SidebarStore.getHeaderMiddle(),
+      headerRight: SidebarStore.getHeaderRight()
     });
   }
 
@@ -31,7 +43,8 @@ class Header extends React.Component {
         this.state.headerMiddle != '' ||
         this.state.headerRight != ''
           ? '1px solid black'
-          : '0px'
+          : '0px',
+      visibility: this.props.visibility ? 'visible' : 'hidden'
     };
   }
 

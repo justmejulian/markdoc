@@ -1,16 +1,17 @@
 import { EventEmitter } from 'events';
-import { MDDOM } from '../js/markdown.js';
 
 import dispatcher from '../dispatcher';
+import moment from 'moment';
 
-class Store extends EventEmitter {
+class SidebarStore extends EventEmitter {
   constructor() {
     super();
-    this.markdown = '';
-    this.html = '';
-    this.title = '';
-    this.author = '';
-    this.date = '';
+    this.hasTitlepage = false;
+    this.hasHeader = true;
+    this.hasFooter = true;
+    this.title = 'Title';
+    this.author = 'Author';
+    this.date = moment().format('DD/MM/YYYY');
     this.headerLeft = 'Zusammenfassung';
     this.headerMiddle = 'PSIT';
     this.headerRight = 'Max Muster';
@@ -19,12 +20,16 @@ class Store extends EventEmitter {
     this.footerRight = '';
   }
 
-  setMarkdown(text) {
-    this.markdown = text;
+  setHasTitlepage(status) {
+    this.hasTitlepage = status;
   }
 
-  setHTML(markdown) {
-    this.html = MDDOM.parse(markdown).toHtml();
+  setHasHeader(status) {
+    this.hasHeader = status;
+  }
+
+  setHasFooter(status) {
+    this.hasFooter = status;
   }
 
   setTitle(title) {
@@ -36,11 +41,11 @@ class Store extends EventEmitter {
   }
 
   setDate(date) {
-    this.date = date;
+    this.date = date.format('DD/MM/YYYY');
   }
 
-  setHeaderLeft(tex) {
-    this.headerLeft = tex;
+  setHeaderLeft(text) {
+    this.headerLeft = text;
   }
 
   setHeaderMiddle(text) {
@@ -63,16 +68,20 @@ class Store extends EventEmitter {
     this.footerRight = text;
   }
 
-  getHTML() {
-    return this.html;
+  getHasTitlepage() {
+    return this.hasTitlepage;
+  }
+
+  getHasHeader() {
+    return this.hasHeader;
+  }
+
+  getHasFooter() {
+    return this.hasFooter;
   }
 
   getTitle() {
     return this.title;
-  }
-
-  getMarkdown() {
-    return this.markdown;
   }
 
   getAuthor() {
@@ -109,22 +118,28 @@ class Store extends EventEmitter {
 
   handleActions(action) {
     switch (action.type) {
-      case 'SET_HTML':
-        this.setMarkdown(action.text);
-        this.setHTML(this.markdown);
-        this.emit('HTML_changed');
+      case 'SET_HASTITLEPAGE':
+        this.setHasTitlepage(action.text);
+        this.emit('hasTitlepage_changed');
+        break;
+      case 'SET_HASHEADER':
+        this.setHasHeader(action.text);
+        this.emit('hasHeader_changed');
+        break;
+      case 'SET_HASFOOTER':
+        this.setHasFooter(action.text);
+        this.emit('hasFooter_changed');
         break;
       case 'SET_TITLE':
         this.setTitle(action.text);
         this.emit('Title_changed');
         break;
-      case 'SET_AUHTOR':
+      case 'SET_AUTHOR':
         this.setAuthor(action.text);
         this.emit('Author_changed');
         break;
       case 'SET_DATE':
         this.setDate(action.text);
-        this.setHTML(this.markdown);
         this.emit('Date_changed');
         break;
       case 'SET_HEADER_LEFT':
@@ -155,7 +170,7 @@ class Store extends EventEmitter {
   }
 }
 
-const store = new Store();
-dispatcher.register(store.handleActions.bind(store));
+const sidebarStore = new SidebarStore();
+dispatcher.register(sidebarStore.handleActions.bind(sidebarStore));
 
-export default store;
+export default sidebarStore;
