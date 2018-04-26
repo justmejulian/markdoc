@@ -62,7 +62,11 @@ describe('Lexer', () => {
     tokens = Lexer.tokenize('# Header\n\n## Subheader');
     expect(tokens.length).toEqual(5);
     expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 1]);
     expect(tokens[3].type).toEqual(TokenTypes.HEADER);
+    expect(tokens[3].from).toEqual([2, 0]);
+    expect(tokens[3].to).toEqual([2, 2]);
   });
   it('should find proper paragraphs', () => {
     // Matches:
@@ -70,10 +74,19 @@ describe('Lexer', () => {
     expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
     expect(tokens[0].from).toEqual([0, 0]);
     expect(tokens[0].to).toEqual([0, 0]);
-    tokens = Lexer.tokenize('This is an example Paragraph');
+    tokens = Lexer.tokenize("'code'");
     expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
     expect(tokens[0].from).toEqual([0, 0]);
     expect(tokens[0].to).toEqual([0, 0]);
+
+    // Multiple:
+    tokens = Lexer.tokenize('This is an example\nParagraph');
+    expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
+    expect(tokens[0].from).toEqual([0, 0]);
+    expect(tokens[0].to).toEqual([0, 0]);
+    expect(tokens[2].type).toEqual(TokenTypes.PARAGRAPH);
+    expect(tokens[2].from).toEqual([1, 0]);
+    expect(tokens[2].to).toEqual([1, 0]);
   });
 });
 

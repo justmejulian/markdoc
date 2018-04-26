@@ -16,13 +16,12 @@ class InputStream {
     } else {
       this.col++;
     }
+    if (this.first) this.first = false;
     return ch;
   }
   match(regex) {
     var substr = this.input.substr(this.pos);
-    if (this.first) {
-      substr = '\n' + substr;
-    }
+    if (this.first) substr = '\n' + substr;
     return substr.match(regex);
   }
   skip(regex) {
@@ -30,11 +29,8 @@ class InputStream {
     if (this.first) substr = '\n' + substr;
     var match = substr.match(regex);
     var value = match[0];
-    if (this.first) {
-      this.first = false;
-      value = value.substr(1);
-    }
     this.pos += value.length;
+    if (this.first) this.pos--;
     var lines = value.split('\n');
     var newLines = lines.length - 1;
     this.line += newLines;
@@ -43,6 +39,7 @@ class InputStream {
     } else {
       this.col += value.length;
     }
+    if (this.first) this.first = false;
   }
   peek() {
     return this.input.charAt(this.pos);
@@ -97,6 +94,27 @@ class TokenStream {
         newToken.match = match;
         newToken.value = match[0];
         newToken.from = [this.inputStream.line, this.inputStream.col];
+        if (
+          [
+            TokenTypes.HEADER,
+            TokenTypes.PARAGRAPH,
+            TokenTypes.BLOCKQUOTE,
+            TokenTypes.CODEBLOCKSTART,
+            TokenTypes.CODEBLOCKEND,
+            TokenTypes.LATEXBLOCKSTART,
+            TokenTypes.LATEXBLOCKEND,
+            TokenTypes.NUMBEREDLIST,
+            TokenTypes.UNNUMBEREDLIST,
+            TokenTypes.RULE,
+            TokenTypes.TOC,
+            TokenTypes.TOF,
+            TokenTypes.PAGEBREAK
+          ].includes(newToken.type)
+        ) {
+          // Fix .from
+          newToken.from[0]++;
+          newToken.from[1] = 0;
+        }
         this.inputStream.skip(token.pattern);
         newToken.to = [
           this.inputStream.line,
@@ -192,7 +210,7 @@ class Parser {
           // Ignore
           break;
         default:
-          error('Unexpected Token: ' + token.type);
+          throw new Error('Unexpected Token: ' + token.type);
           break;
       }
       // These components require a leading newline. Fix the coordinates:
@@ -1268,7 +1286,7 @@ class MDDOM extends MDComponent {
             translated = new MDBulletList();
             break;
           default:
-            throw `Unknown list sub type: ${node.listType}`;
+            throw new Error(`Unknown list sub type: ${node.listType}`);
             return;
         }
         break;
@@ -1276,7 +1294,7 @@ class MDDOM extends MDComponent {
         translated = new MDItem();
         break;
       default:
-        throw `Unknown token type: ${node.type}`;
+        throw new Error(`Unknown token type: ${node.type}`);
         return;
     }
     if (node.literal) translated.value = node.literal;
