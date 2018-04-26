@@ -45,7 +45,10 @@ class Preview extends React.Component {
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
     var html = PagesStore.getHTML();
-    var words = html.replace(' <br/> ', '<br/> ').split(' ');
+    var words = html
+      .replace(' <br/> ', '<br/> ')
+      .replace(/\n/g, '<br/> ')
+      .split(' ');
 
     copyArray[0].html = words[0].replace('<br/> ', ' <br/> ');
 
