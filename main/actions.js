@@ -136,7 +136,7 @@ function setFilePath(filePath, currentWindow) {
 
 // returns the filename without extension
 function getFilename(filePath) {
-  return path.basename(filePath, path.extname(filePath));
+  return path.posix.basename(filePath, path.extname(filePath));
 }
 
 // returns the user homedir if filePath is not defined
