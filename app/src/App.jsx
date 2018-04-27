@@ -175,7 +175,7 @@ class App extends React.Component {
   _processMdocContent(currentContent, currentFilePath) {
     // prepare editor content
     var editorContent = currentContent.slice(4, currentContent.size);
-    var indexOfMetadataEnd = editorContent.indexOf('---\n');
+    var indexOfMetadataEnd = editorContent.indexOf('---');
 
     // slice off metadata to get editor Content
     editorContent = editorContent.slice(
@@ -191,7 +191,7 @@ class App extends React.Component {
   }
 
   _setSidebarContent(currentContent) {
-    var splitContent = currentContent.split('---\n');
+    var splitContent = currentContent.split('---');
     for (const metaDataHelper of this.metaDataHelpers) {
       if (!metaDataHelper.consume(splitContent[1])) {
         metaDataHelper.setDefault();
