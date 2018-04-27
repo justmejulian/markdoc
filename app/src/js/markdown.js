@@ -61,33 +61,33 @@ class TokenStream {
   constructor(inputStream) {
     this.inputStream = inputStream;
     this.tokens = [
-      new Token(TokenTypes.HEADER, /^\n#{1,6}\s/),
-      new Token(TokenTypes.BOLD, /^\*\*/),
-      new Token(TokenTypes.ITALICS, /^_/),
-      new Token(TokenTypes.STRIKETHROUGH, /^~~/),
-      new Token(TokenTypes.BLOCKQUOTE, /^\n> /),
-      new Token(TokenTypes.NUMBEREDLIST, /^\n(    |\t)*\d+?\.\s/),
-      new Token(TokenTypes.UNNUMBEREDLIST, /^\n(    |\t)*\*\s/),
-      new Token(TokenTypes.RULE, /^\n(\*\*\*|---|___)\n*/),
+      new Token(TokenTypes.HEADER, /#{1,6}\s/),
+      new Token(TokenTypes.BOLD, /\*\*/),
+      new Token(TokenTypes.ITALICS, /_/),
+      new Token(TokenTypes.STRIKETHROUGH, /~~/),
+      new Token(TokenTypes.BLOCKQUOTE, /> /),
+      new Token(TokenTypes.LIST, /(    |\t)*(\d+?\.|\*)\s/),
+      new Token(TokenTypes.RULE, /(\*\*\*|---|___)/),
+      new Token(TokenTypes.IMAGESTART, /!\[/),
+      new Token(TokenTypes.LINKSTART, /\[/),
+      new Token(TokenTypes.IMGLINKINLINE, /\]\(([^\(\)\s]+?)(?=\s)/),
+      new Token(TokenTypes.IMGLINKREFERENCE, /\]\[[^\[\]]+?/),
       new Token(
         TokenTypes.IMAGE,
-        /^!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/
+        /!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/
       ),
       new Token(
         TokenTypes.LINK,
-        /^(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
+        /(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
       ),
-      new Token(TokenTypes.CODEBLOCKSTART, /^\n```(.+?)\n/),
-      new Token(TokenTypes.CODEBLOCKEND, /^```\n/),
-      new Token(TokenTypes.CODETOGGLE, /^`/),
-      new Token(TokenTypes.TOC, /^\n\[TOC\]\n/),
-      new Token(TokenTypes.TOF, /^\n\[TOF\]\n/),
-      new Token(TokenTypes.PAGEBREAK, /^\n\[PB\]\n/),
-      new Token(TokenTypes.LATEXTOGGLE, /^\$/),
-      new Token(TokenTypes.LATEXBLOCKSTART, /^\n\$\$/),
-      new Token(TokenTypes.LATEXBLOCKEND, /^\$\$\n/),
-      new Token(TokenTypes.PARAGRAPH, /^\n(?=[^\n])/),
-      new Token(TokenTypes.NEWLINE, /^\n/)
+      new Token(TokenTypes.CODEBLOCK, /```/),
+      new Token(TokenTypes.CODETOGGLE, /`/),
+      new Token(TokenTypes.TOC, /\[TOC\]/),
+      new Token(TokenTypes.TOF, /\[TOF\]/),
+      new Token(TokenTypes.PAGEBREAK, /\[PB\]/),
+      new Token(TokenTypes.LATEXTOGGLE, /\$/),
+      new Token(TokenTypes.LATEXBLOCK, /\$\$/),
+      new Token(TokenTypes.NEWLINE, /\n/)
     ];
   }
   _read_next() {
