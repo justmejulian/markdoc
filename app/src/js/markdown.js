@@ -2,35 +2,40 @@
 
 class InputStream {
   constructor(string) {
-    this.input = string;
-    this.first = true;
+    this._input = string;
     this.pos = 0;
     this.line = 0;
     this.col = 0;
   }
   next() {
-    var ch = this.input.charAt(this.pos++);
-    if (ch == '\n') {
-      this.line++;
-      this.col = 0;
-    } else {
-      this.col++;
+    var char = this._input.charAt(this.pos);
+    if (char != '') {
+      if (char == '\n') {
+        this.line++;
+        this.col = 0;
+      } else {
+        this.col++;
+      }
+      this.pos++;
     }
-    if (this.first) this.first = false;
-    return ch;
+    return char;
   }
   match(regex) {
-    var substr = this.input.substr(this.pos);
-    if (this.first) substr = '\n' + substr;
+    var substr = this._input.substr(this.pos);
     return substr.match(regex);
   }
-  skip(regex) {
-    var substr = this.input.substr(this.pos);
-    if (this.first) substr = '\n' + substr;
+  test(regex) {
+    var substr = this._input.substr(this.pos);
     var match = substr.match(regex);
-    var value = match[0];
+    if (match) {
+      return match.index;
+    }
+    return -1;
+  }
+  skip(distance) {
+    if (distance < 0) this.croak('Distance to skip cannot be negative!');
+    var value = this._input.substr(this.pos, distance);
     this.pos += value.length;
-    if (this.first) this.pos--;
     var lines = value.split('\n');
     var newLines = lines.length - 1;
     this.line += newLines;
@@ -39,16 +44,16 @@ class InputStream {
     } else {
       this.col += value.length;
     }
-    if (this.first) this.first = false;
+    return value;
   }
   peek() {
-    return this.input.charAt(this.pos);
+    return this._input.charAt(this.pos);
   }
   eof() {
     return this.peek() == '';
   }
   croak(msg) {
-    throw new Error(msg + ' (' + this.line + ':' + this.col + ')');
+    throw new Error(`${msg} (${this.line}:${this.col})`);
   }
 }
 
@@ -1348,10 +1353,10 @@ class SourcePosition {
 
 // var tokens = Lexer.tokenize('# **Header!**');
 // var input = new InputStream('\nHi there!\n\n# **Header!**');
-var ast = Parser.parse('# **Header!**');
-ast = Parser.parse(
-  'Hi there!\nnext line\n\nand another one\n\n# **Header!**\nMath be like: $\\int_0^\\infty f(x)\\mathrm dx = F(\\infity)$\n> May the heavens smite me if I ever let go!\n> This Lasagne belongs to me!\n> Badumm tzz!'
-);
+// var ast = Parser.parse('# **Header!**');
+// ast = Parser.parse(
+//   'Hi there!\nnext line\n\nand another one\n\n# **Header!**\nMath be like: $\\int_0^\\infty f(x)\\mathrm dx = F(\\infity)$\n> May the heavens smite me if I ever let go!\n> This Lasagne belongs to me!\n> Badumm tzz!'
+// );
 
 module.exports = {
   Lexer: Lexer,

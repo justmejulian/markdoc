@@ -11,84 +11,202 @@ const {
   InputStream
 } = MD;
 
-describe('Lexer', () => {
-  it('should tokenize correctly', () => {
-    var tokens = Lexer.tokenize('Test `this`!');
-    expect(tokens.length).toEqual(6);
-    expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
-    expect(tokens[1].type).toEqual(TokenTypes.TEXT);
-    expect(tokens[2].type).toEqual(TokenTypes.CODETOGGLE);
-    expect(tokens[3].type).toEqual(TokenTypes.TEXT);
-    expect(tokens[4].type).toEqual(TokenTypes.CODETOGGLE);
-    expect(tokens[5].type).toEqual(TokenTypes.TEXT);
+describe('InputStream', () => {
+  it('should read strings correctly', () => {
+    var inputStream = new InputStream('ab\n c');
+    expect(inputStream.next()).toEqual('a');
+    expect(inputStream.next()).toEqual('b');
+    expect(inputStream.next()).toEqual('\n');
+    expect(inputStream.next()).toEqual(' ');
+    expect(inputStream.next()).toEqual('c');
+    expect(inputStream.next()).toEqual('');
   });
-  it('should find proper header tokens', () => {
-    // Matches:
-    var tokens = Lexer.tokenize('# Header');
-    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 1]);
-    tokens = Lexer.tokenize('## Header');
-    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 2]);
-    tokens = Lexer.tokenize('### Header');
-    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 3]);
-    tokens = Lexer.tokenize('#### Header');
-    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 4]);
-    tokens = Lexer.tokenize('##### Header');
-    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 5]);
-    tokens = Lexer.tokenize('###### Header');
-    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 6]);
-
-    // No matches:
-    tokens = Lexer.tokenize('####### Header');
-    expect(tokens[0].type).not.toEqual(TokenTypes.HEADER);
-    tokens = Lexer.tokenize('\\# Header');
-    expect(tokens[0].type).not.toEqual(TokenTypes.HEADER);
-    tokens = Lexer.tokenize(' # Header');
-    expect(tokens[0].type).not.toEqual(TokenTypes.HEADER);
-
-    // Multiple:
-    //                       XX(text)()XXXXX( text  )
-    tokens = Lexer.tokenize('# Header\n\n## Subheader');
-    expect(tokens.length).toEqual(5);
-    expect(tokens[0].type).toEqual(TokenTypes.HEADER);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 1]);
-    expect(tokens[3].type).toEqual(TokenTypes.HEADER);
-    expect(tokens[3].from).toEqual([2, 0]);
-    expect(tokens[3].to).toEqual([2, 2]);
+  it('should peek characters correctly', () => {
+    var inputStream = new InputStream('ab\n c');
+    expect(inputStream.peek()).toEqual('a');
+    expect(inputStream.peek()).toEqual('a');
+    inputStream.next();
+    expect(inputStream.peek()).toEqual('b');
+    inputStream.next();
+    expect(inputStream.peek()).toEqual('\n');
+    inputStream.next();
+    inputStream.next();
+    expect(inputStream.peek()).toEqual('c');
+    inputStream.next();
+    expect(inputStream.peek()).toEqual('');
   });
-  it('should find proper paragraphs', () => {
-    // Matches:
-    var tokens = Lexer.tokenize('This is an example Paragraph');
-    expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 0]);
-    tokens = Lexer.tokenize("'code'");
-    expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 0]);
-
-    // Multiple:
-    tokens = Lexer.tokenize('This is an example\nParagraph');
-    expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
-    expect(tokens[0].from).toEqual([0, 0]);
-    expect(tokens[0].to).toEqual([0, 0]);
-    expect(tokens[2].type).toEqual(TokenTypes.PARAGRAPH);
-    expect(tokens[2].from).toEqual([1, 0]);
-    expect(tokens[2].to).toEqual([1, 0]);
+  it('should detect the end of the string correctly', () => {
+    var inputStream = new InputStream('ab\n c');
+    expect(inputStream.eof()).toBeFalsy();
+    inputStream.next();
+    expect(inputStream.eof()).toBeFalsy();
+    inputStream.next();
+    expect(inputStream.eof()).toBeFalsy();
+    inputStream.next();
+    expect(inputStream.eof()).toBeFalsy();
+    inputStream.next();
+    expect(inputStream.eof()).toBeFalsy();
+    inputStream.next();
+    expect(inputStream.eof()).toBeTruthy();
+  });
+  it('should keep track of the string position', () => {
+    var inputStream = new InputStream('ab\n c');
+    expect(inputStream.pos).toEqual(0);
+    inputStream.next();
+    expect(inputStream.pos).toEqual(1);
+    inputStream.next();
+    expect(inputStream.pos).toEqual(2);
+    inputStream.next();
+    expect(inputStream.pos).toEqual(3);
+    inputStream.next();
+    expect(inputStream.pos).toEqual(4);
+    inputStream.next();
+    expect(inputStream.pos).toEqual(5);
+    inputStream.next();
+    expect(inputStream.pos).toEqual(5);
+  });
+  it('should keep track of the current line and column', () => {
+    var inputStream = new InputStream('ab\n c');
+    expect(inputStream.line).toEqual(0);
+    expect(inputStream.col).toEqual(0);
+    inputStream.next();
+    expect(inputStream.line).toEqual(0);
+    expect(inputStream.col).toEqual(1);
+    inputStream.next();
+    expect(inputStream.line).toEqual(0);
+    expect(inputStream.col).toEqual(2);
+    inputStream.next();
+    expect(inputStream.line).toEqual(1);
+    expect(inputStream.col).toEqual(0);
+    inputStream.next();
+    expect(inputStream.line).toEqual(1);
+    expect(inputStream.col).toEqual(1);
+    inputStream.next();
+    expect(inputStream.line).toEqual(1);
+    expect(inputStream.col).toEqual(2);
+    inputStream.next();
+    expect(inputStream.line).toEqual(1);
+    expect(inputStream.col).toEqual(2);
+  });
+  it('should test regex', () => {
+    var inputStream = new InputStream('# header\n> quote');
+    expect(inputStream.test(/\#\s/)).toEqual(0);
+    expect(inputStream.test(/d/)).toEqual(5);
+    expect(inputStream.test(/>\s/)).toEqual(9);
+    expect(inputStream.test(/1.\s/)).toEqual(-1);
+  });
+  it('should match regex', () => {
+    var inputStream = new InputStream('# header\n> quote');
+    expect(inputStream.match(/\#\s/)[0]).toEqual('# ');
+    expect(inputStream.match(/d/)[0]).toEqual('d');
+    expect(inputStream.match(/>\s/)[0]).toEqual('> ');
+    expect(inputStream.match(/1.\s/)).toBeNull();
+  });
+  it('should skip a certain amount of characters', () => {
+    var inputStream = new InputStream('# header\n> quote');
+    expect(inputStream.skip(0)).toEqual('');
+    expect(inputStream.skip(1)).toEqual('#');
+    expect(inputStream.skip(7)).toEqual(' header');
+    var distance = inputStream.test(/>\s/);
+    expect(inputStream.skip(distance)).toEqual('\n');
+    expect(inputStream.skip(20)).toEqual('> quote');
+    expect(inputStream.skip(20)).toEqual('');
+    expect(inputStream.pos).toEqual(16);
   });
 });
+describe('TokenStream', () => {
+  it('should tokenize strings', () => {
+    var tokenStream = new TokenStream(new InputStream('ab\n c'));
+    expect(tokenStream.next()).toBeDefined();
+    expect(tokenStream.next()).toBeDefined();
+    expect(tokenStream.next()).toBeDefined();
+    expect(tokenStream.next()).toBeNull();
+  });
+  it('should tokenize headers', () => {
+    var tokenStream = new TokenStream(
+      new InputStream('# true header ## false header\n### true header')
+    );
+  });
+});
+
+// describe('Lexer', () => {
+//   it('should tokenize correctly', () => {
+//     var tokens = Lexer.tokenize('Test `this`!');
+//     expect(tokens.length).toEqual(6);
+//     expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
+//     expect(tokens[1].type).toEqual(TokenTypes.TEXT);
+//     expect(tokens[2].type).toEqual(TokenTypes.CODETOGGLE);
+//     expect(tokens[3].type).toEqual(TokenTypes.TEXT);
+//     expect(tokens[4].type).toEqual(TokenTypes.CODETOGGLE);
+//     expect(tokens[5].type).toEqual(TokenTypes.TEXT);
+//   });
+//   it('should find proper header tokens', () => {
+//     // Matches:
+//     var tokens = Lexer.tokenize('# Header');
+//     expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 1]);
+//     tokens = Lexer.tokenize('## Header');
+//     expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 2]);
+//     tokens = Lexer.tokenize('### Header');
+//     expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 3]);
+//     tokens = Lexer.tokenize('#### Header');
+//     expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 4]);
+//     tokens = Lexer.tokenize('##### Header');
+//     expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 5]);
+//     tokens = Lexer.tokenize('###### Header');
+//     expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 6]);
+
+//     // No matches:
+//     tokens = Lexer.tokenize('####### Header');
+//     expect(tokens[0].type).not.toEqual(TokenTypes.HEADER);
+//     tokens = Lexer.tokenize('\\# Header');
+//     expect(tokens[0].type).not.toEqual(TokenTypes.HEADER);
+//     tokens = Lexer.tokenize(' # Header');
+//     expect(tokens[0].type).not.toEqual(TokenTypes.HEADER);
+
+//     // Multiple:
+//     //                       XX(text)()XXXXX( text  )
+//     tokens = Lexer.tokenize('# Header\n\n## Subheader');
+//     expect(tokens.length).toEqual(5);
+//     expect(tokens[0].type).toEqual(TokenTypes.HEADER);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 1]);
+//     expect(tokens[3].type).toEqual(TokenTypes.HEADER);
+//     expect(tokens[3].from).toEqual([2, 0]);
+//     expect(tokens[3].to).toEqual([2, 2]);
+//   });
+//   it('should find proper paragraphs', () => {
+//     // Matches:
+//     var tokens = Lexer.tokenize('This is an example Paragraph');
+//     expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 0]);
+//     tokens = Lexer.tokenize("'code'");
+//     expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 0]);
+
+//     // Multiple:
+//     tokens = Lexer.tokenize('This is an example\nParagraph');
+//     expect(tokens[0].type).toEqual(TokenTypes.PARAGRAPH);
+//     expect(tokens[0].from).toEqual([0, 0]);
+//     expect(tokens[0].to).toEqual([0, 0]);
+//     expect(tokens[2].type).toEqual(TokenTypes.PARAGRAPH);
+//     expect(tokens[2].from).toEqual([1, 0]);
+//     expect(tokens[2].to).toEqual([1, 0]);
+//   });
+// });
 
 describe('Markdown parser', () => {
   const source =
