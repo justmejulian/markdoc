@@ -237,6 +237,175 @@ describe('Token Regex', () => {
     expect(pattern.test('[PBB]: d d d\nhi')).toBeFalsy();
     expect(pattern.test('[PBB]')).toBeFalsy();
   });
+  it('should match latex blocks appropriately', () => {
+    var pattern = Tokens.LATEXBLOCK.pattern;
+    // Matches:
+    expect(pattern.test('$$test$$')).toBeTruthy();
+    expect(pattern.test('fds$$test$$')).toBeTruthy();
+    expect(pattern.test('fds$$$$')).toBeTruthy();
+    expect(pattern.test('fds$$\n$')).toBeTruthy();
+    expect(pattern.test('\n$$\n$')).toBeTruthy();
+    expect(pattern.test('\n$$\n')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('$ $')).toBeFalsy();
+    expect(pattern.test('$ $x = y$ $')).toBeFalsy();
+  });
+  it('should match newlines appropriately', () => {
+    var pattern = Tokens.NEWLINE.pattern;
+    // Matches:
+    expect(pattern.test('\n')).toBeTruthy();
+    expect(pattern.test(' \n')).toBeTruthy();
+    expect(pattern.test('\n ')).toBeTruthy();
+    expect(pattern.test('a\nc')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('\r')).toBeFalsy();
+    expect(pattern.test('\t')).toBeFalsy();
+  });
+  it('should match bold text indicators appropriately', () => {
+    var pattern = Tokens.BOLD.pattern;
+    // Matches:
+    expect(pattern.test('**')).toBeTruthy();
+    expect(pattern.test(' **')).toBeTruthy();
+    expect(pattern.test('** ')).toBeTruthy();
+    expect(pattern.test('a**c')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('* *')).toBeFalsy();
+    expect(pattern.test('__')).toBeFalsy();
+  });
+  it('should match italics text indicators appropriately', () => {
+    var pattern = Tokens.ITALICS.pattern;
+    // Matches:
+    expect(pattern.test('_')).toBeTruthy();
+    expect(pattern.test(' _')).toBeTruthy();
+    expect(pattern.test('_ ')).toBeTruthy();
+    expect(pattern.test('a_c')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('-')).toBeFalsy();
+    expect(pattern.test('**')).toBeFalsy();
+  });
+  it('should match strikethrough text indicators appropriately', () => {
+    var pattern = Tokens.STRIKETHROUGH.pattern;
+    // Matches:
+    expect(pattern.test('~~')).toBeTruthy();
+    expect(pattern.test(' ~~')).toBeTruthy();
+    expect(pattern.test('~~ ')).toBeTruthy();
+    expect(pattern.test('a~~c')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('~ ~')).toBeFalsy();
+    expect(pattern.test('~')).toBeFalsy();
+    expect(pattern.test('- -')).toBeFalsy();
+    expect(pattern.test('_ _')).toBeFalsy();
+    expect(pattern.test('__ __')).toBeFalsy();
+  });
+  it('should match image start indicators appropriately', () => {
+    var pattern = Tokens.IMAGESTART.pattern;
+    // Matches:
+    expect(pattern.test('![alt text](test.jpg)')).toBeTruthy();
+    expect(pattern.test('![alt text](test.jpg "hi there")')).toBeTruthy();
+    expect(pattern.test('![alt text][1]')).toBeTruthy();
+    expect(pattern.test('sad![alt text](test.jpg)')).toBeTruthy();
+    expect(pattern.test('sad![al')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('[alt text](test.jpg)')).toBeFalsy();
+    expect(pattern.test('!(test)')).toBeFalsy();
+  });
+  it('should match link start indicators appropriately', () => {
+    var pattern = Tokens.LINKSTART.pattern;
+    // Matches:
+    expect(pattern.test('![alt text](test.jpg)')).toBeTruthy();
+    expect(pattern.test('![alt text](test.jpg "hi there")')).toBeTruthy();
+    expect(pattern.test('![alt text][1]')).toBeTruthy();
+    expect(pattern.test('sad![alt text](test.jpg)')).toBeTruthy();
+    expect(pattern.test('sad![al')).toBeTruthy();
+    expect(pattern.test('[alt text](test.jpg)')).toBeTruthy();
+    expect(pattern.test('[alt text](test.jpg "hi there")')).toBeTruthy();
+    expect(pattern.test('[alt text][1]')).toBeTruthy();
+    expect(pattern.test('[alt text][ [alt text][1]')).toBeTruthy();
+    expect(pattern.test('sad[alt text](test.jpg)')).toBeTruthy();
+    expect(pattern.test('sad[al')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('{alt text](test.jpg)')).toBeFalsy();
+    expect(pattern.test('!(test)')).toBeFalsy();
+  });
+  it('should match image-/link-inline indicators appropriately', () => {
+    var pattern = Tokens.IMGLINKINLINE.pattern;
+    // Matches:
+    expect(pattern.test('![alt text](test.jpg)')).toBeTruthy();
+    expect(pattern.test('![alt text](test.jpg "')).toBeTruthy();
+    expect(pattern.test('text](test.jpg)')).toBeTruthy();
+    expect(pattern.test('lt text](test.jp "')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('![alt text]( test.jpg)')).toBeFalsy();
+    expect(pattern.test('text](test.jpg"')).toBeFalsy();
+    expect(pattern.test('text](tes[]')).toBeFalsy();
+    expect(pattern.test('text](tes()')).toBeFalsy();
+    expect(pattern.test('![alt text][1]')).toBeFalsy();
+    expect(pattern.test('![alt text][1 ]')).toBeFalsy();
+    expect(pattern.test('![alt text][ 1]')).toBeFalsy();
+    expect(pattern.test('![alt text][link// text]')).toBeFalsy();
+    expect(pattern.test('![alt text][li[]]')).toBeFalsy();
+    expect(pattern.test('![alt text][li()')).toBeFalsy();
+    expect(pattern.test('[alt text]: test.jpg')).toBeFalsy();
+    expect(pattern.test('!(test)')).toBeFalsy();
+  });
+  it('should match image-/link-inline indicators appropriately', () => {
+    var pattern = Tokens.IMGLINKREFERENCE.pattern;
+    // Matches:
+    expect(pattern.test('![alt text][1]')).toBeTruthy();
+    expect(pattern.test('![alt text][1022]')).toBeTruthy();
+    expect(pattern.test('![alt text][logo]')).toBeTruthy();
+    expect(pattern.test('![alt text][logo 3]')).toBeTruthy();
+    expect(pattern.test('![alt text][link// text]')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('![alt text][1 ]')).toBeFalsy();
+    expect(pattern.test('![alt text][ 1]')).toBeFalsy();
+    expect(pattern.test('sad![alt text](test.jpg)')).toBeFalsy();
+    expect(pattern.test('![alt text](test.jpg)')).toBeFalsy();
+    expect(pattern.test('![alt text](test.jpg "hi there")')).toBeFalsy();
+    expect(pattern.test('[alt text]: test.jpg')).toBeFalsy();
+    expect(pattern.test('!(test)')).toBeFalsy();
+  });
+  it('should match image-/link-end indicators appropriately', () => {
+    var pattern = Tokens.IMGLINKEND.pattern;
+    // Matches:
+    expect(pattern.test('alt text(test.jpg)')).toBeTruthy();
+    expect(pattern.test('!alt text(test.jpg "hi there")')).toBeTruthy();
+    expect(pattern.test('!alt text[1]')).toBeTruthy();
+    expect(pattern.test('sa(test.jpg)')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('alt text: test.jpg')).toBeFalsy();
+    expect(pattern.test('!(test')).toBeFalsy();
+  });
+  it('should match code indicators appropriately', () => {
+    var pattern = Tokens.CODE.pattern;
+    // Matches:
+    expect(pattern.test('Let ` x = 5`')).toBeTruthy();
+    expect(pattern.test('Let `x = 5`')).toBeTruthy();
+    expect(pattern.test('Let `x = 5')).toBeTruthy();
+    expect(pattern.test('Let`x = 5')).toBeTruthy();
+    expect(pattern.test('Let` x = 5')).toBeTruthy();
+    // Mismatches:
+  });
+  it('should match latex indicators appropriately', () => {
+    var pattern = Tokens.LATEX.pattern;
+    // Matches:
+    expect(pattern.test('Let $ x = 5$')).toBeTruthy();
+    expect(pattern.test('Let $x = 5$')).toBeTruthy();
+    expect(pattern.test('Let $x = 5')).toBeTruthy();
+    expect(pattern.test('Let$x = 5')).toBeTruthy();
+    expect(pattern.test('Let$ x = 5')).toBeTruthy();
+    // Mismatches:
+  });
+  it('should match latex indicators appropriately', () => {
+    var pattern = Tokens.LATEX.pattern;
+    // Matches:
+    expect(pattern.test('Let $ x = 5$')).toBeTruthy();
+    expect(pattern.test('Let $x = 5$')).toBeTruthy();
+    expect(pattern.test('Let $x = 5')).toBeTruthy();
+    expect(pattern.test('Let$x = 5')).toBeTruthy();
+    expect(pattern.test('Let$ x = 5')).toBeTruthy();
+    // Mismatches:
+  });
 });
 
 describe('TokenStream', () => {

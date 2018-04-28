@@ -783,7 +783,6 @@ const TokenTypes = Object.freeze({
   IMGLINKEND: 'Image-/LinkEnd',
   CODE: 'Code',
   LATEX: 'LaTeX',
-  INLINEREFERENCE: 'InlineReference',
   TEXT: 'Text'
 });
 /**
@@ -812,12 +811,17 @@ const Tokens = Object.freeze({
   STRIKETHROUGH: new Token(TokenTypes.STRIKETHROUGH, /~~/),
   IMAGESTART: new Token(TokenTypes.IMAGESTART, /!\[/),
   LINKSTART: new Token(TokenTypes.LINKSTART, /\[/),
-  IMGLINKINLINE: new Token(TokenTypes.IMGLINKINLINE, /\]\(([^\(\)\s]+?)(?=\s)/),
-  IMGLINKREFERENCE: new Token(TokenTypes.IMGLINKREFERENCE, /\]\[[^\[\]]+?/),
-  IMGLINKEND: new Token(TokenTypes.IMGLINKEND, /\]/),
+  IMGLINKINLINE: new Token(
+    TokenTypes.IMGLINKINLINE,
+    /\]\([^\s\(\)\[\]]+((?=\))| ")/
+  ),
+  IMGLINKREFERENCE: new Token(
+    TokenTypes.IMGLINKREFERENCE,
+    /\]\[([^\s\(\)\[\]]([^\(\)\[\]]+[^\s\(\)\[\]]|)\])/
+  ),
+  IMGLINKEND: new Token(TokenTypes.IMGLINKEND, /("\)|\)|\])/),
   CODE: new Token(TokenTypes.CODE, /`/),
   LATEX: new Token(TokenTypes.LATEX, /\$/),
-  INLINEREFERENCE: new Token(TokenTypes.INLINEREFERENCE, /\[[^\[\]]+\]/),
   TEXT: new Token(TokenTypes.TEXT, /.+/),
   /**
    * Filters for those Tokens that are only to be found at the beginning of the
@@ -856,8 +860,7 @@ const Tokens = Object.freeze({
       this.IMGLINKREFERENCE,
       this.IMGLINKEND,
       this.CODE,
-      this.LATEX,
-      this.INLINEREFERENCE
+      this.LATEX
     ];
   },
   /**
