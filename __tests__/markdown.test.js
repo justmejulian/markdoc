@@ -409,27 +409,54 @@ describe('Token Regex', () => {
 });
 
 describe('TokenStream', () => {
-  it('should tokenize strings', () => {
-    var tokenStream = new TokenStream(new CharacterStream('ab\n c'));
+  it('should find the correct amount of tokens', () => {
+    var tokenStream = new TokenStream(new CharacterStream('# ab\n c'));
+    expect(tokenStream.read()).not.toBeNull();
     expect(tokenStream.read()).not.toBeNull();
     expect(tokenStream.read()).not.toBeNull();
     expect(tokenStream.read()).not.toBeNull();
     expect(tokenStream.read()).toBeNull();
   });
-  it('should tokenize headers', () => {
-    var tokenStream = new TokenStream(
-      new CharacterStream('# true header ## false header\n### true header')
-    );
-    tokenStream.rea;
-  });
-
-  it('should tokenize correctly', () => {
+  it('should tokenize to the correct types', () => {
     var tokenStream = new TokenStream(new CharacterStream('Test `this`!'));
     expect(tokenStream.read().type).toEqual(TokenTypes.TEXT);
     expect(tokenStream.read().type).toEqual(TokenTypes.CODE);
     expect(tokenStream.read().type).toEqual(TokenTypes.TEXT);
     expect(tokenStream.read().type).toEqual(TokenTypes.CODE);
     expect(tokenStream.read().type).toEqual(TokenTypes.TEXT);
+  });
+  it('should record the correct columns and rows', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('```js\nhi```\n\n# test header')
+    );
+    var token = tokenStream.read(); // ```
+    expect(token.from).toEqual([0, 0]);
+    expect(token.to).toEqual([0, 2]);
+    token = tokenStream.read(); // js
+    expect(token.from).toEqual([0, 3]);
+    expect(token.to).toEqual([0, 4]);
+    token = tokenStream.read(); // \n
+    expect(token.from).toEqual([0, 5]);
+    expect(token.to).toEqual([1, 0]);
+    token = tokenStream.read(); // hi
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 1]);
+    token = tokenStream.read(); // ```
+    expect(token.from).toEqual([1, 2]);
+    expect(token.to).toEqual([1, 4]);
+    token = tokenStream.read(); // \n
+    expect(token.from).toEqual([1, 5]);
+    expect(token.to).toEqual([2, 0]);
+    token = tokenStream.read(); // \n
+    expect(token.from).toEqual([2, 0]);
+    expect(token.to).toEqual([3, 0]);
+    token = tokenStream.read(); // "# "
+    expect(token.from).toEqual([3, 0]);
+    expect(token.to).toEqual([3, 1]);
+    token = tokenStream.read(); // test header
+    expect(token.from).toEqual([3, 2]);
+    expect(token.to).toEqual([3, 12]);
+    expect(tokenStream.read()).toBeNull();
   });
   it('should find proper header tokens', () => {
     // Matches:
@@ -493,6 +520,360 @@ describe('TokenStream', () => {
     expect(token.type).toEqual(TokenTypes.HEADER);
     expect(token.from).toEqual([1, 0]);
     expect(token.to).toEqual([1, 2]);
+  });
+  it('should find proper blockquotes', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('>   Hey there\n> How are you?')
+    );
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.BLOCKQUOTE);
+    expect(token.from).toEqual([0, 0]);
+    expect(token.to).toEqual([0, 3]);
+    tokenStream.read();
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.BLOCKQUOTE);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 1]);
+    tokenStream.read();
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper rules', () => {
+    var tokenStream = new TokenStream(new CharacterStream('---\n___\n***'));
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.RULE);
+    expect(token.from).toEqual([0, 0]);
+    expect(token.to).toEqual([0, 2]);
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.RULE);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 2]);
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.RULE);
+    expect(token.from).toEqual([2, 0]);
+    expect(token.to).toEqual([2, 2]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper lists', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('1. one\n2. two\n* three')
+    );
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.LIST);
+    expect(token.from).toEqual([0, 0]);
+    expect(token.to).toEqual([0, 2]);
+    tokenStream.read();
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.LIST);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 2]);
+    tokenStream.read();
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.LIST);
+    expect(token.from).toEqual([2, 0]);
+    expect(token.to).toEqual([2, 1]);
+    tokenStream.read();
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper code blocks', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('```js\nvar i = 0;\n```')
+    );
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.CODEBLOCK);
+    expect(token.from).toEqual([0, 0]);
+    expect(token.to).toEqual([0, 2]);
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.CODEBLOCK);
+    expect(token.from).toEqual([2, 0]);
+    expect(token.to).toEqual([2, 2]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper TOCs', () => {
+    var tokenStream = new TokenStream(new CharacterStream('[TOC] \n[TOC]'));
+    var token = tokenStream.read();
+    while (token.type != TokenTypes.NEWLINE) {
+      token = tokenStream.read();
+      expect(token.type).not.toEqual(TokenTypes.TOC);
+      if (token == null) throw new Error('Utter failure');
+    }
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.TOC);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 4]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper TOFs', () => {
+    var tokenStream = new TokenStream(new CharacterStream('[TOF] \n[TOF]'));
+    var token = tokenStream.read();
+    while (token.type != TokenTypes.NEWLINE) {
+      token = tokenStream.read();
+      expect(token.type).not.toEqual(TokenTypes.TOF);
+      if (token == null) throw new Error('Utter failure');
+    }
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.TOF);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 4]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper pagebreaks', () => {
+    var tokenStream = new TokenStream(new CharacterStream('[PB] \n[PB]'));
+    var token = tokenStream.read();
+    while (token.type != TokenTypes.NEWLINE) {
+      token = tokenStream.read();
+      expect(token.type).not.toEqual(TokenTypes.PAGEBREAK);
+      if (token == null) throw new Error('Utter failure');
+    }
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.PAGEBREAK);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 3]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper references', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        '[alt text]: file://test.jpg "random pic" \n' +
+          '[alt text]: file://test.jpg "random pic"'
+      )
+    );
+    var token = tokenStream.read();
+    while (token.type != TokenTypes.NEWLINE) {
+      token = tokenStream.read();
+      expect(token.type).not.toEqual(TokenTypes.REFERENCE);
+      if (token == null) throw new Error('Utter failure');
+    }
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.REFERENCE);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 39]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper LaTeX blocks', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('Check:\n$$\nx=y\n$$')
+    );
+    tokenStream.read();
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.LATEXBLOCK);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 1]);
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.LATEXBLOCK);
+    expect(token.from).toEqual([3, 0]);
+    expect(token.to).toEqual([3, 1]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper newlines', () => {
+    var tokenStream = new TokenStream(new CharacterStream('Check:\n\nx=y\n'));
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.NEWLINE);
+    expect(token.from).toEqual([0, 6]);
+    expect(token.to).toEqual([1, 0]);
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.NEWLINE);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([2, 0]);
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.NEWLINE);
+    expect(token.from).toEqual([2, 3]);
+    expect(token.to).toEqual([3, 0]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper bold indicators', () => {
+    var tokenStream = new TokenStream(new CharacterStream(' ** gl\n**'));
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.BOLD);
+    expect(token.from).toEqual([0, 1]);
+    expect(token.to).toEqual([0, 2]);
+    tokenStream.read();
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.BOLD);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 1]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper italics indicators', () => {
+    var tokenStream = new TokenStream(new CharacterStream(' _ gl\n_'));
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.ITALICS);
+    expect(token.from).toEqual([0, 1]);
+    expect(token.to).toEqual([0, 1]);
+    tokenStream.read();
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.ITALICS);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 0]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper strikethrough indicators', () => {
+    var tokenStream = new TokenStream(new CharacterStream(' ~~ gl\n~~'));
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.STRIKETHROUGH);
+    expect(token.from).toEqual([0, 1]);
+    expect(token.to).toEqual([0, 2]);
+    tokenStream.read();
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.STRIKETHROUGH);
+    expect(token.from).toEqual([1, 0]);
+    expect(token.to).toEqual([1, 1]);
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper image start indicators', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        'Pic: ![alt text](test.jpg)\n![alt text][1]\n![alt text][ref]'
+      )
+    );
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.IMAGESTART);
+    expect(token.from).toEqual([0, 5]);
+    expect(token.to).toEqual([0, 6]);
+  });
+  it('should find proper link start indicators', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        'Pic: [alt text](test.jpg)\n![alt text][1]\n![alt text][ref]'
+      )
+    );
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.LINKSTART);
+    expect(token.from).toEqual([0, 5]);
+    expect(token.to).toEqual([0, 5]);
+  });
+  it('should find proper image-/link inline indicators', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        'Pic: ![alt text](test.jpg)\n![alt text][1]\n![alt text][ref]'
+      )
+    );
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.IMGLINKINLINE);
+    expect(token.from).toEqual([0, 15]);
+    expect(token.to).toEqual([0, 24]);
+  });
+  it('should find proper image-/link reference indicators', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        'Pic: ![alt text](test.jpg)\n![alt text][1]\n![alt text][ref]'
+      )
+    );
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.IMGLINKREFERENCE);
+    expect(token.from).toEqual([1, 10]);
+    expect(token.to).toEqual([1, 13]);
+  });
+  it('should find proper image-/link end indicators', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        'Pic: ![alt text](test.jpg)\n![alt text](test.jpg "label")'
+      )
+    );
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.IMGLINKEND);
+    expect(token.from).toEqual([0, 25]);
+    expect(token.to).toEqual([0, 25]);
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.IMGLINKEND);
+    expect(token.from).toEqual([1, 27]);
+    expect(token.to).toEqual([1, 28]);
+  });
+  it('should find proper code indicators', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('code: `var i = 1`.')
+    );
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.CODE);
+    expect(token.from).toEqual([0, 6]);
+    expect(token.to).toEqual([0, 6]);
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.CODE);
+    expect(token.from).toEqual([0, 16]);
+    expect(token.to).toEqual([0, 16]);
+    tokenStream.read();
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper latex indicators', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('math: $x=\\dot{x}$.')
+    );
+    tokenStream.read();
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.LATEX);
+    expect(token.from).toEqual([0, 6]);
+    expect(token.to).toEqual([0, 6]);
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.LATEX);
+    expect(token.from).toEqual([0, 16]);
+    expect(token.to).toEqual([0, 16]);
+    tokenStream.read();
+    expect(tokenStream.read()).toBeNull();
+  });
+  it('should find proper latex indicators', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('math: $x=\\dot{x}$.')
+    );
+    var token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.TEXT);
+    expect(token.from).toEqual([0, 0]);
+    expect(token.to).toEqual([0, 5]);
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.TEXT);
+    expect(token.from).toEqual([0, 7]);
+    expect(token.to).toEqual([0, 15]);
+    tokenStream.read();
+    token = tokenStream.read();
+    expect(token.type).toEqual(TokenTypes.TEXT);
+    expect(token.from).toEqual([0, 17]);
+    expect(token.to).toEqual([0, 17]);
+    expect(tokenStream.read()).toBeNull();
   });
 });
 

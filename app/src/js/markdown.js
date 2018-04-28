@@ -180,7 +180,7 @@ class TokenStream {
    * @see eof()
    */
   read_next() {
-    if (this.charStream.eof()) return null;
+    if (this.charStream.eof() && this.next == null) return null;
     var out = null;
     if (this.next) {
       // Leftover token from last match with prepended text
@@ -209,7 +209,10 @@ class TokenStream {
       var textToken = new Token(TokenTypes.TEXT, /.+/);
       textToken.from = [this.charStream.row, this.charStream.column];
       textToken.value = this.charStream.skip(lowestDistance);
-      textToken.to = [this.charStream.row, this.charStream.column - 1];
+      textToken.to = [
+        this.charStream.row,
+        Math.max(this.charStream.column - 1, 0)
+      ];
       out = textToken;
     }
     if (lowestBidder == null) return out;
@@ -219,7 +222,10 @@ class TokenStream {
     newToken.value = newToken.match[0];
     newToken.from = [this.charStream.row, this.charStream.column];
     this.charStream.skip(newToken.value.length);
-    newToken.to = [this.charStream.row, this.charStream.column - 1];
+    newToken.to = [
+      this.charStream.row,
+      Math.max(this.charStream.column - 1, 0)
+    ];
     if (lowestDistance > 0) {
       this.next = newToken;
     } else {
@@ -791,18 +797,18 @@ const TokenTypes = Object.freeze({
 const Tokens = Object.freeze({
   HEADER: new Token(TokenTypes.HEADER, /#{1,6}[\ \t]+(?=[^\s])/),
   BLOCKQUOTE: new Token(TokenTypes.BLOCKQUOTE, />[\ \t]+(?=[^\s])/),
-  RULE: new Token(TokenTypes.RULE, /(\*\*\*|---|___)$/),
+  RULE: new Token(TokenTypes.RULE, /(\*\*\*|---|___)$/m),
   LIST: new Token(
     TokenTypes.LIST,
     /(    |\t)*([1-9]\d*?\.|\*)[\ \t]+(?=[^\s])/
   ),
   CODEBLOCK: new Token(TokenTypes.CODEBLOCK, /```/),
-  TOC: new Token(TokenTypes.TOC, /\[TOC\]$/),
-  TOF: new Token(TokenTypes.TOF, /\[TOF\]$/),
-  PAGEBREAK: new Token(TokenTypes.PAGEBREAK, /\[PB\]$/),
+  TOC: new Token(TokenTypes.TOC, /\[TOC\]$/m),
+  TOF: new Token(TokenTypes.TOF, /\[TOF\]$/m),
+  PAGEBREAK: new Token(TokenTypes.PAGEBREAK, /\[PB\]$/m),
   REFERENCE: new Token(
     TokenTypes.REFERENCE,
-    /\[([^\[\]]+?)\]\:[\ \t]+([^\s]+)([\ \t]+\"([^\"]+)\"|)$/
+    /\[([^\[\]]+?)\]\:[\ \t]+([^\s]+)([\ \t]+\"([^\"]+)\"|)$/m
   ),
   LATEXBLOCK: new Token(TokenTypes.LATEXBLOCK, /\$\$/),
   NEWLINE: new Token(TokenTypes.NEWLINE, /\n/),
@@ -1619,4 +1625,9 @@ const markdown = {
   CodeBlock: MDCodeBlock
 };
 
+// var tokenStream = new TokenStream(new CharacterStream('Check:\n\nx=y\n'));
+// var token = null;
+// while (token = tokenStream.read()) {
+//   console.log(token);
+// }
 module.exports = markdown;
