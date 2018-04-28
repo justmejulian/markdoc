@@ -792,19 +792,19 @@ const TokenTypes = Object.freeze({
 const Tokens = Object.freeze({
   HEADER: new Token(TokenTypes.HEADER, /#{1,6}[\ \t]+(?=[^\s])/),
   BLOCKQUOTE: new Token(TokenTypes.BLOCKQUOTE, />[\ \t]+(?=[^\s])/),
-  RULE: new Token(TokenTypes.RULE, /(\*\*\*|---|___)/),
+  RULE: new Token(TokenTypes.RULE, /(\*\*\*|---|___)$/),
   LIST: new Token(
     TokenTypes.LIST,
     /(    |\t)*([1-9]\d*?\.|\*)[\ \t]+(?=[^\s])/
   ),
+  CODEBLOCK: new Token(TokenTypes.CODEBLOCK, /```/),
+  TOC: new Token(TokenTypes.TOC, /\[TOC\]$/),
+  TOF: new Token(TokenTypes.TOF, /\[TOF\]$/),
+  PAGEBREAK: new Token(TokenTypes.PAGEBREAK, /\[PB\]$/),
   REFERENCE: new Token(
     TokenTypes.REFERENCE,
-    /\[([^\[\]]+?)\]\:[\ \t]+([^\s]+)([\ \t]+\"([^\"]+)\"|)/
+    /\[([^\[\]]+?)\]\:[\ \t]+([^\s]+)([\ \t]+\"([^\"]+)\"|)$/
   ),
-  CODEBLOCK: new Token(TokenTypes.CODEBLOCK, /```/),
-  TOC: new Token(TokenTypes.TOC, /\[TOC\]/),
-  TOF: new Token(TokenTypes.TOF, /\[TOF\]/),
-  PAGEBREAK: new Token(TokenTypes.PAGEBREAK, /\[PB\]/),
   LATEXBLOCK: new Token(TokenTypes.LATEXBLOCK, /\$\$/),
   NEWLINE: new Token(TokenTypes.NEWLINE, /\n/),
   BOLD: new Token(TokenTypes.BOLD, /\*\*/),
@@ -831,11 +831,11 @@ const Tokens = Object.freeze({
       this.BLOCKQUOTE,
       this.RULE,
       this.LIST,
-      this.REFERENCE,
       this.CODEBLOCK,
       this.TOC,
       this.TOF,
       this.PAGEBREAK,
+      this.REFERENCE,
       this.LATEXBLOCK,
       this.NEWLINE
     ];

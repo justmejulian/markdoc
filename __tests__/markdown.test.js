@@ -118,12 +118,14 @@ describe('InputStream', () => {
 describe('Token Regex', () => {
   it('should match headers appropriately', () => {
     var pattern = Tokens.HEADER.pattern;
+    // Matches:
     expect(pattern.test('# Header')).toBeTruthy();
     expect(pattern.test('#     Header')).toBeTruthy();
     expect(pattern.test('#	Header')).toBeTruthy();
     expect(pattern.test('###### Header')).toBeTruthy();
     expect(pattern.test(' ###### Header')).toBeTruthy();
     expect(pattern.test('####### Header')).toBeTruthy();
+    // Mismatches:
     expect(pattern.test('####### ')).toBeFalsy();
     expect(pattern.test('###### ')).toBeFalsy();
     expect(pattern.test('# ')).toBeFalsy();
@@ -132,28 +134,36 @@ describe('Token Regex', () => {
   });
   it('should match blockquotes appropriately', () => {
     var pattern = Tokens.BLOCKQUOTE.pattern;
+    // Matches:
     expect(pattern.test('> Header')).toBeTruthy();
     expect(pattern.test('>> Header')).toBeTruthy();
     expect(pattern.test('>   Header')).toBeTruthy();
+    expect(pattern.test('\n> Header')).toBeTruthy();
+    // Mismatches:
     expect(pattern.test('>   ')).toBeFalsy();
     expect(pattern.test('>  \n ')).toBeFalsy();
     expect(pattern.test('>')).toBeFalsy();
-    expect(pattern.test('\n> Header')).toBeTruthy();
   });
   it('should match rules appropriately', () => {
     var pattern = Tokens.RULE.pattern;
+    // Matches:
     expect(pattern.test('***')).toBeTruthy();
     expect(pattern.test('---')).toBeTruthy();
     expect(pattern.test('___')).toBeTruthy();
     expect(pattern.test('asd***')).toBeTruthy();
     expect(pattern.test('asd---')).toBeTruthy();
     expect(pattern.test('asd___')).toBeTruthy();
-    expect(pattern.test('***daws')).toBeTruthy();
-    expect(pattern.test('---daws')).toBeTruthy();
-    expect(pattern.test('___daws')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('***daws')).toBeFalsy();
+    expect(pattern.test('---daws')).toBeFalsy();
+    expect(pattern.test('___daws')).toBeFalsy();
+    expect(pattern.test('**')).toBeFalsy();
+    expect(pattern.test('--')).toBeFalsy();
+    expect(pattern.test('__')).toBeFalsy();
   });
   it('should match lists appropriately', () => {
     var pattern = Tokens.LIST.pattern;
+    // Matches:
     expect(pattern.test('1. one')).toBeTruthy();
     expect(pattern.test('* one')).toBeTruthy();
     expect(pattern.test('	1. one')).toBeTruthy();
@@ -164,24 +174,68 @@ describe('Token Regex', () => {
     expect(pattern.test('   * one')).toBeTruthy();
     expect(pattern.test('1.      one')).toBeTruthy();
     expect(pattern.test('*      one')).toBeTruthy();
+    expect(pattern.test('486528. one')).toBeTruthy();
+    expect(pattern.test('** one')).toBeTruthy();
+    // Mismatches:
     expect(pattern.test('1.      \none')).toBeFalsy();
     expect(pattern.test('*      \none')).toBeFalsy();
     expect(pattern.test('1. \none')).toBeFalsy();
     expect(pattern.test('* \none')).toBeFalsy();
-    expect(pattern.test('486528. one')).toBeTruthy();
     expect(pattern.test('0. one')).toBeFalsy();
     expect(pattern.test('0 one')).toBeFalsy();
     expect(pattern.test('1 one')).toBeFalsy();
     expect(pattern.test('. one')).toBeFalsy();
     expect(pattern.test('*. one')).toBeFalsy();
     expect(pattern.test('- one')).toBeFalsy();
-    expect(pattern.test('** one')).toBeTruthy();
   });
   it('should match code blocks appropriately', () => {
     var pattern = Tokens.CODEBLOCK.pattern;
+    // Matches:
     expect(pattern.test('```')).toBeTruthy();
     expect(pattern.test('awdw```')).toBeTruthy();
     expect(pattern.test('```sadwad')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('`')).toBeFalsy();
+  });
+  it('should match TOCs appropriately', () => {
+    var pattern = Tokens.TOC.pattern;
+    // Matches:
+    expect(pattern.test('[TOC]')).toBeTruthy();
+    expect(pattern.test('asd[TOC]')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('[TOF]')).toBeFalsy();
+    expect(pattern.test('[TOC]]')).toBeFalsy();
+  });
+  it('should match TOFs appropriately', () => {
+    var pattern = Tokens.TOF.pattern;
+    // Matches:
+    expect(pattern.test('[TOF]')).toBeTruthy();
+    expect(pattern.test('asd[TOF]')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('[TOC]')).toBeFalsy();
+    expect(pattern.test('[TOF]]')).toBeFalsy();
+  });
+  it('should match pagebreaks appropriately', () => {
+    var pattern = Tokens.PAGEBREAK.pattern;
+    // Matches:
+    expect(pattern.test('[PB]')).toBeTruthy();
+    expect(pattern.test('asd[PB]')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('[PBB]')).toBeFalsy();
+    expect(pattern.test('[PB]]')).toBeFalsy();
+  });
+  it('should match references appropriately', () => {
+    var pattern = Tokens.REFERENCE.pattern;
+    // Matches:
+    expect(pattern.test('[a]: dawd')).toBeTruthy();
+    expect(pattern.test('[q2fwa4  34wd]: dafa22')).toBeTruthy();
+    expect(
+      pattern.test('[adw sa]: https://duckduckgo.com/ "DuckDuckGo Homepage"')
+    ).toBeTruthy();
+    expect(pattern.test('[2]: file://test.png')).toBeTruthy();
+    // Mismatches:
+    expect(pattern.test('[PBB]: d d d\nhi')).toBeFalsy();
+    expect(pattern.test('[PBB]')).toBeFalsy();
   });
 });
 
