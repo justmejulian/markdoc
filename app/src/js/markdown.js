@@ -1,163 +1,271 @@
+/**
+ * File for parsing markdown documents.
+ *
+ * This file provides functionality to parse markdown documents and convert
+ * them into a DOM.
+ *
+ * @file   This files defines the markdown and markdown.parser namespace.
+ * @author Raphael Emberger
+ */
+
 'use strict';
 
-class InputStream {
-  constructor(string) {
-    this._input = string;
+/**
+ * Provides a character stream based on a string.
+ */
+class CharacterStream {
+  /**
+   * Creates a stream of characters.
+   * @constructs CharacterStream
+   * @static
+   * @access public
+   * @param {string} source The string to use as source.
+   * @returns {CharacterStream} An instance of a CharacterStream.
+   */
+  constructor(source) {
+    /**
+     * String to stream.
+     * @access private
+     * @type {string}
+     */
+    this.source = source;
+    /**
+     * Current position in the string.
+     * @access private
+     * @type {number}
+     */
     this.pos = 0;
-    this.line = 0;
-    this.col = 0;
+    /**
+     * Current row in the string.
+     * @access public
+     * @readonly
+     * @type {number}
+     */
+    this.row = 0;
+    /**
+     * Current column in the string.
+     * @access public
+     * @readonly
+     * @type {number}
+     */
+    this.column = 0;
   }
-  next() {
-    var char = this._input.charAt(this.pos);
+  /**
+   * Returns the character of the current position, increments the position
+   * and also updates the column and row properties of the class.
+   * @access public
+   * @returns {string} One character on the current position. The string is
+   *                  empty if the end of the string has been reached.
+   * @see eof()
+   */
+  read() {
+    var char = this.source.charAt(this.pos);
     if (char != '') {
       if (char == '\n') {
-        this.line++;
-        this.col = 0;
+        this.row++;
+        this.column = 0;
       } else {
-        this.col++;
+        this.column++;
       }
       this.pos++;
     }
     return char;
   }
+  /**
+   * Returns the match of the regex starting from the current position.
+   * @access public
+   * @param {RegExp} regex Regex to search for(floating: No leading ^).
+   * @returns {RegExpMatchArray} The found match. null if no match.
+   * @see test()
+   */
   match(regex) {
-    var substr = this._input.substr(this.pos);
+    var substr = this.source.substr(this.pos);
     return substr.match(regex);
   }
+  /**
+   * Returns the position of the regex match from the current position
+   * @access public
+   * @param {RegExp} regex Regex to search for(floating: No leading ^).
+   * @returns {number} The index of the first match. -1 if no match.
+   */
   test(regex) {
-    var substr = this._input.substr(this.pos);
-    var match = substr.match(regex);
+    var match = this.match(regex);
     if (match) {
       return match.index;
     }
     return -1;
   }
+  /**
+   * Skips the position over the given distance and returns the skipped part.
+   * @access public
+   * @param {number} distance The zero-based distance to skip.
+   * @returns {string} The skipped part.
+   * @see test()
+   */
   skip(distance) {
     if (distance < 0) this.croak('Distance to skip cannot be negative!');
-    var value = this._input.substr(this.pos, distance);
+    var value = this.source.substr(this.pos, distance);
     this.pos += value.length;
     var lines = value.split('\n');
     var newLines = lines.length - 1;
-    this.line += newLines;
+    this.row += newLines;
     if (newLines > 0) {
-      this.col = lines[newLines].length;
+      this.column = lines[newLines].length;
     } else {
-      this.col += value.length;
+      this.column += value.length;
     }
     return value;
   }
+  /**
+   * Peeks the current character without incrementing the position.
+   * @access public
+   * @returns {string} The current character. The string is
+   *                  empty if the end of the string has been reached.
+   * @see eof()
+   */
   peek() {
-    return this._input.charAt(this.pos);
+    return this.source.charAt(this.pos);
   }
+  /**
+   * Returns whether the end of the string has been reached.
+   * @access public
+   * @returns {boolean}
+   */
   eof() {
     return this.peek() == '';
   }
+  /**
+   * Throws an error with a message and an indication of the current position.
+   * @access private
+   * @param {string} msg Error message to display.
+   */
   croak(msg) {
-    throw new Error(`${msg} (${this.line}:${this.col})`);
+    throw new Error(
+      `${msg} (${this.row}:${this.column}): ${this.source.substr(this.pos)}`
+    );
   }
 }
 
+/**
+ * Provides a token stream based on an character stream
+ */
 class TokenStream {
-  constructor(inputStream) {
-    this.inputStream = inputStream;
-    this.tokens = [
-      new Token(TokenTypes.HEADER, /#{1,6}\s/),
-      new Token(TokenTypes.BOLD, /\*\*/),
-      new Token(TokenTypes.ITALICS, /_/),
-      new Token(TokenTypes.STRIKETHROUGH, /~~/),
-      new Token(TokenTypes.BLOCKQUOTE, /> /),
-      new Token(TokenTypes.LIST, /(    |\t)*(\d+?\.|\*)\s/),
-      new Token(TokenTypes.RULE, /(\*\*\*|---|___)/),
-      new Token(TokenTypes.IMAGESTART, /!\[/),
-      new Token(TokenTypes.LINKSTART, /\[/),
-      new Token(TokenTypes.IMGLINKINLINE, /\]\(([^\(\)\s]+?)(?=\s)/),
-      new Token(TokenTypes.IMGLINKREFERENCE, /\]\[[^\[\]]+?/),
-      new Token(
-        TokenTypes.IMAGE,
-        /!(\[([^\[\]]+?)\]|)\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)/
-      ),
-      new Token(
-        TokenTypes.LINK,
-        /(\[([^\[\]]+?)\]|)(\(([^\(\) ]+?)( "([^\(\)]+?)"|)\)|\[([^\[\]]+?)\])/
-      ),
-      new Token(TokenTypes.CODEBLOCK, /```/),
-      new Token(TokenTypes.CODETOGGLE, /`/),
-      new Token(TokenTypes.TOC, /\[TOC\]/),
-      new Token(TokenTypes.TOF, /\[TOF\]/),
-      new Token(TokenTypes.PAGEBREAK, /\[PB\]/),
-      new Token(TokenTypes.LATEXTOGGLE, /\$/),
-      new Token(TokenTypes.LATEXBLOCK, /\$\$/),
-      new Token(TokenTypes.NEWLINE, /\n/)
-    ];
+  /**
+   * Creates a stream of characters.
+   * @constructs TokenStream
+   * @static
+   * @access public
+   * @param {string} source The string to use as source.
+   * @returns {TokenStream} An instance of a TokenStream.
+   */
+  constructor(charStream) {
+    /**
+     * Character stream.
+     * @access private
+     * @type {CharacterStream}
+     */
+    this.charStream = charStream;
+    /**
+     * Tokens to match.
+     * @access private
+     * @type {Token[]}
+     */
+    this.tokens = Tokens.all();
   }
-  _read_next() {
-    if (this.inputStream.eof()) return null;
-    var match = null;
+  /**
+   * Returns the token of the current position and increments the position.
+   * @access private
+   * @returns {Token} The Token on the current position. Null if the end of the
+   *                  string has been reached.
+   * @see eof()
+   */
+  read_next() {
+    if (this.charStream.eof()) return null;
+    var out = null;
+    if (this.next) {
+      // Leftover token from last match with prepended text
+      out = this.next;
+      this.next = null;
+      return out;
+    }
+    var lowestDistance = this.charStream.source.length;
+    var lowestBidder = null;
     for (const token of this.tokens) {
-      if ((match = this.inputStream.match(token.pattern))) {
-        var newToken = token.createNew();
-        newToken.match = match;
-        newToken.value = match[0];
-        newToken.from = [this.inputStream.line, this.inputStream.col];
-        if (
-          [
-            TokenTypes.HEADER,
-            TokenTypes.PARAGRAPH,
-            TokenTypes.BLOCKQUOTE,
-            TokenTypes.CODEBLOCKSTART,
-            TokenTypes.CODEBLOCKEND,
-            TokenTypes.LATEXBLOCKSTART,
-            TokenTypes.LATEXBLOCKEND,
-            TokenTypes.NUMBEREDLIST,
-            TokenTypes.UNNUMBEREDLIST,
-            TokenTypes.RULE,
-            TokenTypes.TOC,
-            TokenTypes.TOF,
-            TokenTypes.PAGEBREAK
-          ].includes(newToken.type)
-        ) {
-          // Fix .from
-          newToken.from[0]++;
-          newToken.from[1] = 0;
+      var distance = 0;
+      if ((distance = this.charStream.test(token.pattern)) >= 0) {
+        if (distance < lowestDistance) {
+          lowestDistance = distance;
+          lowestBidder = token;
         }
-        this.inputStream.skip(token.pattern);
-        newToken.to = [
-          this.inputStream.line,
-          Math.max(this.inputStream.col - 1, 0)
-        ];
-        return newToken;
       }
     }
-    // No match => Assume text until next match
-    // TODO: Make this sexier
-    var textToken = new Token(TokenTypes.TEXT, /^./);
-    textToken.from = [this.inputStream.line, this.inputStream.col];
-    textToken.value = '';
-    var foundToken = false;
-    while (!foundToken) {
-      if (this.inputStream.eof()) break;
-      textToken.value += this.inputStream.next();
-      for (const token of this.tokens) {
-        foundToken = this.inputStream.match(token.pattern);
-        textToken.to = [this.inputStream.line, this.inputStream.col - 1];
-        if (foundToken) break;
-      }
+    if (lowestBidder == null) {
+      // No more tokens to be matches EXCEPT text.
+      // So give it enough distance to parse it as text
+      lowestDistance = this.charStream.source.length - this.charStream.pos;
     }
-    return textToken;
+    if (lowestDistance > 0) {
+      // There's text before the closest match. Capture it
+      var textToken = new Token(TokenTypes.TEXT, /.+/);
+      textToken.from = [this.charStream.row, this.charStream.column];
+      textToken.value = this.charStream.skip(lowestDistance);
+      textToken.to = [this.charStream.row, this.charStream.column - 1];
+      out = textToken;
+    }
+    if (lowestBidder == null) return out;
+    // Now store the already found Token for the next read_next()
+    var newToken = lowestBidder.createNew();
+    newToken.match = this.charStream.match(newToken.pattern);
+    newToken.value = newToken.match[0];
+    newToken.from = [this.charStream.row, this.charStream.column];
+    this.charStream.skip(newToken.value.length);
+    newToken.to = [this.charStream.row, this.charStream.column - 1];
+    if (lowestDistance > 0) {
+      this.next = newToken;
+    } else {
+      out = newToken;
+    }
+    return out;
   }
+  /**
+   * Peeks the current token without incrementing the position.
+   * @access public
+   * @returns {Token} The current token. null if the end of the string has been
+   *                  reached.
+   * @see eof()
+   */
   peek() {
-    return this.current || (this.current = this._read_next());
+    return this.current || (this.current = this.read());
   }
-  next() {
+  /**
+   * Returns the token of the current position if it hasn't been peeked before
+   * and increments the position.
+   * @access public
+   * @returns {Token} The Token on the current position. Null if the end of the
+   *                  string has been reached.
+   * @see eof()
+   * @see peek()
+   */
+  read() {
     var tok = this.current;
     this.current = null;
-    return tok || this._read_next();
+    return tok || this.read_next();
   }
+  /**
+   * Returns whether the end of the string has been reached.
+   * @access public
+   * @returns {boolean}
+   */
   eof() {
     return this.peek() == null;
   }
+  /**
+   * Throws an error with a message and an indication of the current position.
+   * @access private
+   * @param {string} msg Error message to display.
+   */
   croak(msg) {
-    this.inputStream.croak(msg);
+    this.charStream.croak(msg);
   }
 }
 
@@ -166,7 +274,7 @@ class Parser {
     this.tokenStream = tokenStream;
   }
   static parse(string) {
-    return new Parser(new TokenStream(new InputStream(string))).parse();
+    return new Parser(new TokenStream(new CharacterStream(string))).parse();
   }
   parse() {
     var out = [];
@@ -176,7 +284,7 @@ class Parser {
     token.value = token.value.substr(1);
 
     var comp = null;
-    while ((token = this.tokenStream.next())) {
+    while ((token = this.tokenStream.read())) {
       switch (token.type) {
         case TokenTypes.HEADER:
           comp = this._parse_header(token);
@@ -250,7 +358,7 @@ class Parser {
     ];
     var finished = false;
     while (!finished && conditions.indexOf(this.tokenStream.peek().type) >= 0) {
-      var token = this.tokenStream.next();
+      var token = this.tokenStream.read();
       var comp = null;
       switch (token.type) {
         case TokenTypes.TEXT:
@@ -300,30 +408,30 @@ class Parser {
       var comp = null;
       switch (token.type) {
         case TokenTypes.TEXT:
-          comp = this._parse_text(this.tokenStream.next());
+          comp = this._parse_text(this.tokenStream.read());
           break;
         case TokenTypes.BOLD:
           bold.to = token.to;
-          this.tokenStream.next();
+          this.tokenStream.read();
           return bold;
           break;
         case TokenTypes.ITALICS:
-          comp = this._parse_italics(this.tokenStream.next());
+          comp = this._parse_italics(this.tokenStream.read());
           break;
         case TokenTypes.STRIKETHROUGH:
-          comp = this._parse_strikethrough(this.tokenStream.next());
+          comp = this._parse_strikethrough(this.tokenStream.read());
           break;
         case TokenTypes.LATEXTOGGLE:
-          comp = this._parse_inline_latex(this.tokenStream.next());
+          comp = this._parse_inline_latex(this.tokenStream.read());
           break;
         case TokenTypes.CODETOGGLE:
-          comp = this._parse_inline_code(this.tokenStream.next());
+          comp = this._parse_inline_code(this.tokenStream.read());
           break;
         case TokenTypes.LINK:
-          comp = this._parse_link(this.tokenStream.next());
+          comp = this._parse_link(this.tokenStream.read());
           break;
         case TokenTypes.IMAGE:
-          comp = this._parse_image(this.tokenStream.next());
+          comp = this._parse_image(this.tokenStream.read());
           break;
         default:
           error('Unexpected Token: ' + token.type);
@@ -340,29 +448,29 @@ class Parser {
       var comp = null;
       switch (token.type) {
         case TokenTypes.TEXT:
-          comp = this._parse_text(this.tokenStream.next());
+          comp = this._parse_text(this.tokenStream.read());
           break;
         case TokenTypes.BOLD:
-          comp = this._parse_bold(this.tokenStream.next());
+          comp = this._parse_bold(this.tokenStream.read());
           break;
         case TokenTypes.ITALICS:
           italics.to = token.to;
-          this.tokenStream.next();
+          this.tokenStream.read();
           return italics;
         case TokenTypes.STRIKETHROUGH:
-          comp = this._parse_strikethrough(this.tokenStream.next());
+          comp = this._parse_strikethrough(this.tokenStream.read());
           break;
         case TokenTypes.LATEXTOGGLE:
-          comp = this._parse_inline_latex(this.tokenStream.next());
+          comp = this._parse_inline_latex(this.tokenStream.read());
           break;
         case TokenTypes.CODETOGGLE:
-          comp = this._parse_inline_code(this.tokenStream.next());
+          comp = this._parse_inline_code(this.tokenStream.read());
           break;
         case TokenTypes.LINK:
-          comp = this._parse_link(this.tokenStream.next());
+          comp = this._parse_link(this.tokenStream.read());
           break;
         case TokenTypes.IMAGE:
-          comp = this._parse_image(this.tokenStream.next());
+          comp = this._parse_image(this.tokenStream.read());
           break;
         default:
           this.tokenStream.croak('Unexpected Token: ' + token.type);
@@ -379,29 +487,29 @@ class Parser {
       var comp = null;
       switch (token.type) {
         case TokenTypes.TEXT:
-          comp = this._parse_text(this.tokenStream.next());
+          comp = this._parse_text(this.tokenStream.read());
           break;
         case TokenTypes.BOLD:
-          comp = this._parse_bold(this.tokenStream.next());
+          comp = this._parse_bold(this.tokenStream.read());
           break;
         case TokenTypes.ITALICS:
-          comp = this._parse_italics(this.tokenStream.next());
+          comp = this._parse_italics(this.tokenStream.read());
           break;
         case TokenTypes.STRIKETHROUGH:
           strike.to = token.to;
-          this.tokenStream.next();
+          this.tokenStream.read();
           return strike;
         case TokenTypes.LATEXTOGGLE:
-          comp = this._parse_inline_latex(this.tokenStream.next());
+          comp = this._parse_inline_latex(this.tokenStream.read());
           break;
         case TokenTypes.CODETOGGLE:
-          comp = this._parse_inline_code(this.tokenStream.next());
+          comp = this._parse_inline_code(this.tokenStream.read());
           break;
         case TokenTypes.LINK:
-          comp = this._parse_link(this.tokenStream.next());
+          comp = this._parse_link(this.tokenStream.read());
           break;
         case TokenTypes.IMAGE:
-          comp = this._parse_image(this.tokenStream.next());
+          comp = this._parse_image(this.tokenStream.read());
           break;
         default:
           this.tokenStream.croak('Unexpected Token: ' + token.type);
@@ -421,7 +529,7 @@ class Parser {
       switch (token.type) {
         case TokenTypes.LATEXTOGGLE:
           latex.to = token.to;
-          this.tokenStream.next();
+          this.tokenStream.read();
           return latex;
         case (TokenTypes.HEADER,
         TokenTypes.PARAGRAPH,
@@ -440,7 +548,7 @@ class Parser {
           this.tokenStream.croak('Unexpected Token: ' + token.type);
           break;
         default:
-          text.value += this.tokenStream.next().value;
+          text.value += this.tokenStream.read().value;
           break;
       }
     }
@@ -455,7 +563,7 @@ class Parser {
       switch (token.type) {
         case TokenTypes.CODETOGGLE:
           code.to = token.to;
-          this.tokenStream.next();
+          this.tokenStream.read();
           return code;
         case (TokenTypes.HEADER,
         TokenTypes.PARAGRAPH,
@@ -474,7 +582,7 @@ class Parser {
           this.tokenStream.croak('Unexpected Token: ' + token.type);
           break;
         default:
-          text += this.tokenStream.next().value;
+          text += this.tokenStream.read().value;
           break;
       }
     }
@@ -520,7 +628,7 @@ class Parser {
       if (token == null) break;
       if (token.type == TokenTypes.NEWLINE) {
         // Still going
-        this.tokenStream.next();
+        this.tokenStream.read();
         paragraph.add(this._create_softbreak(paragraph.last().to));
         continue;
       }
@@ -557,7 +665,7 @@ class Parser {
       newline.to[0]++;
       newline.from[1] = 0;
       quote.add(new MDSoftBreak());
-      token = this.tokenStream.next();
+      token = this.tokenStream.read();
     }
     quote.to = quote.last().to;
     return quote;
@@ -572,7 +680,7 @@ class Parser {
       token = this.tokenStream.peek();
       if (token && token.type == NEWLINE) {
         // Still going
-        this.tokenStream.next();
+        this.tokenStream.read();
         code.add(this._parse_newline(token));
       } else {
         break;
@@ -581,75 +689,196 @@ class Parser {
   }
 }
 
-class Lexer {
-  static tokenize(string) {
-    var out = [];
-    var tokenStream = new TokenStream(new InputStream(string));
-    var token;
-    while ((token = tokenStream.next())) out.push(token);
-    return out;
-  }
-}
-
+/**
+ * Representation of a Token
+ */
 class Token {
+  /**
+   * Creates a stream of characters.
+   * @constructs TokenStream
+   * @static
+   * @access public
+   * @param {string} type The type of the token.
+   * @see TokenTypes
+   * @param {string} pattern The regex pattern.
+   * @returns {Token} An instance of a Token.
+   */
   constructor(type, pattern) {
+    /**
+     * Type identifier of the Token.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
     this.type = type;
+    /**
+     * Pattern of the Token.
+     * @access public
+     * @readonly
+     * @type {RegExp}
+     */
     this.pattern = pattern;
+    /**
+     * Value of the matched string.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
     this.value = '';
-    this.escapable = false;
+    /**
+     * Match of the the pattern.
+     * @access public
+     * @readonly
+     * @type {RegExpMatchArray}
+     */
+    this.match = null;
+    /**
+     * Start of the Token. First value corresponds to the row, the second one
+     * to the column.
+     * @access public
+     * @readonly
+     * @type {number[]}
+     */
+    this.from = [];
+    /**
+     * End of the Token. First value corresponds to the row, the second one
+     * to the column.
+     * @access public
+     * @readonly
+     * @type {number[]}
+     */
+    this.to = [];
   }
-  test(string) {
-    return this.pattern.test(string);
-  }
-  apply(string) {
-    this.match = string.match(this.pattern);
-    this.value = this.match[0];
-    return string.substr(this.value.length);
-  }
-  escapable() {
-    this.escapable = true;
-    return this;
-  }
+  /**
+   * Creates a new Token of the same type with the same pattern.
+   * @access public
+   * @returns {Token}
+   */
   createNew() {
     return new Token(this.type, this.pattern);
   }
-  getRows() {
-    return this.value.match(/\n/).length;
-  }
-  getColumns() {
-    var split = this.value.split('\n');
-    return split[split.length - 1].length;
-  }
-  containsNewline() {
-    return this.value.test(/\n/);
-  }
 }
+/**
+ * Enum of all the available Token types.
+ */
 const TokenTypes = Object.freeze({
   HEADER: 'Header',
-  PARAGRAPH: 'Paragraph',
   BLOCKQUOTE: 'Blockquote',
-  NUMBEREDLIST: 'NumberedList',
-  UNNUMBEREDLIST: 'UnnumberedList',
-  CODEBLOCKSTART: 'Codeblockstart',
-  CODEBLOCKEND: 'Codeblockend',
-  LATEXBLOCKSTART: 'LaTeXBlockStart',
-  LATEXBLOCKEND: 'LaTeXBlockEnd',
   RULE: 'Rule',
+  LIST: 'List',
+  REFERENCE: 'Reference',
+  CODEBLOCK: 'Codeblock',
   TOC: 'TOC',
   TOF: 'TOF',
   PAGEBREAK: 'Pagebreak',
+  LATEXBLOCK: 'LaTeXblock',
   NEWLINE: 'Newline',
-  TEXT: 'Text',
   BOLD: 'Bold',
   ITALICS: 'Italics',
   STRIKETHROUGH: 'Strikethrough',
-  LATEXTOGGLE: 'LaTeX',
-  CODETOGGLE: 'Code',
-  LINK: 'Link',
-  IMAGE: 'Image'
+  IMAGESTART: 'ImageStart',
+  LINKSTART: 'LinkStart',
+  IMGLINKINLINE: 'Image/LinkInline',
+  IMGLINKREFERENCE: 'Image-/LinkReference',
+  IMGLINKEND: 'Image-/LinkEnd',
+  CODE: 'Code',
+  LATEX: 'LaTeX',
+  INLINEREFERENCE: 'InlineReference',
+  TEXT: 'Text'
+});
+/**
+ * Enum of all the available Tokens.
+ */
+const Tokens = Object.freeze({
+  HEADER: new Token(TokenTypes.HEADER, /#{1,6}[\ \t]+(?=[^\s])/),
+  BLOCKQUOTE: new Token(TokenTypes.BLOCKQUOTE, />[\ \t]+(?=[^\s])/),
+  RULE: new Token(TokenTypes.RULE, /(\*\*\*|---|___)/),
+  LIST: new Token(
+    TokenTypes.LIST,
+    /(    |\t)*([1-9]\d*?\.|\*)[\ \t]+(?=[^\s])/
+  ),
+  REFERENCE: new Token(
+    TokenTypes.REFERENCE,
+    /\[([^\[\]]+?)\]\:[\ \t]+([^\s]+)([\ \t]+\"([^\"]+)\"|)/
+  ),
+  CODEBLOCK: new Token(TokenTypes.CODEBLOCK, /```/),
+  TOC: new Token(TokenTypes.TOC, /\[TOC\]/),
+  TOF: new Token(TokenTypes.TOF, /\[TOF\]/),
+  PAGEBREAK: new Token(TokenTypes.PAGEBREAK, /\[PB\]/),
+  LATEXBLOCK: new Token(TokenTypes.LATEXBLOCK, /\$\$/),
+  NEWLINE: new Token(TokenTypes.NEWLINE, /\n/),
+  BOLD: new Token(TokenTypes.BOLD, /\*\*/),
+  ITALICS: new Token(TokenTypes.ITALICS, /_/),
+  STRIKETHROUGH: new Token(TokenTypes.STRIKETHROUGH, /~~/),
+  IMAGESTART: new Token(TokenTypes.IMAGESTART, /!\[/),
+  LINKSTART: new Token(TokenTypes.LINKSTART, /\[/),
+  IMGLINKINLINE: new Token(TokenTypes.IMGLINKINLINE, /\]\(([^\(\)\s]+?)(?=\s)/),
+  IMGLINKREFERENCE: new Token(TokenTypes.IMGLINKREFERENCE, /\]\[[^\[\]]+?/),
+  IMGLINKEND: new Token(TokenTypes.IMGLINKEND, /\]/),
+  CODE: new Token(TokenTypes.CODE, /`/),
+  LATEX: new Token(TokenTypes.LATEX, /\$/),
+  INLINEREFERENCE: new Token(TokenTypes.INLINEREFERENCE, /\[[^\[\]]+\]/),
+  TEXT: new Token(TokenTypes.TEXT, /.+/),
+  /**
+   * Filters for those Tokens that are only to be found at the beginning of the
+   * line.
+   * @access public
+   * @returns {Token[]}
+   */
+  fullRow() {
+    return [
+      this.HEADER,
+      this.BLOCKQUOTE,
+      this.RULE,
+      this.LIST,
+      this.REFERENCE,
+      this.CODEBLOCK,
+      this.TOC,
+      this.TOF,
+      this.PAGEBREAK,
+      this.LATEXBLOCK,
+      this.NEWLINE
+    ];
+  },
+  /**
+   * Filters for those Tokens which are normally found inside a single row.
+   * @access public
+   * @returns {Token[]}
+   */
+  inline() {
+    return [
+      this.BOLD,
+      this.ITALICS,
+      this.STRIKETHROUGH,
+      this.IMAGESTART,
+      this.LINKSTART,
+      this.IMGLINKINLINE,
+      this.IMGLINKREFERENCE,
+      this.IMGLINKEND,
+      this.CODE,
+      this.LATEX,
+      this.INLINEREFERENCE
+    ];
+  },
+  /**
+   * Filters for all the tokens for tokenizing except the TEST-Token.
+   * @access public
+   * @returns {Token[]}
+   * @see this.allWithText()
+   */
+  all() {
+    return this.fullRow().concat(this.inline());
+  },
+  /**
+   * Filters for all the tokens including the TEST-Token.
+   * @access public
+   * @returns {Token[]}
+   */
+  allInclText() {
+    return this.all().concat(this.TEXT);
+  }
 });
 
-class TokenArray {}
 class TokenFilter {
   constructor() {}
   oneOf(tokenArray) {}
@@ -1358,29 +1587,33 @@ class SourcePosition {
 //   'Hi there!\nnext line\n\nand another one\n\n# **Header!**\nMath be like: $\\int_0^\\infty f(x)\\mathrm dx = F(\\infity)$\n> May the heavens smite me if I ever let go!\n> This Lasagne belongs to me!\n> Badumm tzz!'
 // );
 
-module.exports = {
-  Lexer: Lexer,
-  Parser: Parser,
-  InputStream: InputStream,
-  TokenStream: TokenStream,
-  Token: Token,
-  TokenTypes: TokenTypes,
-  MDComponent: MDComponent,
-  MDDOM: MDDOM,
-  MDText: MDText,
-  MDTextBold: MDTextBold,
-  MDTextItalics: MDTextItalics,
-  MDTextCode: MDTextCode,
-  MDTextLaTeX: MDTextLaTeX,
-  MDParagraph: MDParagraph,
-  MDHeader: MDHeader,
-  MDTOC: MDTOC,
-  MDOrderedList: MDOrderedList,
-  MDBulletList: MDBulletList,
-  MDItem: MDItem,
-  MDLink: MDLink,
-  MDImage: MDImage,
-  MDSoftBreak: MDSoftBreak,
-  MDBlockQuote: MDBlockQuote,
-  MDCodeBlock: MDCodeBlock
+const markdown = {
+  parser: {
+    Parser: Parser,
+    TokenStream: TokenStream,
+    CharacterStream: CharacterStream,
+    Token: Token,
+    TokenTypes: TokenTypes,
+    Tokens
+  },
+  Component: MDComponent,
+  DOM: MDDOM,
+  Text: MDText,
+  TextBold: MDTextBold,
+  TextItalics: MDTextItalics,
+  TextCode: MDTextCode,
+  TextLaTeX: MDTextLaTeX,
+  Paragraph: MDParagraph,
+  Header: MDHeader,
+  TOC: MDTOC,
+  OrderedList: MDOrderedList,
+  BulletList: MDBulletList,
+  Item: MDItem,
+  Link: MDLink,
+  Image: MDImage,
+  SoftBreak: MDSoftBreak,
+  BlockQuote: MDBlockQuote,
+  CodeBlock: MDCodeBlock
 };
+
+module.exports = markdown;
