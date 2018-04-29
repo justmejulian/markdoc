@@ -222,10 +222,14 @@ class TokenStream {
     newToken.value = newToken.match[0];
     newToken.from = [this.charStream.row, this.charStream.column];
     this.charStream.skip(newToken.value.length);
-    newToken.to = [
-      this.charStream.row,
-      Math.max(this.charStream.column - 1, 0)
-    ];
+    if (newToken.type == TokenTypes.NEWLINE) {
+      newToken.to = newToken.from;
+    } else {
+      newToken.to = [
+        this.charStream.row,
+        Math.max(this.charStream.column - 1, 0)
+      ];
+    }
     if (lowestDistance > 0) {
       this.next = newToken;
     } else {

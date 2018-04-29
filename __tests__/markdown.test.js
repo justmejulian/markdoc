@@ -69,19 +69,19 @@ describe('InputStream', () => {
     var charStream = new CharacterStream('ab\n c');
     expect(charStream.row).toEqual(0);
     expect(charStream.column).toEqual(0);
-    charStream.read();
+    charStream.read(); // a
     expect(charStream.row).toEqual(0);
     expect(charStream.column).toEqual(1);
-    charStream.read();
+    charStream.read(); // b
     expect(charStream.row).toEqual(0);
     expect(charStream.column).toEqual(2);
-    charStream.read();
+    charStream.read(); // \n
     expect(charStream.row).toEqual(1);
     expect(charStream.column).toEqual(0);
-    charStream.read();
+    charStream.read(); // " "
     expect(charStream.row).toEqual(1);
     expect(charStream.column).toEqual(1);
-    charStream.read();
+    charStream.read(); // c
     expect(charStream.row).toEqual(1);
     expect(charStream.column).toEqual(2);
     charStream.read();
@@ -437,7 +437,7 @@ describe('TokenStream', () => {
     expect(token.to).toEqual([0, 4]);
     token = tokenStream.read(); // \n
     expect(token.from).toEqual([0, 5]);
-    expect(token.to).toEqual([1, 0]);
+    expect(token.to).toEqual([0, 5]);
     token = tokenStream.read(); // hi
     expect(token.from).toEqual([1, 0]);
     expect(token.to).toEqual([1, 1]);
@@ -446,10 +446,10 @@ describe('TokenStream', () => {
     expect(token.to).toEqual([1, 4]);
     token = tokenStream.read(); // \n
     expect(token.from).toEqual([1, 5]);
-    expect(token.to).toEqual([2, 0]);
+    expect(token.to).toEqual([1, 5]);
     token = tokenStream.read(); // \n
     expect(token.from).toEqual([2, 0]);
-    expect(token.to).toEqual([3, 0]);
+    expect(token.to).toEqual([2, 0]);
     token = tokenStream.read(); // "# "
     expect(token.from).toEqual([3, 0]);
     expect(token.to).toEqual([3, 1]);
@@ -683,16 +683,16 @@ describe('TokenStream', () => {
     var token = tokenStream.read();
     expect(token.type).toEqual(TokenTypes.NEWLINE);
     expect(token.from).toEqual([0, 6]);
-    expect(token.to).toEqual([1, 0]);
+    expect(token.to).toEqual([0, 6]);
     token = tokenStream.read();
     expect(token.type).toEqual(TokenTypes.NEWLINE);
     expect(token.from).toEqual([1, 0]);
-    expect(token.to).toEqual([2, 0]);
+    expect(token.to).toEqual([1, 0]);
     tokenStream.read();
     token = tokenStream.read();
     expect(token.type).toEqual(TokenTypes.NEWLINE);
     expect(token.from).toEqual([2, 3]);
-    expect(token.to).toEqual([3, 0]);
+    expect(token.to).toEqual([2, 3]);
     expect(tokenStream.read()).toBeNull();
   });
   it('should find proper bold indicators', () => {
