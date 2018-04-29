@@ -305,6 +305,7 @@ class Parser {
      */
     this.dom = null;
   }
+
   /**
    * Parses a token stream and returns a DOM containing the parsed elements.
    * @access public
@@ -320,6 +321,7 @@ class Parser {
     }
     return dom;
   }
+
   /**
    * Parses a token stream and returns an array of the parsed elements.
    * @access public
@@ -333,6 +335,7 @@ class Parser {
     parser.dom = dom;
     return parser.parse();
   }
+
   /**
    * Parses the token stream and prepares the parsed elements before returning
    * them.
@@ -414,7 +417,7 @@ class Parser {
    * Parses a header from the token stream.
    * @access private
    * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDHeader}
+   * @returns {MDHeader[]}
    */
   parseHeader() {
     var token = this.tokenStream.read();
@@ -429,26 +432,10 @@ class Parser {
   }
 
   /**
-   * Parses a paragraph from the token stream.
-   * @access private
-   * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDParagraph}
-   */
-  parseParagraph() {
-    var component = new MDParagraph();
-    component.from = this.tokenStream.peek().from;
-    for (const sub of this.parseText()) {
-      component.add(sub);
-    }
-    component.to = component.last().to;
-    return [component];
-  }
-
-  /**
    * Parses a block quote from the token stream.
    * @access private
    * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDBlockQuote}
+   * @returns {MDBlockQuote[]}
    */
   parseBlockquote() {
     var component = new MDBlockQuote();
@@ -467,10 +454,84 @@ class Parser {
   }
 
   /**
+   * Parses a list from the token stream.
+   * @access private
+   * @param {Token} token Peeked token that triggered this parsing method.
+   * @returns {MDListBase[]}
+   */
+  parseList() {
+    var component = this.parseListToken();
+    this.tokenStream.read();
+    while (!this.tokenStream.eof()) {
+      var item = new MDItem();
+      component.add(item);
+      for (const sub of this.parseText()) {
+        item.add(sub);
+      }
+      var token = this.tokenStream.peek();
+      if (!token) break;
+      if (token.type != TokenTypes.LIST) break;
+      var nextList = this.parseListToken();
+      if (nextList.type != component.type) {
+        // Different list type
+        break;
+      }
+      if (nextList.level > component.level) {
+        // Sub list detected
+        item.add(this.appendSoftBreak(item.last()));
+        item.add(this.parseList()[0]);
+        // TODO: Fix the interpretation as text of the following list item
+      } else if (nextList.level < component.level) {
+        // Return to parent list
+        break;
+      }
+    }
+    component.to = component.last().to;
+    return [component];
+  }
+  /**
+   * Parses a list token and returns a list instance of the right type and
+   * indentation level.
+   * @access private
+   * @returns {MDListBase}
+   */
+  parseListToken() {
+    var token = this.tokenStream.peek();
+    var component = null;
+    if (token.match[1].endsWith('.')) {
+      component = new MDOrderedList();
+      component.number = 1 * token.match[1].split('.')[0];
+    } else {
+      component = new MDBulletList();
+    }
+    component.level = Math.floor(
+      token.match[0].split(token.match[1])[0].replace('\t', '    ').length / 4
+    );
+    component.from = token.from;
+    return component;
+  }
+
+  /**
+   * Parses a paragraph from the token stream.
+   * @access private
+   * @param {Token} token Peeked token that triggered this parsing method.
+   * @returns {MDParagraph[]}
+   */
+  parseParagraph() {
+    var component = new MDParagraph();
+    component.from = this.tokenStream.peek().from;
+    for (const sub of this.parseText()) {
+      component.add(sub);
+    }
+    component.to = component.last().to;
+    return [component];
+  }
+
+  /**
    * Parses a code block from the token stream.
    * @access private
    * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDCodeBlock}
+   * @returns {MDCodeBlock[]}
    */
   parseCodeblock() {
     var component = new MDCodeBlock();
@@ -944,6 +1005,7 @@ class Token {
     return new Token(this.type, this.pattern);
   }
 }
+
 /**
  * Enum of all the available Token types.
  */
@@ -971,6 +1033,7 @@ const TokenTypes = Object.freeze({
   LATEX: 'LaTeX',
   TEXT: 'Text'
 });
+
 /**
  * Enum of all the available Tokens.
  */
@@ -978,10 +1041,7 @@ const Tokens = Object.freeze({
   HEADER: new Token(TokenTypes.HEADER, /#{1,6}[\ \t]+(?=[^\s])/),
   BLOCKQUOTE: new Token(TokenTypes.BLOCKQUOTE, />[\ \t]+(?=[^\s])/),
   RULE: new Token(TokenTypes.RULE, /(\*\*\*|---|___)$/m),
-  LIST: new Token(
-    TokenTypes.LIST,
-    /(    |\t)*([1-9]\d*?\.|\*)[\ \t]+(?=[^\s])/
-  ),
+  LIST: new Token(TokenTypes.LIST, / *([1-9]\d*?\.|\*)[\ \t]+(?=[^\s])/),
   CODEBLOCK: new Token(TokenTypes.CODEBLOCK, /```/),
   TOC: new Token(TokenTypes.TOC, /\[TOC\]$/m),
   TOF: new Token(TokenTypes.TOF, /\[TOF\]$/m),
@@ -1401,7 +1461,7 @@ class MDListBase extends MDComponent {
 
 class MDOrderedList extends MDListBase {
   constructor() {
-    super(ComponentTypes.UNNUMBEREDLIST);
+    super(ComponentTypes.NUMBEREDLIST);
   }
   toHtml() {
     if (this.start != 1) {
@@ -1435,7 +1495,7 @@ class MDOrderedList extends MDListBase {
 
 class MDBulletList extends MDListBase {
   constructor() {
-    super(ComponentTypes.NUMBEREDLIST);
+    super(ComponentTypes.UNNUMBEREDLIST);
   }
   toHtml() {
     return `<ul>${super.toHtml()}</ul>`;
@@ -1865,10 +1925,18 @@ const markdown = {
 // }
 var tokenStream = new TokenStream(
   new CharacterStream(
-    '> First quote\n' + '> Second quote\n' + '\n' + '>       Third quote'
+    '1. One\n' +
+      '2. Two\n' +
+      '    1. Indented\n' +
+      '3. continue\n' +
+      '        7. super sensical indentation\n' +
+      '* different type\n' +
+      '* another one\n' +
+      '   * And last one(beware the 3-space fake-indentation)'
   )
 );
 var parser = new Parser(tokenStream);
+//var list = parser.parseList()[0];
 var components = parser.parse();
 //console.log(components[0].toString());
 

@@ -4,7 +4,7 @@ m2=#{1,6}[\ \t]+(?=[^\s])</panel_attributes><additional_attributes>10;350;30;350
 r2=BLOCKQUOTE
 m2=&gt;[\ \t]+(?=[^\s])</panel_attributes><additional_attributes>10;290;30;290;30;20;290;20</additional_attributes></element><element><id>Relation</id><coordinates><x>190</x><y>330</y><w>310</w><h>250</h></coordinates><panel_attributes>lt=-&gt;
 r2=LIST
-m2=(    |\t)*([1-9]\d*?\.|\*)[\ \t]+(?=[^\s])</panel_attributes><additional_attributes>10;230;30;230;30;20;290;20</additional_attributes></element><element><id>Relation</id><coordinates><x>190</x><y>550</y><w>310</w><h>250</h></coordinates><panel_attributes>lt=-&gt;
+m2=^ *([1-9]\d*?\.|\*)[\ \t]+(?=[^\s])</panel_attributes><additional_attributes>10;230;30;230;30;20;290;20</additional_attributes></element><element><id>Relation</id><coordinates><x>190</x><y>550</y><w>310</w><h>250</h></coordinates><panel_attributes>lt=-&gt;
 r2=RULE
 m2=(\*\*\*|---|___)$</panel_attributes><additional_attributes>10;10;30;10;30;220;290;220</additional_attributes></element><element><id>Relation</id><coordinates><x>190</x><y>510</y><w>310</w><h>70</h></coordinates><panel_attributes>lt=-&gt;
 r2=REFERENCE
