@@ -795,7 +795,7 @@ describe('TokenStream', () => {
     var token = tokenStream.read();
     expect(token.type).toEqual(TokenTypes.IMGLINKREFERENCE);
     expect(token.from).toEqual([1, 10]);
-    expect(token.to).toEqual([1, 13]);
+    expect(token.to).toEqual([1, 12]);
   });
   it('should find proper image-/link end indicators', () => {
     var tokenStream = new TokenStream(
@@ -874,6 +874,25 @@ describe('TokenStream', () => {
     expect(token.from).toEqual([0, 17]);
     expect(token.to).toEqual([0, 17]);
     expect(tokenStream.read()).toBeNull();
+  });
+});
+
+describe('Parser', () => {
+  it('should parse the right amount of components', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        '# Testheader\n' +
+          'Some text\n' +
+          '\n' +
+          '## Subheader\n' +
+          'Some more text.\n' +
+          '\n' +
+          '```js\n' +
+          'var a = 3;\n' +
+          '```'
+      )
+    );
+    var parser = new Parser(tokenStream);
   });
 });
 

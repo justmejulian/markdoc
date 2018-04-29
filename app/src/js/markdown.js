@@ -275,80 +275,148 @@ class TokenStream {
   }
 }
 
+/**
+ * Parses Markdown input to an object representation
+ */
 class Parser {
+  /**
+   * Creates a stream of characters.
+   * @constructs Parser
+   * @static
+   * @access public
+   * @param {MDDOM} dom The dom to construct the model in.
+   * @returns {Parser} An instance of a Parser.
+   */
   constructor(tokenStream) {
+    /**
+     * Token stream.
+     * @access private
+     * @type {TokenStream}
+     */
     this.tokenStream = tokenStream;
+    /**
+     * DOM for reference.
+     * @access private
+     * @type {MDDOM}
+     */
+    this.dom = null;
   }
-  static parse(string) {
-    return new Parser(new TokenStream(new CharacterStream(string))).parse();
+  /**
+   * Parses a token stream and returns a DOM containing the parsed elements.
+   * @access public
+   * @static
+   * @param {TokenStream} tokenStream The token stream to use as source.
+   * @param {MDDOM} [dom=null] The dom to use as a reference.
+   * @returns {MDDOM} The completed DOM
+   */
+  static parseToDOM(tokenStream, dom) {
+    for (const component of Parser.parseToArray(tokenStream, dom)) {
+      dom.add(component);
+    }
+    return dom;
   }
+  /**
+   * Parses a token stream and returns an array of the parsed elements.
+   * @access public
+   * @static
+   * @param {TokenStream} tokenStream The token stream to use as source.
+   * @param {MDDOM} [dom=null] The dom to use as a reference.
+   * @returns {MDComponent[]} The parsed elements
+   */
+  static parseToArray(tokenStream, dom) {
+    var parser = new Parser(tokenStream);
+    parser.dom = dom;
+    return parser.parse();
+  }
+  /**
+   * Parses the token stream and prepares the parsed elements before returning
+   * them.
+   * @access public
+   * @returns {MDComponent[]} The parsed elements
+   */
   parse() {
     var out = [];
-    // Fix prepended newline
-    var token = this.tokenStream.peek();
-    if (token == null) return out;
-    token.value = token.value.substr(1);
-
     var comp = null;
-    while ((token = this.tokenStream.read())) {
+    while (!this.tokenStream.eof()) {
+      var token = this.tokenStream.read();
       switch (token.type) {
         case TokenTypes.HEADER:
-          comp = this._parse_header(token);
-          break;
-        case TokenTypes.PARAGRAPH:
-          comp = this._parse_paragraph(token);
+          out.push(this.parse_header(token));
           break;
         case TokenTypes.BLOCKQUOTE:
-          comp = this._parse_blockquote(token);
+          out.push(this.parse_blockquote(token));
           break;
-        case TokenTypes.NUMBEREDLIST:
-          comp = this._parse_numberedlist(token);
-          break;
-        case TokenTypes.UNNUMBEREDLIST:
-          comp = this._parse_unnumberedlist(token);
-          break;
-        case TokenTypes.CODEBLOCKSTART:
-          comp = this._parse_codeblock(token);
+        case TokenTypes.LIST:
+          out.push(this.parse_list(token));
           break;
         case TokenTypes.LATEXBLOCKSTART:
-          comp = this._parse_latexblock(token);
+          out.push(this.parse_latexblock(token));
           break;
-        case TokenTypes.RULE:
-          comp = this._parse_rule(token);
+        case TokenTypes.CODEBLOCKSTART:
+          out.push(this.parse_codeblock(token));
+          break;
+        case TokenTypes.REFERENCE:
+          out.push(this.parse_reference(token));
           break;
         case TokenTypes.TOC:
-          comp = this._parse_toc(token);
+          out.push(this.parse_toc(token));
           break;
         case TokenTypes.TOF:
-          comp = this._parse_tof(token);
+          out.push(this.parse_tof(token));
           break;
         case TokenTypes.PAGEBREAK:
-          comp = this._parse_pagebreak(token);
+          out.push(this.parse_pagebreak(token));
           break;
-        case TokenTypes.NEWLINE:
-          // Ignore
+        case TokenTypes.RULE:
+          out.push(this.parse_rule(token));
           break;
         default:
-          throw new Error('Unexpected Token: ' + token.type);
+          out.push(this.parse_paragraph(token));
           break;
       }
-      // These components require a leading newline. Fix the coordinates:
-      comp.from[0]++;
-      comp.from[1] = 0;
-      out.push(comp);
     }
     return out;
   }
 
-  _parse_header(token) {
+  parse_header(token) {
     var header = new MDHeader();
     header.level = token.value.split('#').length - 1;
     header.from = token.from;
-    for (const sub of this._parse_text_line()) {
+    for (const sub of this.parseUntilEOFOr(
+      TokenTypes.NEWLINE,
+      Tokens.fullRow()
+    )) {
       header.add(sub);
     }
     header.to = header.last().to;
     return header;
+  }
+  /**
+   * Parses until either EOF or the given token type has been reached.
+   * @access private
+   * @param {TokenTypes} stopType The type of token before which to stop.
+   * @param {TokenTypes[]} [toText=[]] The types to ignore and to convert to
+   *                                   text.
+   * @returns {MDComponent[]} The parsed components.
+   */
+  parseUntilEOFOr(stopType, toText) {
+    if (!toText) toText = [];
+    var out = [];
+    while (!checkForStopType(stopType)) {
+      var token = this.tokenStream.read();
+      if (toText.includes(token.type)) {
+      }
+    }
+    return out;
+  }
+  /**
+   * Checks if EOF or the specified token type has been reached.
+   * @access private
+   * @param {TokenTypes} type The token type to check for.
+   * @returns {boolean}
+   */
+  checkForStopType(type) {
+    return this.tokenStream.eof() || this.tokenStream.peek().type == type;
   }
   _parse_text_line() {
     var out = [];
@@ -623,7 +691,7 @@ class Parser {
     }
     return img;
   }
-  _parse_paragraph(token) {
+  parse_paragraph(token) {
     var paragraph = new MDParagraph();
     paragraph.from = token.from;
     while ((token = this.tokenStream.peek())) {
@@ -655,7 +723,7 @@ class Parser {
     softbreak.to = [from[0] + 1, 0];
     return softbreak;
   }
-  _parse_blockquote(token) {
+  parse_blockquote(token) {
     var quote = new MDBlockQuote();
     quote.from = token.from;
     while (token.type == TokenTypes.BLOCKQUOTE) {
@@ -676,7 +744,7 @@ class Parser {
     quote.to = quote.last().to;
     return quote;
   }
-  _parse_codeblock(token) {
+  parse_codeblock(token) {
     var code = new MDCodeBlock();
     code.from = token.from;
     while ((token = this.tokenStream.peek())) {
@@ -823,7 +891,7 @@ const Tokens = Object.freeze({
   ),
   IMGLINKREFERENCE: new Token(
     TokenTypes.IMGLINKREFERENCE,
-    /\]\[([^\s\(\)\[\]]([^\(\)\[\]]+[^\s\(\)\[\]]|)\])/
+    /\]\[([^\s\(\)\[\]]([^\(\)\[\]]+[^\s\(\)\[\]]|)(?=\]))/
   ),
   IMGLINKEND: new Token(TokenTypes.IMGLINKEND, /("\)|\)|\])/),
   CODE: new Token(TokenTypes.CODE, /`/),
