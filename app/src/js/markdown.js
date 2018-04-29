@@ -300,7 +300,7 @@ class Parser {
     this.tokenStream = tokenStream;
     /**
      * DOM for reference.
-     * @access private
+     * @access public
      * @type {MDDOM}
      */
     this.dom = null;
@@ -314,6 +314,7 @@ class Parser {
    * @returns {MDDOM} The completed DOM
    */
   static parseToDOM(tokenStream, dom) {
+    if (!dom) dom = new MDDOM();
     for (const component of Parser.parseToArray(tokenStream, dom)) {
       dom.add(component);
     }
@@ -342,331 +343,445 @@ class Parser {
     var out = [];
     var comp = null;
     while (!this.tokenStream.eof()) {
-      var token = this.tokenStream.read();
+      var token = this.tokenStream.peek();
       switch (token.type) {
         case TokenTypes.HEADER:
-          out.push(this.parse_header(token));
+          for (const sub of this.parseHeader()) {
+            out.push(sub);
+          }
           break;
         case TokenTypes.BLOCKQUOTE:
-          out.push(this.parse_blockquote(token));
+          for (const sub of this.parseBlockquote()) {
+            out.push(sub);
+          }
           break;
         case TokenTypes.LIST:
-          out.push(this.parse_list(token));
+          for (const sub of this.parseList()) {
+            out.push(sub);
+          }
           break;
-        case TokenTypes.LATEXBLOCKSTART:
-          out.push(this.parse_latexblock(token));
+        case TokenTypes.LATEXBLOCK:
+          for (const sub of this.parseLatexblock()) {
+            out.push(sub);
+          }
           break;
-        case TokenTypes.CODEBLOCKSTART:
-          out.push(this.parse_codeblock(token));
+        case TokenTypes.CODEBLOCK:
+          for (const sub of this.parseCodeblock()) {
+            out.push(sub);
+          }
           break;
         case TokenTypes.REFERENCE:
-          out.push(this.parse_reference(token));
+          for (const sub of this.parseReference()) {
+            out.push(sub);
+          }
           break;
         case TokenTypes.TOC:
-          out.push(this.parse_toc(token));
+          for (const sub of this.parseTOC()) {
+            out.push(sub);
+          }
           break;
         case TokenTypes.TOF:
-          out.push(this.parse_tof(token));
+          for (const sub of this.parseTOF()) {
+            out.push(sub);
+          }
           break;
         case TokenTypes.PAGEBREAK:
-          out.push(this.parse_pagebreak(token));
+          for (const sub of this.parsePagebreak()) {
+            out.push(sub);
+          }
           break;
         case TokenTypes.RULE:
-          out.push(this.parse_rule(token));
+          for (const sub of this.parseRule()) {
+            out.push(sub);
+          }
+          break;
+        case TokenTypes.NEWLINE: // Ignore empty line
+          this.tokenStream.read();
           break;
         default:
-          out.push(this.parse_paragraph(token));
+          for (const sub of this.parseParagraph()) {
+            out.push(sub);
+          }
           break;
       }
     }
     return out;
   }
 
-  parse_header(token) {
-    var header = new MDHeader();
-    header.level = token.value.split('#').length - 1;
-    header.from = token.from;
-    for (const sub of this.parseUntilEOFOr(
-      TokenTypes.NEWLINE,
-      Tokens.fullRow()
-    )) {
-      header.add(sub);
-    }
-    header.to = header.last().to;
-    return header;
-  }
+  // Full row elements:
+
   /**
-   * Parses until either EOF or the given token type has been reached.
+   * Parses a header from the token stream.
    * @access private
-   * @param {TokenTypes} stopType The type of token before which to stop.
-   * @param {TokenTypes[]} [toText=[]] The types to ignore and to convert to
-   *                                   text.
-   * @returns {MDComponent[]} The parsed components.
+   * @param {Token} token Peeked token that triggered this parsing method.
+   * @returns {MDHeader}
    */
-  parseUntilEOFOr(stopType, toText) {
-    if (!toText) toText = [];
+  parseHeader() {
+    var token = this.tokenStream.read();
+    var component = new MDHeader();
+    component.level = token.value.split('#').length - 1;
+    component.from = token.from;
+    for (const sub of this.parseText()) {
+      component.add(sub);
+    }
+    component.to = component.last().to;
+    return [component];
+  }
+
+  /**
+   * Parses a paragraph from the token stream.
+   * @access private
+   * @param {Token} token Peeked token that triggered this parsing method.
+   * @returns {MDParagraph}
+   */
+  parseParagraph() {
+    var component = new MDParagraph();
+    component.from = this.tokenStream.peek().from;
+    for (const sub of this.parseText()) {
+      component.add(sub);
+    }
+    component.to = component.last().to;
+    return [component];
+  }
+
+  /**
+   * Parses a block quote from the token stream.
+   * @access private
+   * @param {Token} token Peeked token that triggered this parsing method.
+   * @returns {MDBlockQuote}
+   */
+  parseBlockquote() {
+    var component = new MDBlockQuote();
+    component.from = this.tokenStream.read().from;
+    while (!this.tokenStream.eof()) {
+      for (const sub of this.parseText()) {
+        component.add(sub);
+      }
+      if (this.tokenStream.eof()) break;
+      if (this.tokenStream.peek().type != TokenTypes.BLOCKQUOTE) break;
+      component.add(this.appendSoftBreak(component.last()));
+      this.tokenStream.read(); // "> "
+    }
+    component.to = component.last().to;
+    return [component];
+  }
+
+  /**
+   * Parses a code block from the token stream.
+   * @access private
+   * @param {Token} token Peeked token that triggered this parsing method.
+   * @returns {MDCodeBlock}
+   */
+  parseCodeblock() {
+    var component = new MDCodeBlock();
+    var token = this.tokenStream.read(); // ```
+    var cache = [token];
+    component.from = token.from;
+    token = this.tokenStream.read(); // {language|\n|null}
+    cache.push(token);
+    if (this.tokenStream.eof()) {
+      this.reinterpretAsText(cache);
+      return cache;
+    }
+    if (token.type == TokenTypes.TEXT) {
+      // Language specified
+      component.language = token.value;
+      cache.push(this.tokenStream.read()); // Skip newline
+    }
+    // Ready to collect the code content
+    while (!this.tokenStream.eof()) {
+      token = this.tokenStream.peek();
+      switch (token.type) {
+        case TokenTypes.CODEBLOCK:
+          this.tokenStream.read(); // ```
+          component.to = token.to;
+          return [component];
+        default:
+          this.reinterpretAsText(component.children);
+          break;
+      }
+    }
+    cache = cache.concat(component.children);
+    this.reinterpretAsText(cache);
+    return cache;
+  }
+
+  // Inline elements:
+
+  /**
+   * Parses Text until next newline. Converts unexpected tokens to text as well.
+   * @access private
+   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
+   *                          text reinterpreted elements.
+   */
+  parseText() {
     var out = [];
-    while (!checkForStopType(stopType)) {
-      var token = this.tokenStream.read();
-      if (toText.includes(token.type)) {
+    while (!this.tokenStream.eof()) {
+      var token = this.tokenStream.peek();
+      switch (token.type) {
+        case TokenTypes.BOLD:
+          for (const sub of this.parseBold()) {
+            out.push(sub);
+          }
+          break;
+        case TokenTypes.ITALICS:
+          for (const sub of this.parseItalics()) {
+            out.push(sub);
+          }
+          break;
+        case TokenTypes.STRIKETHROUGH:
+          for (const sub of this.parseStrikethrough()) {
+            out.push(sub);
+          }
+          break;
+        case TokenTypes.IMAGESTART:
+          for (const sub of this.parseImage()) {
+            out.push(sub);
+          }
+          break;
+        case TokenTypes.LINKSTART:
+          for (const sub of this.parseLink()) {
+            out.push(sub);
+          }
+          break;
+        case TokenTypes.CODE:
+          for (const sub of this.parseCode()) {
+            out.push(sub);
+          }
+          break;
+        case TokenTypes.LATEX:
+          for (const sub of this.parseLatex()) {
+            out.push(sub);
+          }
+          break;
+        case TokenTypes.NEWLINE:
+          this.tokenStream.read(); // Skip the newline
+          return out;
+          break;
+        default:
+          // Unexpected token(or text) detected. Reinterpret as text.
+          this.reinterpretAsText(out);
+          break;
       }
     }
     return out;
   }
+
   /**
-   * Checks if EOF or the specified token type has been reached.
+   * Parses the token stream for bold text.
    * @access private
-   * @param {TokenTypes} type The token type to check for.
-   * @returns {boolean}
+   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
+   *                          text reinterpreted elements.
    */
-  checkForStopType(type) {
-    return this.tokenStream.eof() || this.tokenStream.peek().type == type;
-  }
-  _parse_text_line() {
-    var out = [];
-    var conditions = [
-      TokenTypes.TEXT,
-      TokenTypes.BOLD,
-      TokenTypes.ITALICS,
-      TokenTypes.STRIKETHROUGH,
-      TokenTypes.LATEXTOGGLE,
-      TokenTypes.CODETOGGLE,
-      TokenTypes.LINK,
-      TokenTypes.IMAGE
-    ];
-    var finished = false;
-    while (!finished && conditions.indexOf(this.tokenStream.peek().type) >= 0) {
-      var token = this.tokenStream.read();
-      var comp = null;
+  parseBold() {
+    this.tokenStream.read();
+    var component = new MDTextBold();
+    component.from = token.from;
+    while (!this.tokenStream.eof()) {
+      var token = this.tokenStream.peek();
       switch (token.type) {
         case TokenTypes.TEXT:
-          comp = this._parse_text(token);
+          for (const sub of this.parseText()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.BOLD:
-          comp = this._parse_bold(token);
+          component.to = token.to;
+          this.tokenStream.read();
+          return [component];
           break;
         case TokenTypes.ITALICS:
-          comp = this._parse_italics(token);
+          for (const sub of this.parseItalics()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.STRIKETHROUGH:
-          comp = this._parse_strikethrough(token);
+          for (const sub of this.parseStrikethrough()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.LATEXTOGGLE:
-          comp = this._parse_inline_latex(token);
+          for (const sub of this.parseLatex()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.CODETOGGLE:
-          comp = this._parse_inline_code(token);
+          for (const sub of this.parseCode()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.LINK:
-          comp = this._parse_link(token);
+          for (const sub of this.parseLink()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.IMAGE:
-          comp = this._parse_image(token);
+          for (const sub of this.parseImage()) {
+            component.add(sub);
+          }
           break;
+        case TokenTypes.NEWLINE: // Failed to complete sequence
+          this.reinterpretAsText(component.children);
+          return component.children;
         default:
-          finished = true;
+          this.reinterpretAsText(component.children);
           break;
       }
-      out.push(comp);
-      if (this.tokenStream.peek() == null) break;
     }
-    return out;
+    return component.children;
   }
-  _parse_text(token) {
-    var comp = new MDText();
-    comp.from = token.from;
-    comp.to = token.to;
-    comp.value = token.value;
-    return comp;
-  }
-  _parse_bold(token) {
-    var bold = new MDTextBold();
-    bold.from = token.from;
-    while ((token = this.tokenStream.peek())) {
-      var comp = null;
+
+  /**
+   * Parses the token stream for italicalised text.
+   * @access private
+   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
+   *                          text reinterpreted elements.
+   */
+  parseItalics() {
+    this.tokenStream.read();
+    var component = new MDTextItalics();
+    component.from = token.from;
+    while (!this.tokenStream.eof()) {
+      var token = this.tokenStream.peek();
       switch (token.type) {
         case TokenTypes.TEXT:
-          comp = this._parse_text(this.tokenStream.read());
+          for (const sub of this.parseText()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.BOLD:
-          bold.to = token.to;
-          this.tokenStream.read();
-          return bold;
+          for (const sub of this.parseBold()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.ITALICS:
-          comp = this._parse_italics(this.tokenStream.read());
+          component.to = token.to;
+          this.tokenStream.read();
+          return [component];
           break;
         case TokenTypes.STRIKETHROUGH:
-          comp = this._parse_strikethrough(this.tokenStream.read());
+          for (const sub of this.parseStrikethrough()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.LATEXTOGGLE:
-          comp = this._parse_inline_latex(this.tokenStream.read());
+          for (const sub of this.parseLatex()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.CODETOGGLE:
-          comp = this._parse_inline_code(this.tokenStream.read());
+          for (const sub of this.parseCode()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.LINK:
-          comp = this._parse_link(this.tokenStream.read());
+          for (const sub of this.parseLink()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.IMAGE:
-          comp = this._parse_image(this.tokenStream.read());
+          for (const sub of this.parseImage()) {
+            component.add(sub);
+          }
           break;
+        case TokenTypes.NEWLINE: // Failed to complete sequence
+          this.reinterpretAsText(component.children);
+          return component.children;
         default:
-          error('Unexpected Token: ' + token.type);
+          this.reinterpretAsText(component.children);
           break;
       }
-      bold.add(comp);
     }
-    this.tokenStream.croak('Unexpected end of string');
+    return component.children;
   }
-  _parse_italics(token) {
-    var italics = new MDTextItalics();
-    italics.from = token.from;
-    while ((token = this.tokenStream.peek())) {
-      var comp = null;
+
+  /**
+   * Parses the token stream for strikethrough text.
+   * @access private
+   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
+   *                          text reinterpreted elements.
+   */
+  parseStrikethrough() {
+    this.tokenStream.read();
+    var component = new MDTextStrikethrough();
+    component.from = token.from;
+    while (!this.tokenStream.eof()) {
+      var token = this.tokenStream.peek();
       switch (token.type) {
         case TokenTypes.TEXT:
-          comp = this._parse_text(this.tokenStream.read());
+          for (const sub of this.parseText()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.BOLD:
-          comp = this._parse_bold(this.tokenStream.read());
+          for (const sub of this.parseBold()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.ITALICS:
-          italics.to = token.to;
-          this.tokenStream.read();
-          return italics;
-        case TokenTypes.STRIKETHROUGH:
-          comp = this._parse_strikethrough(this.tokenStream.read());
-          break;
-        case TokenTypes.LATEXTOGGLE:
-          comp = this._parse_inline_latex(this.tokenStream.read());
-          break;
-        case TokenTypes.CODETOGGLE:
-          comp = this._parse_inline_code(this.tokenStream.read());
-          break;
-        case TokenTypes.LINK:
-          comp = this._parse_link(this.tokenStream.read());
-          break;
-        case TokenTypes.IMAGE:
-          comp = this._parse_image(this.tokenStream.read());
-          break;
-        default:
-          this.tokenStream.croak('Unexpected Token: ' + token.type);
-          break;
-      }
-      italics.add(comp);
-    }
-    this.tokenStream.croak('Unexpected end of string');
-  }
-  _parse_strikethrough(token) {
-    var strike = new MDTextStrikethrough();
-    strike.from = token.from;
-    while ((token = this.tokenStream.peek())) {
-      var comp = null;
-      switch (token.type) {
-        case TokenTypes.TEXT:
-          comp = this._parse_text(this.tokenStream.read());
-          break;
-        case TokenTypes.BOLD:
-          comp = this._parse_bold(this.tokenStream.read());
-          break;
-        case TokenTypes.ITALICS:
-          comp = this._parse_italics(this.tokenStream.read());
+          for (const sub of this.parseItalics()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.STRIKETHROUGH:
-          strike.to = token.to;
+          component.to = token.to;
           this.tokenStream.read();
-          return strike;
+          return [component];
+          break;
         case TokenTypes.LATEXTOGGLE:
-          comp = this._parse_inline_latex(this.tokenStream.read());
+          for (const sub of this.parseLatex()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.CODETOGGLE:
-          comp = this._parse_inline_code(this.tokenStream.read());
+          for (const sub of this.parseCode()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.LINK:
-          comp = this._parse_link(this.tokenStream.read());
+          for (const sub of this.parseLink()) {
+            component.add(sub);
+          }
           break;
         case TokenTypes.IMAGE:
-          comp = this._parse_image(this.tokenStream.read());
+          for (const sub of this.parseImage()) {
+            component.add(sub);
+          }
           break;
+        case TokenTypes.NEWLINE: // Failed to complete sequence
+          this.reinterpretAsText(component.children);
+          return component.children;
         default:
-          this.tokenStream.croak('Unexpected Token: ' + token.type);
-          break;
-      }
-      strike.add(comp);
-    }
-    this.tokenStream.croak('Unexpected end of string');
-  }
-  _parse_inline_latex(token) {
-    var latex = new MDTextLaTeX();
-    var text = new MDText();
-    text.value = '';
-    latex.from = token.from;
-    latex.add(text);
-    while ((token = this.tokenStream.peek())) {
-      switch (token.type) {
-        case TokenTypes.LATEXTOGGLE:
-          latex.to = token.to;
-          this.tokenStream.read();
-          return latex;
-        case (TokenTypes.HEADER,
-        TokenTypes.PARAGRAPH,
-        TokenTypes.BLOCKQUOTE,
-        TokenTypes.NUMBEREDLIST,
-        TokenTypes.UNNUMBEREDLIST,
-        TokenTypes.CODEBLOCKSTART,
-        TokenTypes.CODEBLOCKEND,
-        TokenTypes.LATEXBLOCKSTART,
-        TokenTypes.LATEXBLOCKEND,
-        TokenTypes.RULE,
-        TokenTypes.TOC,
-        TokenTypes.TOF,
-        TokenTypes.PAGEBREAK,
-        TokenTypes.NEWLINE):
-          this.tokenStream.croak('Unexpected Token: ' + token.type);
-          break;
-        default:
-          text.value += this.tokenStream.read().value;
+          this.reinterpretAsText(component.children);
           break;
       }
     }
-    this.tokenStream.croak('Unexpected end of string');
+    return component.children;
   }
-  _parse_inline_code(token) {
-    var code = new MDTextCode();
-    var text = new MDText();
-    code.from = token.from;
-    code.add(text);
-    while ((token = this.tokenStream.peek())) {
-      switch (token.type) {
-        case TokenTypes.CODETOGGLE:
-          code.to = token.to;
-          this.tokenStream.read();
-          return code;
-        case (TokenTypes.HEADER,
-        TokenTypes.PARAGRAPH,
-        TokenTypes.BLOCKQUOTE,
-        TokenTypes.NUMBEREDLIST,
-        TokenTypes.UNNUMBEREDLIST,
-        TokenTypes.CODEBLOCKSTART,
-        TokenTypes.CODEBLOCKEND,
-        TokenTypes.LATEXBLOCKSTART,
-        TokenTypes.LATEXBLOCKEND,
-        TokenTypes.RULE,
-        TokenTypes.TOC,
-        TokenTypes.TOF,
-        TokenTypes.PAGEBREAK,
-        TokenTypes.NEWLINE):
-          this.tokenStream.croak('Unexpected Token: ' + token.type);
-          break;
-        default:
-          text += this.tokenStream.read().value;
-          break;
-      }
-    }
-    this.tokenStream.croak('Unexpected end of string');
-  }
-  _parse_link(token) {
+
+  /**
+   * Parses the token stream for inline LaTeX.
+   * @access private
+   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
+   *                          text reinterpreted elements.
+   */
+  parseLatex() {}
+
+  /**
+   * Parses the token stream for inline code.
+   * @access private
+   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
+   *                          text reinterpreted elements.
+   */
+  parseCode() {}
+
+  /**
+   * Parses the token stream for a link.
+   * @access private
+   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
+   *                          text reinterpreted elements.
+   */
+  parseLink() {
     var link = new MDLink();
     link.from = token.from;
     link.destination = token.match[4].value;
@@ -677,7 +792,14 @@ class Parser {
     link.to = link.last().from;
     return link;
   }
-  _parse_image(token) {
+
+  /**
+   * Parses the token stream for an image.
+   * @access private
+   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
+   *                          text reinterpreted elements.
+   */
+  parseImage() {
     var img = new MDImage();
     img.from = token.from;
     img.to = token.to;
@@ -695,75 +817,61 @@ class Parser {
     }
     return img;
   }
-  parse_paragraph(token) {
+
+  // Helpers:
+
+  /**
+   * Turns failed blocks into paragraphs instead
+   * @param {MDComponent[]} chached The elements chached for the failed block
+   */
+  blockFail(chached) {
     var paragraph = new MDParagraph();
-    paragraph.from = token.from;
-    while ((token = this.tokenStream.peek())) {
-      for (const sub of this._parse_text_line()) {
-        paragraph.add(sub);
-      }
-      token = this.tokenStream.peek();
-      if (token == null) break;
-      if (token.type == TokenTypes.NEWLINE) {
-        // Still going
-        this.tokenStream.read();
-        paragraph.add(this._create_softbreak(paragraph.last().to));
-        continue;
-      }
-      break;
+    paragraph.from = chached.from;
+    for (const component of chached) {
+      paragraph.add(component);
     }
-    // if (paragraph.last() instanceof MDSoftBreak) {
-    //   paragraph.remove(paragraph.last());
-    // }
-    paragraph.to = paragraph.last().to;
+    if (paragraph.children.length == 0) {
+      paragraph.to = paragraph.from;
+    } else {
+      paragraph.to = paragraph.last().to;
+    }
     return paragraph;
   }
-  _parse_newline(token) {
-    return this._create_softbreak(token.to);
-  }
-  _create_softbreak(from) {
-    var softbreak = new MDSoftBreak();
-    softbreak.from = from;
-    softbreak.to = [from[0] + 1, 0];
-    return softbreak;
-  }
-  parse_blockquote(token) {
-    var quote = new MDBlockQuote();
-    quote.from = token.from;
-    while (token.type == TokenTypes.BLOCKQUOTE) {
-      for (const sub of this._parse_text_line()) {
-        quote.add(sub);
-      }
-      token = this.tokenStream.peek();
-      if (token == null) break;
-      var newline = new MDSoftBreak();
-      newline.from = quote.last().to;
-      newline.from[1]++;
-      newline.to = newline.from;
-      newline.to[0]++;
-      newline.from[1] = 0;
-      quote.add(new MDSoftBreak());
-      token = this.tokenStream.read();
+
+  /**
+   * Reinterprets unexpected tokens as text and appends them to either the last
+   * text element or as a new element to the list.
+   * @access private
+   * @param {MDComponent[]} list The existing list of components
+   */
+  reinterpretAsText(list) {
+    var text = null;
+    var token = this.tokenStream.read();
+    if (list.length > 0 && list[list.length - 1].type == TokenTypes.TEXT) {
+      text = list[list.length - 1];
+    } else {
+      text = new MDText();
+      text.value = '';
+      text.from = token.from;
+      list.push(text);
     }
-    quote.to = quote.last().to;
-    return quote;
+    text.value += token.value;
+    text.to = token.to;
   }
-  parse_codeblock(token) {
-    var code = new MDCodeBlock();
-    code.from = token.from;
-    while ((token = this.tokenStream.peek())) {
-      for (const sub of this._parse_text_line()) {
-        code.add(sub);
-      }
-      token = this.tokenStream.peek();
-      if (token && token.type == NEWLINE) {
-        // Still going
-        this.tokenStream.read();
-        code.add(this._parse_newline(token));
-      } else {
-        break;
-      }
-    }
+
+  /**
+   * Returns a soft break with the correct coordinates according to the given
+   * token.
+   * @access private
+   * @param {Token} token Reference token
+   * @returns {MDSoftBreak}
+   */
+  appendSoftBreak(token) {
+    var softBreak = new MDSoftBreak();
+    softBreak.from = token.to;
+    softBreak.from[1]++;
+    softBreak.to = softBreak.from;
+    return softBreak;
   }
 }
 
@@ -960,6 +1068,30 @@ const Tokens = Object.freeze({
   }
 });
 
+const ComponentTypes = Object.freeze({
+  DOM: 'DOM',
+  HEADER: 'Header',
+  BLOCKQUOTE: 'Block Quote',
+  NUMBEREDLIST: 'Numbered List',
+  UNNUMBEREDLIST: 'Unnumbered List',
+  LATEXBLOCK: 'LaTeX Block',
+  CODEBLOCK: 'Code Block',
+  REFERENCE: 'Reference',
+  TOC: 'Table Of Contents',
+  TOF: 'Table Of Figures',
+  PAGEBREAK: 'Page Break',
+  RULE: 'Rule',
+  PARAGRAPH: 'Paragraph',
+  TEXT: 'Text',
+  BOLD: 'Bold',
+  ITALICS: 'Italics',
+  STRIKETHROUGH: 'Strike Through',
+  IMAGE: 'Image',
+  LINK: 'Link',
+  INLINECODE: 'Inline Code',
+  INLINELATEX: 'Inline LaTeX'
+});
+
 class TokenFilter {
   constructor() {}
   oneOf(tokenArray) {}
@@ -974,7 +1106,8 @@ var toc_found = false;
 var tof_found = false;
 
 class MDComponent {
-  constructor() {
+  constructor(type) {
+    this.type = type;
     this.parent = null;
     this.children = [];
   }
@@ -1010,55 +1143,6 @@ class MDComponent {
     return this.children[this.children.length - 1];
   }
 
-  // Consume token to check for a prematch
-  prematch(tokens, index) {
-    var prematchIndex = 0;
-    for (const prematchFilter of this.prematchFilters) {
-      if (prematchFilter.matches.includes(EOF)) {
-      }
-      if (prematchFilter.match(tokens[index + prematchIndex])) {
-        this.prematchIndex++;
-      } else {
-        this.prematchIndex = 0;
-      }
-    }
-    return this.prematchIndex == this.prematchFilters.length;
-  }
-
-  // Check for match and if not invalidated by escaping or nesting exclusions
-  match(tokens, index, stack) {
-    if (!this._couldMatch(tokens, index)) return false;
-    if (!this._isNotEscaped(tokens, index)) return false;
-    if (!this._isNotInsideExcludingComponents(stack)) return false;
-    return true;
-  }
-
-  // Check if this could be a match
-  _couldMatch(tokens, index) {}
-
-  // Check for leading escape
-  _isNotEscaped(tokens, index) {
-    if (this.escapable && index > 0) {
-      if (tokens[index - 1].type == ESCAPE) return false;
-    }
-    return true;
-  }
-
-  // Check for elements in a higher hierarchy excluding this component
-  _isNotInsideExcludingComponents(stack) {
-    return !stack.includes(this.nestedExclusions);
-  }
-
-  // Replace current component with a new one if parsable
-  _parseReplace() {
-    return this;
-  }
-
-  // Make some post parse actions if necessary
-  _aftermath(dom) {
-    return;
-  }
-
   toHtml() {
     var tags = [];
     for (var component of this.children) {
@@ -1086,6 +1170,9 @@ class MDComponent {
 
 // text components:
 class MDText extends MDComponent {
+  constructor() {
+    super(ComponentTypes.TEXT);
+  }
   toHtml() {
     if (this.value) return this.value;
     return super.toHtml();
@@ -1099,6 +1186,9 @@ class MDText extends MDComponent {
 }
 
 class MDTextBold extends MDText {
+  constructor() {
+    super(ComponentTypes.BOLD);
+  }
   toHtml() {
     return `<strong>${super.toHtml()}</strong>`;
   }
@@ -1119,6 +1209,9 @@ class MDTextBold extends MDText {
 }
 
 class MDTextItalics extends MDText {
+  constructor() {
+    super(ComponentTypes.ITALICS);
+  }
   toHtml() {
     return `<em>${super.toHtml()}</em>`;
   }
@@ -1139,6 +1232,9 @@ class MDTextItalics extends MDText {
 }
 
 class MDTextStrikethrough extends MDText {
+  constructor() {
+    super(ComponentTypes.STRIKETHROUGH);
+  }
   toHtml() {
     return `<s>${super.toHtml()}</s>`;
   }
@@ -1159,6 +1255,9 @@ class MDTextStrikethrough extends MDText {
 }
 
 class MDTextCode extends MDText {
+  constructor() {
+    super(ComponentTypes.INLINECODE);
+  }
   toHtml() {
     return `<code>${this.value}</code>`;
   }
@@ -1171,6 +1270,9 @@ class MDTextCode extends MDText {
 }
 
 class MDTextLaTeX extends MDText {
+  constructor() {
+    super(ComponentTypes.INLINELATEX);
+  }
   toHtml() {
     return `<span>${super.toHtml()}</span>`;
   }
@@ -1191,6 +1293,9 @@ class MDTextLaTeX extends MDText {
 }
 
 class MDLink extends MDComponent {
+  constructor() {
+    super(ComponentTypes.LINK);
+  }
   toHtml() {
     if (this.title) {
       return `<a href="${this.destination}" title="${
@@ -1207,6 +1312,9 @@ class MDLink extends MDComponent {
 }
 
 class MDImage extends MDComponent {
+  constructor() {
+    super(ComponentTypes.IMAGE);
+  }
   toHtml() {
     if (this.id) {
       return `<img src="${this.destination}" id="${
@@ -1235,6 +1343,9 @@ class MDSoftBreak extends MDComponent {
 // per line components:
 
 class MDHeader extends MDComponent {
+  constructor() {
+    super(ComponentTypes.HEADER);
+  }
   toHtml() {
     if (this.id) {
       return `<h${this.level} id="${this.id}">${super.toHtml()}</h${
@@ -1249,6 +1360,9 @@ class MDHeader extends MDComponent {
 }
 
 class MDParagraph extends MDComponent {
+  constructor() {
+    super(ComponentTypes.PARAGRAPH);
+  }
   _parseReplace() {
     var obj = this;
     obj = MDTOC._test(this.toString()) ? MDTOC._parse(this) : obj;
@@ -1267,6 +1381,9 @@ class MDParagraph extends MDComponent {
 }
 
 class MDListBase extends MDComponent {
+  constructor(type) {
+    super(type);
+  }
   _aftermath(dom) {
     this._scoutNestedLevels(0);
   }
@@ -1283,6 +1400,9 @@ class MDListBase extends MDComponent {
 }
 
 class MDOrderedList extends MDListBase {
+  constructor() {
+    super(ComponentTypes.UNNUMBEREDLIST);
+  }
   toHtml() {
     if (this.start != 1) {
       return `<ol start="${this.start}">${super.toHtml()}</ol>`;
@@ -1314,6 +1434,9 @@ class MDOrderedList extends MDListBase {
 }
 
 class MDBulletList extends MDListBase {
+  constructor() {
+    super(ComponentTypes.NUMBEREDLIST);
+  }
   toHtml() {
     return `<ul>${super.toHtml()}</ul>`;
   }
@@ -1342,6 +1465,9 @@ class MDItem extends MDComponent {
 }
 
 class MDBlockQuote extends MDComponent {
+  constructor() {
+    super(ComponentTypes.BLOCKQUOTE);
+  }
   toHtml() {
     return `<blockquote>${super.toHtml()}</blockquote>`;
   }
@@ -1358,6 +1484,9 @@ class MDBlockQuote extends MDComponent {
 }
 
 class MDCodeBlock extends MDComponent {
+  constructor() {
+    super(ComponentTypes.CODEBLOCK);
+  }
   toHtml() {
     if (this.language) return `<pre><code>${this.value}</code></pre>`;
     return `<pre><code class="${this.language} language-${this.language}">${
@@ -1373,6 +1502,9 @@ class MDCodeBlock extends MDComponent {
 }
 
 class MDThematicBreak extends MDComponent {
+  constructor() {
+    super(ComponentTypes.RULE);
+  }
   toHtml() {
     return '<hr/>';
   }
@@ -1387,6 +1519,9 @@ class MDThematicBreak extends MDComponent {
 // New elements
 
 class MDTOC extends MDComponent {
+  constructor() {
+    super(ComponentTypes.TOC);
+  }
   _aftermath(dom) {
     this._compile(dom.children);
   }
@@ -1433,6 +1568,9 @@ class MDTOC extends MDComponent {
 }
 
 class MDTOF extends MDComponent {
+  constructor() {
+    super(ComponentTypes.TOF);
+  }
   _aftermath(dom) {
     this._compile(dom);
   }
@@ -1500,6 +1638,9 @@ class MDTOF extends MDComponent {
 }
 
 class MDPageBreak extends MDComponent {
+  constructor() {
+    super(ComponentTypes.PAGEBREAK);
+  }
   static _test(string) {
     return /^\[PB\]$/gm.test(string);
   }
@@ -1521,6 +1662,9 @@ class MDPageBreak extends MDComponent {
 
 // Central class
 class MDDOM extends MDComponent {
+  constructor() {
+    super(ComponentTypes.DOM);
+  }
   static parse(source) {
     var dom = new MDDOM();
 
@@ -1649,6 +1793,18 @@ class MDDOM extends MDComponent {
   }
 }
 
+class MDLatexBlock extends MDComponent {
+  constructor() {
+    super(ComponentTypes.LATEXBLOCK);
+  }
+}
+
+class MDReference extends MDComponent {
+  constructor() {
+    super(ComponentTypes.REFERENCE);
+  }
+}
+
 class SourcePosition {
   constructor(array) {
     this.row = array[0];
@@ -1670,31 +1826,36 @@ class SourcePosition {
 
 const markdown = {
   parser: {
-    Parser: Parser,
-    TokenStream: TokenStream,
     CharacterStream: CharacterStream,
+    TokenStream: TokenStream,
     Token: Token,
+    Tokens,
     TokenTypes: TokenTypes,
-    Tokens
+    Parser: Parser
   },
+  ComponentTypes: ComponentTypes,
   Component: MDComponent,
   DOM: MDDOM,
-  Text: MDText,
-  TextBold: MDTextBold,
-  TextItalics: MDTextItalics,
-  TextCode: MDTextCode,
-  TextLaTeX: MDTextLaTeX,
-  Paragraph: MDParagraph,
   Header: MDHeader,
-  TOC: MDTOC,
-  OrderedList: MDOrderedList,
-  BulletList: MDBulletList,
-  Item: MDItem,
-  Link: MDLink,
-  Image: MDImage,
-  SoftBreak: MDSoftBreak,
   BlockQuote: MDBlockQuote,
-  CodeBlock: MDCodeBlock
+  NumberedList: MDOrderedList,
+  UnnumberedList: MDBulletList,
+  LatexBlock: MDLatexBlock,
+  CodeBlock: MDCodeBlock,
+  Reference: MDReference,
+  TOC: MDTOC,
+  TOF: MDTOF,
+  Pagebreak: MDPageBreak,
+  Rule: MDThematicBreak,
+  Paragraph: MDParagraph,
+  Text: MDText,
+  Bold: MDTextBold,
+  Italics: MDTextItalics,
+  Strikethrough: MDTextStrikethrough,
+  Image: MDImage,
+  Link: MDLink,
+  InlineCode: MDTextCode,
+  InlineLatex: MDTextLaTeX
 };
 
 // var tokenStream = new TokenStream(new CharacterStream('Check:\n\nx=y\n'));
@@ -1702,4 +1863,13 @@ const markdown = {
 // while (token = tokenStream.read()) {
 //   console.log(token);
 // }
+var tokenStream = new TokenStream(
+  new CharacterStream(
+    '> First quote\n' + '> Second quote\n' + '\n' + '>       Third quote'
+  )
+);
+var parser = new Parser(tokenStream);
+var components = parser.parse();
+//console.log(components[0].toString());
+
 module.exports = markdown;
