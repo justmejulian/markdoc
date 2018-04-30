@@ -8,6 +8,7 @@ import SidebarStore from '../stores/SidebarStore.js';
 class Preview extends React.Component {
   constructor(props) {
     super(props);
+    this.pageRef = React.createRef();
     this.setPreview = this.setPreview.bind(this);
     this.setHasTitlepage = this.setHasTitlepage.bind(this);
     this.handleZoomIn = this._handleZoomIn.bind(this);
@@ -44,7 +45,10 @@ class Preview extends React.Component {
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
     var html = PagesStore.getHTML();
-    var words = html.replace(' <br/> ', '<br/> ').split(' ');
+    var words = html
+      .replace(' <br/> ', '<br/> ')
+      .replace(/\n/g, '<br/> ')
+      .split(' ');
 
     copyArray[0].html = words[0].replace('<br/> ', ' <br/> ');
 
@@ -166,6 +170,7 @@ class Preview extends React.Component {
           {this.state.pages.map(page => (
             <Page
               id={page.key}
+              ref={this.pageRef}
               key={page.key}
               html={page.html}
               handleHeight={this.handleHeight.bind(this)}

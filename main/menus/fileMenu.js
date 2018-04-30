@@ -4,6 +4,8 @@ const { ipcMain, BrowserWindow } = electron;
 // import constants
 const {
   GET_DOCUMENT_CONTENT,
+  GET_HTML_CONTENT,
+  GET_PDF_CONTENT,
   DEFAULT_URL
 } = require('../../app/utils/constants');
 
@@ -40,10 +42,24 @@ module.exports = {
     { type: 'separator' },
     {
       label: 'Export as...',
-      accelerator: process.platform === 'darwin' ? 'Command+E' : 'Ctrl+E',
-      click() {
-        console.log('Export as...');
-      }
+      submenu: [
+        {
+          label: 'Export as PDF',
+          accelerator:
+            process.platform === 'darwin' ? 'Command+Shift+P' : 'Ctrl+Shift+P',
+          click() {
+            BrowserWindow.getFocusedWindow().send(GET_PDF_CONTENT, 'pdf');
+          }
+        },
+        {
+          label: 'Export as HTML',
+          accelerator:
+            process.platform === 'darwin' ? 'Command+Shift+H' : 'Ctrl+Shift+H',
+          click() {
+            BrowserWindow.getFocusedWindow().send(GET_HTML_CONTENT, 'html');
+          }
+        }
+      ]
     }
   ]
 };
