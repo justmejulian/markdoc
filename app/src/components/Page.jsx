@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { ReactHeight } from 'react-height';
 import Header from './Header.jsx';
 import Footer from './Footer.jsx';
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 
 class Page extends React.Component {
   constructor() {
@@ -12,30 +12,30 @@ class Page extends React.Component {
     this.state = {
       _html: null,
       id: null,
-      hasHeader: Store.getHasHeader(),
-      hasFooter: Store.getHasFooter()
+      hasHeader: SidebarStore.getHasHeader(),
+      hasFooter: SidebarStore.getHasFooter()
     };
   }
 
   componentWillMount() {
-    Store.on('hasHeader_changed', this.setHasHeader);
-    Store.on('hasFooter_changed', this.setHasFooter);
+    SidebarStore.on('hasHeader_changed', this.setHasHeader);
+    SidebarStore.on('hasFooter_changed', this.setHasFooter);
   }
 
   componentWillUnmount() {
-    Store.removeListener('hasHeader_changed', this.setHasHeader);
-    Store.removeListener('hasFooter_changed', this.setHasFooter);
+    SidebarStore.removeListener('hasHeader_changed', this.setHasHeader);
+    SidebarStore.removeListener('hasFooter_changed', this.setHasFooter);
   }
 
   setHasHeader() {
     this.setState({
-      hasHeader: Store.getHasHeader()
+      hasHeader: SidebarStore.getHasHeader()
     });
   }
 
   setHasFooter() {
     this.setState({
-      hasFooter: Store.getHasFooter()
+      hasFooter: SidebarStore.getHasFooter()
     });
   }
 

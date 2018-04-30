@@ -30,7 +30,7 @@ export function setTitle(text) {
 
 export function setAuthor(text) {
   dispatcher.dispatch({
-    type: 'SET_AUHTOR',
+    type: 'SET_AUTHOR',
     text
   });
 }

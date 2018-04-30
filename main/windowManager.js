@@ -22,7 +22,7 @@ function _unref() {
 }
 
 function createWindow(url) {
-  const window = new BrowserWindow(defaultWindow);
+  const window = _createWindow();
   window.unref = _unref.bind(window);
   window.once('close', window.unref);
   window.loadURL(url);

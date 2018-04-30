@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import dispatcher from '../dispatcher';
 import moment from 'moment';
 
-class Store extends EventEmitter {
+class SidebarStore extends EventEmitter {
   constructor() {
     super();
     this.hasTitlepage = false;
@@ -20,16 +20,16 @@ class Store extends EventEmitter {
     this.footerRight = '';
   }
 
-  setHasTitlepage(title) {
-    this.hasTitlepage = title;
+  setHasTitlepage(status) {
+    this.hasTitlepage = status;
   }
 
-  setHasHeader(title) {
-    this.hasHeader = title;
+  setHasHeader(status) {
+    this.hasHeader = status;
   }
 
-  setHasFooter(title) {
-    this.hasFooter = title;
+  setHasFooter(status) {
+    this.hasFooter = status;
   }
 
   setTitle(title) {
@@ -44,8 +44,8 @@ class Store extends EventEmitter {
     this.date = date.format('DD/MM/YYYY');
   }
 
-  setHeaderLeft(tex) {
-    this.headerLeft = tex;
+  setHeaderLeft(text) {
+    this.headerLeft = text;
   }
 
   setHeaderMiddle(text) {
@@ -134,7 +134,7 @@ class Store extends EventEmitter {
         this.setTitle(action.text);
         this.emit('Title_changed');
         break;
-      case 'SET_AUHTOR':
+      case 'SET_AUTHOR':
         this.setAuthor(action.text);
         this.emit('Author_changed');
         break;
@@ -170,7 +170,7 @@ class Store extends EventEmitter {
   }
 }
 
-const store = new Store();
-dispatcher.register(store.handleActions.bind(store));
+const sidebarStore = new SidebarStore();
+dispatcher.register(sidebarStore.handleActions.bind(sidebarStore));
 
-export default store;
+export default sidebarStore;

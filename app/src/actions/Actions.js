@@ -12,3 +12,15 @@ export function setMarkdown(text) {
     text
   });
 }
+
+export function zoomIn() {
+  dispatcher.dispatch({
+    type: 'ZOOM_IN'
+  });
+}
+
+export function zoomOut() {
+  dispatcher.dispatch({
+    type: 'ZOOM_OUT'
+  });
+}

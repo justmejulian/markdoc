@@ -1,48 +1,58 @@
 import React, { Component } from 'react';
+import * as Actions from '../actions/Actions';
 import Page from './Page.jsx';
 import Titlepage from './Titlepage.jsx';
 import PagesStore from '../stores/PagesStore.js';
-import Store from '../stores/Store.js';
+import SidebarStore from '../stores/SidebarStore.js';
 
 class Preview extends React.Component {
   constructor(props) {
     super(props);
+    this.pageRef = React.createRef();
     this.setPreview = this.setPreview.bind(this);
     this.setHasTitlepage = this.setHasTitlepage.bind(this);
     this.handleZoomIn = this._handleZoomIn.bind(this);
     this.handleZoomOut = this._handleZoomOut.bind(this);
+    this.setZoom = this._setZoom.bind(this);
     this.state = {
       pages: [{ key: 0, html: PagesStore.getMarkdown(), height: 0 }],
       words: [],
       currentWord: 0,
       currentPage: 0,
-      hasTitlepage: Store.getHasTitlepage(),
-      zoom: 1
+      hasTitlepage: SidebarStore.getHasTitlepage(),
+      zoom: PagesStore.getZoom()
     };
   }
 
   componentWillMount() {
     PagesStore.on('HTML_changed', this.setPreview);
-    Store.on('hasTitlepage_changed', this.setHasTitlepage);
+    PagesStore.on('Zoom_changed', this.setZoom);
+    SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
   }
 
   componentWillUnmount() {
     PagesStore.removeListener('HTML_changed', this.setPreview);
-    Store.removeListener('hasTitlepage_changed', this.setHasTitlepage);
+    PagesStore.removeListener('Zoom_changed', this.setZoom);
+    SidebarStore.removeListener('hasTitlepage_changed', this.setHasTitlepage);
   }
 
   setHasTitlepage() {
     this.setState({
-      hasTitlepage: Store.getHasTitlepage()
+      hasTitlepage: SidebarStore.getHasTitlepage()
     });
   }
 
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
     var html = PagesStore.getHTML();
-    var words = html.split(' ');
+    var words = html
+      .replace(' <br/> ', '<br/> ')
+      .replace(/\n/g, '<br/> ')
+      .split(' ');
 
-    copyArray[0].html = words[0];
+    copyArray[0].html = words[0].replace('<br/> ', ' <br/> ');
+
+    console.log(words);
 
     this.setState(
       {
@@ -55,22 +65,8 @@ class Preview extends React.Component {
     );
   }
 
-  _handleZoomIn() {
-    if (this.state.zoom < 1.7) {
-      //If not: Silently do nothing.
-      var newState = this.state;
-      newState.zoom += 0.1;
-      this.setState(newState);
-    }
-  }
-
-  _handleZoomOut() {
-    if (this.state.zoom > 0.5) {
-      //If not: Silently do nothing.
-      var newState = this.state;
-      newState.zoom -= 0.1;
-      this.setState(newState);
-    }
+  _setZoom() {
+    this.setState({ zoom: PagesStore.getZoom() });
   }
 
   handleHeight(height, id) {
@@ -90,17 +86,35 @@ class Preview extends React.Component {
     if (currentWord < this.state.words.length - 1) {
       if (copyArray[currentPage].height < 700) {
         currentWord = currentWord + 1;
-        //console.log("Current Word: " + currentWord);
-        //console.log("The word: " + this.state.words[currentWord]);
-        copyArray[currentPage].html =
-          copyArray[currentPage].html + ' ' + this.state.words[currentWord];
-        this.setState(
-          {
-            pages: copyArray,
-            currentWord: currentWord
-          },
-          this.nextWord
-        );
+        //console.log('Current Word: ' + currentWord);
+        console.log('The word: ' + this.state.words[currentWord]);
+        if (
+          this.state.words[currentWord] == '[newpage]' ||
+          this.state.words[currentWord] == '<p>[newpage]' ||
+          this.state.words[currentWord] == '[newpage]</p>' ||
+          this.state.words[currentWord] == '<p>[newpage]</p>'
+        ) {
+          copyArray[currentPage].height = 701;
+          this.setState(
+            {
+              pages: copyArray,
+              currentWord: currentWord
+            },
+            this.nextWord
+          );
+        } else {
+          copyArray[currentPage].html =
+            copyArray[currentPage].html +
+            ' ' +
+            this.state.words[currentWord].replace('<br/> ', ' <br/> ');
+          this.setState(
+            {
+              pages: copyArray,
+              currentWord: currentWord
+            },
+            this.nextWord
+          );
+        }
       } else {
         currentPage = currentPage + 1;
         copyArray[currentPage] = { key: currentPage, html: '', height: 0 };
@@ -116,6 +130,14 @@ class Preview extends React.Component {
       }
     }
     //console.log(this.state.pages);
+  }
+
+  _handleZoomIn() {
+    Actions.zoomIn();
+  }
+
+  _handleZoomOut() {
+    Actions.zoomOut();
   }
 
   render() {
@@ -148,6 +170,7 @@ class Preview extends React.Component {
           {this.state.pages.map(page => (
             <Page
               id={page.key}
+              ref={this.pageRef}
               key={page.key}
               html={page.html}
               handleHeight={this.handleHeight.bind(this)}
