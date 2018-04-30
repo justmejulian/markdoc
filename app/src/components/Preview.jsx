@@ -1,32 +1,46 @@
 import React, { Component } from 'react';
 import Page from './Page.jsx';
+import Titlepage from './Titlepage.jsx';
+import PagesStore from '../stores/PagesStore.js';
 import Store from '../stores/Store.js';
 
 class Preview extends React.Component {
   constructor(props) {
     super(props);
     this.setPreview = this.setPreview.bind(this);
+    this.setHasTitlepage = this.setHasTitlepage.bind(this);
     this.handleZoomIn = this._handleZoomIn.bind(this);
     this.handleZoomOut = this._handleZoomOut.bind(this);
     this.state = {
-      pages: [{ key: 0, html: Store.getMarkdown(), height: 0 }],
+      pages: [{ key: 0, html: PagesStore.getMarkdown(), height: 0 }],
       words: [],
       currentWord: 0,
       currentPage: 0,
+      hasTitlepage: Store.getHasTitlepage(),
       zoom: 1
     };
   }
 
   componentWillMount() {
-    Store.on('HTML_changed', this.setPreview);
+    PagesStore.on('HTML_changed', this.setPreview);
+    Store.on('hasTitlepage_changed', this.setHasTitlepage);
+  }
+
+  componentWillUnmount() {
+    PagesStore.removeListener('HTML_changed', this.setPreview);
+    Store.removeListener('hasTitlepage_changed', this.setHasTitlepage);
+  }
+
+  setHasTitlepage() {
+    this.setState({
+      hasTitlepage: Store.getHasTitlepage()
+    });
   }
 
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
-    var html = Store.getHTML();
+    var html = PagesStore.getHTML();
     var words = html.split(' ');
-
-    //console.log(words);
 
     copyArray[0].html = words[0];
 
@@ -130,6 +144,7 @@ class Preview extends React.Component {
           </button>
         </div>
         <div style={{ zoom: this.state.zoom }}>
+          <Titlepage visibility={this.state.hasTitlepage} />
           {this.state.pages.map(page => (
             <Page
               id={page.key}

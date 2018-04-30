@@ -6,15 +6,25 @@ class Footer extends React.Component {
     super();
     this.getFooterInfo = this.getFooterInfo.bind(this);
     this.state = {
-      headerLeft: '',
-      headerMiddle: '',
-      headerRight: '',
-      pageNumber: 0
+      footerLeft: Store.getFooterLeft(),
+      footerMiddle: Store.getFooterMiddle(),
+      footerRight: Store.getFooterRight(),
+      pageNumber: ''
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      pageNumber: nextProps.pageNumber + 1
+    });
   }
 
   componentWillMount() {
     Store.on('Footer_changed', this.getFooterInfo);
+  }
+
+  componentWillUnmount() {
+    Store.removeListener('Footer_changed', this.getFooterInfo);
   }
 
   getFooterInfo() {
@@ -25,15 +35,15 @@ class Footer extends React.Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      pageNumber: nextProps.pageNumber + 1
-    });
+  getStyle() {
+    return {
+      visibility: this.props.visibility ? 'visible' : 'hidden'
+    };
   }
 
   render() {
     return (
-      <div className="footer">
+      <div className="footer" style={this.getStyle()}>
         <div className="hfLeft"> {this.state.footerLeft} </div>
         <div className="hfCenter"> {this.state.pageNumber} </div>
         <div className="hfRight"> {this.state.footerRight} </div>

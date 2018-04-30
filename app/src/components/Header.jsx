@@ -2,18 +2,30 @@ import React, { Component } from 'react';
 import Store from '../stores/Store.js';
 
 class Header extends React.Component {
-  constructor() {
+  constructor(props) {
     super();
     this.getHeaderInfo = this.getHeaderInfo.bind(this);
     this.state = {
       headerLeft: Store.getHeaderLeft(),
       headerMiddle: Store.getHeaderMiddle(),
-      headerRight: Store.getHeaderRight()
+      headerRight: Store.getHeaderRight(),
+      pageNumber: props.pageNumber + 1
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      pageNumber: nextProps.pageNumber + 1
+    });
   }
 
   componentWillMount() {
     Store.on('Header_changed', this.getHeaderInfo);
+  }
+
+  // Unbind change listener
+  componentWillUnmount() {
+    Store.removeListener('Header_changed', this.getHeaderInfo);
   }
 
   getHeaderInfo() {
@@ -31,7 +43,8 @@ class Header extends React.Component {
         this.state.headerMiddle != '' ||
         this.state.headerRight != ''
           ? '1px solid black'
-          : '0px'
+          : '0px',
+      visibility: this.props.visibility ? 'visible' : 'hidden'
     };
   }
 

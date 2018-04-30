@@ -1,6 +1,8 @@
 # Markdoc
 
-*A beautiful, extended Markdown editor built for academic papers.*
+[![Build Status](http://client108.cloudlab.zhaw.ch:8080/job/markdoc/badge/icon)](http://client108.cloudlab.zhaw.ch:8080/job/markdoc/)
+
+_A beautiful, extended Markdown editor built for academic papers._
 
 For more information about Markdoc, please visit our [Wiki](https://github.engineering.zhaw.ch/vissejul/markdoc/wiki).
 
@@ -26,3 +28,7 @@ $ npm install
 # Run
 $ npm start
 ```
+
+## Markdown Cheatsheet
+
+[Markdown Cheatsheet - Adam Pritchard](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#blockquotes)
