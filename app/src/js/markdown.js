@@ -471,18 +471,7 @@ class Parser {
       var token = this.tokenStream.peek();
       if (!token) break;
       if (token.type != TokenTypes.LIST) break;
-      var nextList = this.parseListToken();
-      if (nextList.type != component.type) {
-        // Different list type
-        break;
-      }
-      if (nextList.level > component.level) {
-        // Sub list detected
-        item.add(this.appendSoftBreak(item.last()));
-        item.add(this.parseList()[0]);
-        // TODO: Fix the interpretation as text of the following list item
-      } else if (nextList.level < component.level) {
-        // Return to parent list
+      if (!this.checkNextPotentialList(component, item)) {
         break;
       }
     }
@@ -509,6 +498,33 @@ class Parser {
     );
     component.from = token.from;
     return component;
+  }
+
+  /**
+   * Checks and decides what to do on the basis of the next list element - if existing.
+   * @param {MDListBase} component List of the current parsing method.
+   * @param {MDItem} item Current item of the list component.
+   * @returns {boolean} True if the next element is a list that fits the requirements.
+   */
+  checkNextPotentialList(component, item) {
+    var nextList = this.parseListToken();
+    if (nextList.type != component.type) {
+      // Different list type
+      return false;
+    }
+    if (nextList.level > component.level) {
+      // Sub list detected
+      item.add(this.appendSoftBreak(item.last()));
+      item.add(this.parseList()[0]);
+      // Recurse
+      if (!this.checkNextPotentialList(component, item)) {
+        return false;
+      }
+    } else if (nextList.level < component.level) {
+      // Return to parent list
+      return false;
+    }
+    return true;
   }
 
   /**
