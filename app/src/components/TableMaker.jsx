@@ -86,47 +86,53 @@ export default class TableMaker extends Component {
           <div className="modal">
             <div className="tablePopupHeader"> Choose table size </div>
             <div className="tablePopupContent">
-              <p>Rows: </p>
-              <input
-                type="number"
-                value={this.state.rows}
-                min="1"
-                name="rows"
-                onChange={evt => this.handleFieldChange(evt.target)}
-                ref={input => {
-                  this.state.popupClosed && input && input.focus();
-                  this.state.popUpClosed = false;
-                }}
-                onKeyPress={evt => {
-                  if (evt.key === 'Enter') {
-                    close();
-                    this.handlePopupClose();
-                  }
-                }}
-              />
-              <p> Columns: </p>
-              <input
-                type="number"
-                value={this.state.columns}
-                min="1"
-                name="columns"
-                onChange={evt => this.handleFieldChange(evt.target)}
-                onKeyPress={evt => {
-                  if (evt.key === 'Enter') {
-                    close();
-                    this.handlePopupClose();
-                  }
-                }}
-              />
-              <p> Use top row as header </p>
-              <input
-                type="checkbox"
-                checked={this.state.topRowIsHeader}
-                name="topRowIsHeader"
-                onChange={evt => this.handleCheckboxChange(evt.target)}
-              />
-            </div>
-            <div className="tablePopupActions">
+              <span>
+                {' '}
+                {/*Extremely important never-referenced span! In all seriousness, these are required to ensure input and description wrap together.*/}
+                <p>Rows: </p>
+                <input
+                  type="number"
+                  value={this.state.rows}
+                  min="1"
+                  name="rows"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  ref={input => {
+                    this.state.popupClosed && input && input.focus();
+                    this.state.popUpClosed = false;
+                  }}
+                  onKeyPress={evt => {
+                    if (evt.key === 'Enter') {
+                      close();
+                      this.handlePopupClose();
+                    }
+                  }}
+                />
+              </span>
+              <span>
+                <p> Columns: </p>
+                <input
+                  type="number"
+                  value={this.state.columns}
+                  min="1"
+                  name="columns"
+                  onChange={evt => this.handleFieldChange(evt.target)}
+                  onKeyPress={evt => {
+                    if (evt.key === 'Enter') {
+                      close();
+                      this.handlePopupClose();
+                    }
+                  }}
+                />
+              </span>
+              <span>
+                <p> Use top row as header </p>
+                <input
+                  type="checkbox"
+                  checked={this.state.topRowIsHeader}
+                  name="topRowIsHeader"
+                  onChange={evt => this.handleCheckboxChange(evt.target)}
+                />
+              </span>
               <button
                 className="button"
                 onClick={() => {
