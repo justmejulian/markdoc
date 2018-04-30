@@ -925,15 +925,21 @@ describe('Parser', () => {
       new CharacterStream('# First header\n' + '## Sub header')
     );
     var parser = new Parser(tokenStream);
-    var header = parser.parseHeader()[0];
+    var header = parser.parseHeader();
     expect(header.level).toBe(1);
     expect(header.toString()).toEqual('First header');
     expect(tokenStream.eof()).toBeFalsy();
     expect(tokenStream.peek().type).toEqual(TokenTypes.HEADER);
-    header = parser.parseHeader()[0];
+    header = parser.parseHeader();
     expect(header.level).toBe(2);
     expect(header.toString()).toEqual('Sub header');
     expect(tokenStream.eof()).toBeTruthy();
+
+    tokenStream = new TokenStream(new CharacterStream('Non-Header'));
+    parser = new Parser(tokenStream);
+    expect(() => {
+      parser.parseHeader();
+    }).toThrow();
   });
   it('should parse block quotes', () => {
     var tokenStream = new TokenStream(
@@ -946,120 +952,161 @@ describe('Parser', () => {
       )
     );
     var parser = new Parser(tokenStream);
-    var quote = parser.parseBlockquote()[0];
+    var quote = parser.parseBlockquote();
     expect(quote.toString()).toEqual('First quote\nSecond quote');
     expect(tokenStream.eof()).toBeFalsy();
     expect(tokenStream.peek().type).toEqual(TokenTypes.NEWLINE);
     tokenStream.read(); // Skip newline
-    quote = parser.parseBlockquote()[0];
+    quote = parser.parseBlockquote();
     expect(quote.toString()).toEqual('Third quote');
     expect(tokenStream.eof()).toBeFalsy();
     expect(tokenStream.read().type).toEqual(TokenTypes.TEXT);
     expect(tokenStream.eof()).toBeTruthy();
+
+    tokenStream = new TokenStream(new CharacterStream('# Header'));
+    parser = new Parser(tokenStream);
+    expect(() => {
+      parser.parseBlockquote();
+    }).toThrow();
   });
+  const listText =
+    '1. One\n' +
+    '3. Two\n' +
+    '3. Three\n' +
+    'still three\n' +
+    '4. Four\n' +
+    '    3. Sublist starting at 3\n' +
+    '	2. nonsensical numbering and tab instead of spaces\n' +
+    '5.   Five\n' +
+    '		* Sublist 2 levels deeper and different type\n' +
+    '6. Last element\n' +
+    '\n' +
+    '* New type\n' +
+    'Extra text\n' +
+    '```js\n' +
+    'var a = 0;\n' +
+    '```\n' +
+    '* Test\n';
   it('should parse list heads', () => {
-    var tokenStream = new TokenStream(
-      new CharacterStream(
-        '1. One\n' +
-          '2. Two\n' +
-          '    1. Indented\n' +
-          '3. continue\n' +
-          '        7. super sensical indentation\n' +
-          '* different type\n' +
-          '* another one\n' +
-          '   * And last one(beware the 3-space fake-indentation)'
-      )
-    );
+    var tokenStream = new TokenStream(new CharacterStream(listText));
     var parser = new Parser(tokenStream);
-    var listHead = parser.peekListType();
-    var listItem = parser.peekListItem(listHead);
+    var listHead = parser.peekListHead();
     expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    expect(listHead.start).toBe(1);
     expect(listHead.level).toBe(0);
-    expect(listItem.number).toBe(1);
-    tokenStream.read(); // "1. "
-    tokenStream.read(); // One
-    tokenStream.read(); // \n
-    listHead = parser.peekListType();
-    listItem = parser.peekListItem(listHead);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
     expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    expect(listHead.start).toBe(3);
     expect(listHead.level).toBe(0);
-    expect(listItem.number).toBe(2);
-    tokenStream.read(); // "2. "
-    tokenStream.read(); // Two
-    tokenStream.read(); // \n
-    listHead = parser.peekListType();
-    listItem = parser.peekListItem(listHead);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
     expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    expect(listHead.start).toBe(3);
+    expect(listHead.level).toBe(0);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
+    expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    expect(listHead.start).toBe(4);
+    expect(listHead.level).toBe(0);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
+    expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    expect(listHead.start).toBe(3);
     expect(listHead.level).toBe(1);
-    expect(listItem.number).toBe(1);
-    tokenStream.read(); // "    1. "
-    tokenStream.read(); // Indented
-    tokenStream.read(); // \n
-    listHead = parser.peekListType();
-    listItem = parser.peekListItem(listHead);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
     expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    expect(listHead.start).toBe(2);
+    expect(listHead.level).toBe(1);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
+    expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    expect(listHead.start).toBe(5);
     expect(listHead.level).toBe(0);
-    expect(listItem.number).toBe(3);
-    tokenStream.read(); // "3. "
-    tokenStream.read(); // continue
-    tokenStream.read(); // \n
-    listHead = parser.peekListType();
-    listItem = parser.peekListItem(listHead);
-    expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
+    expect(listHead.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
     expect(listHead.level).toBe(2);
-    expect(listItem.number).toBe(7);
-    tokenStream.read(); // "        7. "
-    tokenStream.read(); // "super sensical indentation"
-    tokenStream.read(); // \n
-    listHead = parser.peekListType();
-    listItem = parser.peekListItem(listHead);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
+    expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    expect(listHead.start).toBe(6);
+    expect(listHead.level).toBe(0);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
     expect(listHead.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
     expect(listHead.level).toBe(0);
-    tokenStream.read(); // "* "
-    tokenStream.read(); // "different type"
-    tokenStream.read(); // \n
-    listHead = parser.peekListType();
-    listItem = parser.peekListItem(listHead);
+    tokenStream.read(); // List token
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    tokenStream.read(); // Code block
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    tokenStream.read(); // Text
+    tokenStream.read(); // Newline
+    tokenStream.read(); // Code block
+    tokenStream.read(); // Newline
+    listHead = parser.peekListHead();
     expect(listHead.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
     expect(listHead.level).toBe(0);
-    expect(listItem).not.toBeNull();
-    tokenStream.read(); // "* "
-    tokenStream.read(); // "another one"
-    tokenStream.read(); // \n
-    listHead = parser.peekListType();
-    listItem = parser.peekListItem(listHead);
-    expect(listHead.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
-    expect(listHead.level).toBe(0);
-    expect(listItem).not.toBeNull();
+
+    tokenStream = new TokenStream(new CharacterStream('# Header'));
+    parser = new Parser(tokenStream);
+    expect(() => {
+      parser.peekListHead();
+    }).toThrow();
   });
   it('should parse lists', () => {
-    var tokenStream = new TokenStream(
-      new CharacterStream(
-        '1. One\n' +
-          '2. Two\n' +
-          '    1. Indented\n' +
-          '3. continue\n' +
-          '        7. super sensical indentation\n' +
-          '* different type\n' +
-          '* another one\n' +
-          '   * And last one(beware the 3-space fake-indentation)'
-      )
-    );
+    var tokenStream = new TokenStream(new CharacterStream(listText));
     var parser = new Parser(tokenStream);
-    var list = parser.parseList()[0];
+    var list = parser.parseList();
     expect(list.type).toEqual(ComponentTypes.NUMBEREDLIST);
-    expect(list.children.length).toBe(2);
+    expect(list.children.length).toBe(6);
     expect(list.children[0].toString()).toEqual('One');
-    expect(list.children[1].children[1].type).toEqual(
+    expect(list.children[3].children[2].type).toEqual(
       ComponentTypes.NUMBEREDLIST
     );
-    list = parser.parseList()[0];
+    expect(list.children[3].children[2].children.length).toBe(2);
+    this.tokenStream.read(); // \n
+    list = parser.parseList();
     expect(list.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
-    expect(list.children.length).toBe(2);
-    expect(list.children[0].toString()).toEqual('different type');
-    expect(list.children[1].children[1].type).toEqual(
-      ComponentTypes.NUMBEREDLIST
-    );
+    expect(list.children.length).toBe(1);
+    expect(list.children[0].toString()).toEqual('New type\nExtra text');
+    this.tokenStream.read(); // Code block
+    this.tokenStream.read(); // Text
+    this.tokenStream.read(); // \n
+    this.tokenStream.read(); // Text
+    this.tokenStream.read(); // \n
+    this.tokenStream.read(); // Code block
+    this.tokenStream.read(); // \n
+    list = parser.parseList();
+    expect(list.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
+    expect(list.children.length).toBe(1);
+    expect(list.children[0].toString()).toEqual('Test');
   });
 });
 

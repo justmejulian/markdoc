@@ -349,19 +349,13 @@ class Parser {
       var token = this.tokenStream.peek();
       switch (token.type) {
         case TokenTypes.HEADER:
-          for (const sub of this.parseHeader()) {
-            out.push(sub);
-          }
+          out.push(this.parseHeader());
           break;
         case TokenTypes.BLOCKQUOTE:
-          for (const sub of this.parseBlockquote()) {
-            out.push(sub);
-          }
+          out.push(this.parseBlockquote());
           break;
         case TokenTypes.LIST:
-          for (const sub of this.parseList()) {
-            out.push(sub);
-          }
+          out.push(this.parseList());
           break;
         case TokenTypes.LATEXBLOCK:
           for (const sub of this.parseLatexblock()) {
@@ -417,10 +411,13 @@ class Parser {
    * Parses a header from the token stream.
    * @access private
    * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDHeader[]}
+   * @returns {MDHeader}
    */
   parseHeader() {
     var token = this.tokenStream.read();
+    if (token.type != TokenTypes.HEADER) {
+      this.tokenStream.croak(`Cannot parse header from ${token.type}`);
+    }
     var component = new MDHeader();
     component.level = token.value.split('#').length - 1;
     component.from = token.from;
@@ -428,18 +425,22 @@ class Parser {
       component.add(sub);
     }
     component.to = component.last().to;
-    return [component];
+    return component;
   }
 
   /**
    * Parses a block quote from the token stream.
    * @access private
    * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDBlockQuote[]}
+   * @returns {MDBlockQuote}
    */
   parseBlockquote() {
+    var token = this.tokenStream.read();
+    if (token.type != TokenTypes.BLOCKQUOTE) {
+      this.tokenStream.croak(`Cannot parse block quote from ${token.type}`);
+    }
     var component = new MDBlockQuote();
-    component.from = this.tokenStream.read().from;
+    component.from = token.from;
     while (!this.tokenStream.eof()) {
       for (const sub of this.parseText()) {
         component.add(sub);
@@ -450,19 +451,21 @@ class Parser {
       this.tokenStream.read(); // "> "
     }
     component.to = component.last().to;
-    return [component];
+    return component;
   }
 
   /**
    * Parses a list from the token stream.
    * @access private
    * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDListBase[]}
+   * @returns {MDListBase}
    */
   parseList() {
-    var component = this.peekListType();
+    var component = this.peekListHead();
     while (!this.tokenStream.eof()) {
-      var item = this.peekListItem(component);
+      var token = this.tokenStream.peek();
+      var item = new MDItem();
+      item.from = token.from;
       component.add(item);
       this.tokenStream.read();
       for (const sub of this.parseText()) {
@@ -477,7 +480,7 @@ class Parser {
       }
     }
     component.to = component.last().to;
-    return [component];
+    return component;
   }
 
   /**
@@ -486,35 +489,22 @@ class Parser {
    * @access private
    * @returns {MDListBase}
    */
-  peekListType() {
+  peekListHead() {
     var token = this.tokenStream.peek();
+    if (token.type != TokenTypes.LIST) {
+      this.tokenStream.croak(`Cannot parse list head from ${token.type}`);
+    }
     var component = null;
-    if (token.match[1].endsWith('.')) {
+    if (token.match[2].endsWith('.')) {
       component = new MDOrderedList();
+      component.start = 1 * token.match[2].split('.')[0];
     } else {
       component = new MDBulletList();
     }
-    component.level = Math.floor(
-      token.match[0].split(token.match[1])[0].replace('\t', '    ').length / 4
-    );
+    var indentStr = token.match[0].split(token.match[2])[0];
+    component.level = indentStr.replace(/(    |\t)/g, '_').length;
     component.from = token.from;
     return component;
-  }
-
-  /**
-   * Peeks a list item according to the overlaying list type
-   * @access private
-   * @param {MDListBase} list The list used as a reference
-   * @returns {MDItem}
-   */
-  peekListItem(list) {
-    var token = this.tokenStream.peek();
-    var item = new MDItem();
-    if (list.type == ComponentTypes.NUMBEREDLIST) {
-      item.number = 1 * token.match[1].split('.')[0];
-    }
-    item.from = token.from;
-    return item;
   }
 
   /**
@@ -524,15 +514,15 @@ class Parser {
    * @returns {boolean} True if the next element is a list that fits the requirements.
    */
   checkNextPotentialList(component, item) {
-    var nextList = this.peekListType();
+    var nextList = this.peekListHead();
     if (nextList.type != component.type) {
       // Different list type
       return false;
     }
     if (nextList.level > component.level) {
       // Sub list detected
-      //item.add(this.appendSoftBreak(item.last()));
-      item.add(this.parseList()[0]);
+      item.add(this.appendSoftBreak(item.last()));
+      item.add(this.parseList());
       // Recurse
       if (!this.checkNextPotentialList(component, item)) {
         return false;
@@ -1074,7 +1064,7 @@ const Tokens = Object.freeze({
   HEADER: new Token(TokenTypes.HEADER, /#{1,6}[\ \t]+(?=[^\s])/),
   BLOCKQUOTE: new Token(TokenTypes.BLOCKQUOTE, />[\ \t]+(?=[^\s])/),
   RULE: new Token(TokenTypes.RULE, /(\*\*\*|---|___)$/m),
-  LIST: new Token(TokenTypes.LIST, / *([1-9]\d*?\.|\*)[\ \t]+(?=[^\s])/),
+  LIST: new Token(TokenTypes.LIST, /( |\t)*([1-9]\d*?\.|\*)[\ \t]+(?=[^\s])/),
   CODEBLOCK: new Token(TokenTypes.CODEBLOCK, /```/),
   TOC: new Token(TokenTypes.TOC, /\[TOC\]$/m),
   TOF: new Token(TokenTypes.TOF, /\[TOF\]$/m),
@@ -1959,13 +1949,22 @@ const markdown = {
 var tokenStream = new TokenStream(
   new CharacterStream(
     '1. One\n' +
-      '2. Two\n' +
-      '    1. Indented\n' +
-      '3. continue\n' +
-      '        7. super sensical indentation\n' +
-      '* different type\n' +
-      '* another one\n' +
-      '   * And last one(beware the 3-space fake-indentation)'
+      '3. Two\n' +
+      '3. Three\n' +
+      'still three\n' +
+      '4. Four\n' +
+      '    3. Sublist starting at 3\n' +
+      '	2. nonsensical numbering and tyb instead of spaces\n' +
+      '5.   Five\n' +
+      '		* Sublist 2 levels deeper and different type\n' +
+      '6. Last element\n' +
+      '\n' +
+      '* New type\n' +
+      'Extra text\n' +
+      '```js\n' +
+      'var a = 0;\n' +
+      '```\n' +
+      '* Test\n'
   )
 );
 var parser = new Parser(tokenStream);
