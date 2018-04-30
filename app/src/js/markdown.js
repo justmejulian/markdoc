@@ -460,14 +460,15 @@ class Parser {
    * @returns {MDListBase[]}
    */
   parseList() {
-    var component = this.parseListToken();
-    this.tokenStream.read();
+    var component = this.peekListType();
     while (!this.tokenStream.eof()) {
-      var item = new MDItem();
+      var item = this.peekListItem(component);
       component.add(item);
+      this.tokenStream.read();
       for (const sub of this.parseText()) {
         item.add(sub);
       }
+      item.to = item.last().to;
       var token = this.tokenStream.peek();
       if (!token) break;
       if (token.type != TokenTypes.LIST) break;
@@ -478,18 +479,18 @@ class Parser {
     component.to = component.last().to;
     return [component];
   }
+
   /**
-   * Parses a list token and returns a list instance of the right type and
+   * Peeks a list token and returns a list instance of the right type and
    * indentation level.
    * @access private
    * @returns {MDListBase}
    */
-  parseListToken() {
+  peekListType() {
     var token = this.tokenStream.peek();
     var component = null;
     if (token.match[1].endsWith('.')) {
       component = new MDOrderedList();
-      component.number = 1 * token.match[1].split('.')[0];
     } else {
       component = new MDBulletList();
     }
@@ -501,20 +502,36 @@ class Parser {
   }
 
   /**
+   * Peeks a list item according to the overlaying list type
+   * @access private
+   * @param {MDListBase} list The list used as a reference
+   * @returns {MDItem}
+   */
+  peekListItem(list) {
+    var token = this.tokenStream.peek();
+    var item = new MDItem();
+    if (list.type == ComponentTypes.NUMBEREDLIST) {
+      item.number = 1 * token.match[1].split('.')[0];
+    }
+    item.from = token.from;
+    return item;
+  }
+
+  /**
    * Checks and decides what to do on the basis of the next list element - if existing.
    * @param {MDListBase} component List of the current parsing method.
    * @param {MDItem} item Current item of the list component.
    * @returns {boolean} True if the next element is a list that fits the requirements.
    */
   checkNextPotentialList(component, item) {
-    var nextList = this.parseListToken();
+    var nextList = this.peekListType();
     if (nextList.type != component.type) {
       // Different list type
       return false;
     }
     if (nextList.level > component.level) {
       // Sub list detected
-      item.add(this.appendSoftBreak(item.last()));
+      //item.add(this.appendSoftBreak(item.last()));
       item.add(this.parseList()[0]);
       // Recurse
       if (!this.checkNextPotentialList(component, item)) {

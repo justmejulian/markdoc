@@ -971,56 +971,66 @@ describe('Parser', () => {
       )
     );
     var parser = new Parser(tokenStream);
-    var listHead = parser.parseListToken();
+    var listHead = parser.peekListType();
+    var listItem = parser.peekListItem(listHead);
     expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
     expect(listHead.level).toBe(0);
-    expect(listHead.number).toBe(1);
+    expect(listItem.number).toBe(1);
     tokenStream.read(); // "1. "
     tokenStream.read(); // One
     tokenStream.read(); // \n
-    listHead = parser.parseListToken();
+    listHead = parser.peekListType();
+    listItem = parser.peekListItem(listHead);
     expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
     expect(listHead.level).toBe(0);
-    expect(listHead.number).toBe(2);
+    expect(listItem.number).toBe(2);
     tokenStream.read(); // "2. "
     tokenStream.read(); // Two
     tokenStream.read(); // \n
-    listHead = parser.parseListToken();
+    listHead = parser.peekListType();
+    listItem = parser.peekListItem(listHead);
     expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
     expect(listHead.level).toBe(1);
-    expect(listHead.number).toBe(1);
+    expect(listItem.number).toBe(1);
     tokenStream.read(); // "    1. "
     tokenStream.read(); // Indented
     tokenStream.read(); // \n
-    listHead = parser.parseListToken();
+    listHead = parser.peekListType();
+    listItem = parser.peekListItem(listHead);
     expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
     expect(listHead.level).toBe(0);
-    expect(listHead.number).toBe(3);
+    expect(listItem.number).toBe(3);
     tokenStream.read(); // "3. "
     tokenStream.read(); // continue
     tokenStream.read(); // \n
-    listHead = parser.parseListToken();
+    listHead = parser.peekListType();
+    listItem = parser.peekListItem(listHead);
     expect(listHead.type).toEqual(ComponentTypes.NUMBEREDLIST);
     expect(listHead.level).toBe(2);
-    expect(listHead.number).toBe(7);
+    expect(listItem.number).toBe(7);
     tokenStream.read(); // "        7. "
     tokenStream.read(); // "super sensical indentation"
     tokenStream.read(); // \n
-    listHead = parser.parseListToken();
+    listHead = parser.peekListType();
+    listItem = parser.peekListItem(listHead);
     expect(listHead.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
     expect(listHead.level).toBe(0);
     tokenStream.read(); // "* "
     tokenStream.read(); // "different type"
     tokenStream.read(); // \n
-    listHead = parser.parseListToken();
+    listHead = parser.peekListType();
+    listItem = parser.peekListItem(listHead);
     expect(listHead.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
     expect(listHead.level).toBe(0);
+    expect(listItem).not.toBeNull();
     tokenStream.read(); // "* "
     tokenStream.read(); // "another one"
     tokenStream.read(); // \n
-    listHead = parser.parseListToken();
+    listHead = parser.peekListType();
+    listItem = parser.peekListItem(listHead);
     expect(listHead.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
     expect(listHead.level).toBe(0);
+    expect(listItem).not.toBeNull();
   });
   it('should parse lists', () => {
     var tokenStream = new TokenStream(
@@ -1037,9 +1047,19 @@ describe('Parser', () => {
     );
     var parser = new Parser(tokenStream);
     var list = parser.parseList()[0];
-    expect(list.children.length).toBe(3);
+    expect(list.type).toEqual(ComponentTypes.NUMBEREDLIST);
+    expect(list.children.length).toBe(2);
     expect(list.children[0].toString()).toEqual('One');
-    expect(list.children[1].children[2].type).toEqual(TokenTypes.LIST);
+    expect(list.children[1].children[1].type).toEqual(
+      ComponentTypes.NUMBEREDLIST
+    );
+    list = parser.parseList()[0];
+    expect(list.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
+    expect(list.children.length).toBe(2);
+    expect(list.children[0].toString()).toEqual('different type');
+    expect(list.children[1].children[1].type).toEqual(
+      ComponentTypes.NUMBEREDLIST
+    );
   });
 });
 
