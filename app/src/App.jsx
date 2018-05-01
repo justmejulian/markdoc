@@ -14,7 +14,8 @@ import {
   GET_HTML_CONTENT,
   GET_PDF_CONTENT,
   OPEN_FILE_FROM_PATH,
-  SET_FILE_PATH
+  SET_FILE_PATH,
+  HANDLE_PREVIEW_ZOOM
 } from '../utils/constants';
 
 import Sidebar from './components/Sidebar.jsx';
@@ -44,6 +45,8 @@ class App extends React.Component {
     this.setFilePath = (event, data) => this._setFilePath(event, data);
     this.getHTMLContent = (event, data) => this._getHTMLContent(event, data);
     this.getPDFContent = (event, data) => this._getPDFContent(event, data);
+    this.handlePreviewZoom = (event, data) =>
+      this._handlePreviewZoom(event, data);
 
     // prepare metadata helpers
     this.metaDataHelpers = [
@@ -93,6 +96,7 @@ class App extends React.Component {
     ipcRenderer.on(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.on(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.on(SET_FILE_PATH, this.setFilePath);
+    ipcRenderer.on(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
   }
 
   componentWillUnmount() {
@@ -101,6 +105,7 @@ class App extends React.Component {
     ipcRenderer.removeListener(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.removeListener(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.removeListener(SET_FILE_PATH, this.setFilePath);
+    ipcRenderer.removeListener(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
   }
 
   _getDocumentContent(event, data) {
@@ -203,6 +208,14 @@ class App extends React.Component {
     this.setState({
       filePath: data
     });
+  }
+
+  _handlePreviewZoom(event, data) {
+    if (data == 'zoom-in') {
+      Actions.zoomIn();
+    } else {
+      Actions.zoomOut();
+    }
   }
 
   _isMdoc(currentFilePath) {
