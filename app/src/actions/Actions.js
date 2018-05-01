@@ -24,3 +24,9 @@ export function zoomOut() {
     type: 'ZOOM_OUT'
   });
 }
+
+export function zoomReset() {
+  dispatcher.dispatch({
+    type: 'ZOOM_RESET'
+  });
+}

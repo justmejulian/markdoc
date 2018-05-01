@@ -213,8 +213,10 @@ class App extends React.Component {
   _handlePreviewZoom(event, data) {
     if (data == 'zoom-in') {
       Actions.zoomIn();
-    } else {
+    } else if (data == 'zoom-out') {
       Actions.zoomOut();
+    } else {
+      Actions.zoomReset();
     }
   }
 

@@ -53,6 +53,10 @@ class PagesStore extends EventEmitter {
     }
   }
 
+  handleZoomReset() {
+    this.setZoom(1.0);
+  }
+
   handleActions(action) {
     switch (action.type) {
       case 'SET_HTML':
@@ -71,6 +75,9 @@ class PagesStore extends EventEmitter {
         this.handleZoomOut();
         this.emit('Zoom_changed');
         break;
+      case 'ZOOM_RESET':
+        this.handleZoomReset();
+        this.emit('Zoom_changed');
     }
   }
 }

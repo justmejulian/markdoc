@@ -11,7 +11,16 @@ module.exports = {
     { role: 'forcereload' },
     { role: 'toggledevtools' },
     { type: 'separator' },
-    { role: 'resetzoom' },
+    {
+      label: 'Actual Size',
+      accelerator: process.platform === 'darwin' ? 'Command+0' : 'Ctrl+0',
+      click() {
+        BrowserWindow.getFocusedWindow().send(
+          HANDLE_PREVIEW_ZOOM,
+          'zoom-reset'
+        );
+      }
+    },
     {
       label: 'Zoom In',
       accelerator: process.platform === 'darwin' ? 'Command+Plus' : 'Ctrl+Plus',
