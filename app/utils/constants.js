@@ -9,7 +9,7 @@ module.exports = {
   OPEN_FILE_FROM_PATH: 'open-file-from-path',
   SET_FILE_PATH: 'set-file-path',
   HANDLE_PREVIEW_ZOOM: 'handle-preview-zoom',
-  OPEN_SIDEBAR: 'open-sidebar',
+  TRIGGER_SIDEBAR: 'trigger-sidebar',
   DEFAULT_URL: `file://${__dirname}/../index.html`,
   PRINT_URL: `file://${__dirname}/../../main/print.html`,
   FILETYPE_MDOC: {
