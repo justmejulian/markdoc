@@ -1080,6 +1080,17 @@ describe('Parser', () => {
       parser.peekListHead();
     }).toThrow();
   });
+  it('should parse list items', () => {
+    var tokenStream = new TokenStream(new CharacterStream(listText));
+    var parser = new Parser(tokenStream);
+    var listItem = parser.parseListItem();
+
+    tokenStream = new TokenStream(new CharacterStream('# Header'));
+    parser = new Parser(tokenStream);
+    expect(() => {
+      parser.parseListItem();
+    }).toThrow();
+  });
   it('should parse lists', () => {
     var tokenStream = new TokenStream(new CharacterStream(listText));
     var parser = new Parser(tokenStream);

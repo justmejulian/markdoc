@@ -464,23 +464,86 @@ class Parser {
     var component = this.peekListHead();
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
-      var item = new MDItem();
-      item.from = token.from;
-      component.add(item);
-      this.tokenStream.read();
-      for (const sub of this.parseText()) {
-        item.add(sub);
-      }
-      item.to = item.last().to;
-      var token = this.tokenStream.peek();
       if (!token) break;
-      if (token.type != TokenTypes.LIST) break;
-      if (!this.checkNextPotentialList(component, item)) {
-        break;
-      }
+      if (token.type != Tokens.LIST.type) break;
+      // Definitely a list
+      var item = this.parseListItem();
+      component.add(item);
     }
     component.to = component.last().to;
     return component;
+  }
+
+  /**
+   * Parses a list item
+   * @access private
+   * @returns {MDItem}
+   */
+  parseListItem() {
+    var token = this.tokenStream.peek();
+    if (token.type != TokenTypes.LIST) {
+      this.tokenStream.croak(`Cannot parse list item from ${token.type}`);
+    }
+    var listHead = this.peekListHead();
+    var item = new MDItem();
+    item.from = token.from;
+    this.tokenStream.read(); // Skip list token
+    var run = true;
+    while (run && this.doesListContinue()) {
+      for (const sub of this.parseText()) {
+        item.add(sub);
+      }
+      while (true) {
+        if (this.tokenStream.eof()) break;
+        token = this.tokenStream.peek();
+        if (token.type == TokenTypes.LIST) {
+          var newListHead = this.peekListHead();
+          if (newListHead.level > listHead.level) {
+            // Sub list detected
+            item.add(this.appendSoftBreak(item.last()));
+            item.add(this.parseList());
+            continue;
+          }
+          if (
+            newListHead.level < listHead.level ||
+            newListHead.type != listHead.type
+          ) {
+            // This is the last item of the current list.
+            run = false;
+          }
+          // Same type and level. continue
+          break;
+        }
+      }
+      if (this.doesListContinue()) {
+        item.add(this.appendSoftBreak(item.last()));
+      }
+    }
+    item.to = item.last().to;
+    return item;
+  }
+
+  /**
+   * Checks if the list still continues
+   * @access private
+   * @returns {boolean}
+   */
+  doesListContinue() {
+    return (
+      !this.tokenStream.eof() &&
+      ![
+        TokenTypes.HEADER,
+        TokenTypes.BLOCKQUOTE,
+        TokenTypes.RULE,
+        TokenTypes.CODEBLOCK,
+        TokenTypes.TOC,
+        TokenTypes.TOF,
+        TokenTypes.PAGEBREAK,
+        TokenTypes.REFERENCE,
+        TokenTypes.LATEXBLOCK,
+        TokenTypes.NEWLINE
+      ].includes(this.tokenStream.peek().type)
+    );
   }
 
   /**
@@ -505,33 +568,6 @@ class Parser {
     component.level = indentStr.replace(/(    |\t)/g, '_').length;
     component.from = token.from;
     return component;
-  }
-
-  /**
-   * Checks and decides what to do on the basis of the next list element - if existing.
-   * @param {MDListBase} component List of the current parsing method.
-   * @param {MDItem} item Current item of the list component.
-   * @returns {boolean} True if the next element is a list that fits the requirements.
-   */
-  checkNextPotentialList(component, item) {
-    var nextList = this.peekListHead();
-    if (nextList.type != component.type) {
-      // Different list type
-      return false;
-    }
-    if (nextList.level > component.level) {
-      // Sub list detected
-      item.add(this.appendSoftBreak(item.last()));
-      item.add(this.parseList());
-      // Recurse
-      if (!this.checkNextPotentialList(component, item)) {
-        return false;
-      }
-    } else if (nextList.level < component.level) {
-      // Return to parent list
-      return false;
-    }
-    return true;
   }
 
   /**
@@ -947,12 +983,12 @@ class Parser {
    * Returns a soft break with the correct coordinates according to the given
    * token.
    * @access private
-   * @param {Token} token Reference token
+   * @param {MDComponent} component Reference token
    * @returns {MDSoftBreak}
    */
-  appendSoftBreak(token) {
+  appendSoftBreak(component) {
     var softBreak = new MDSoftBreak();
-    softBreak.from = token.to;
+    softBreak.from = component.to;
     softBreak.from[1]++;
     softBreak.to = softBreak.from;
     return softBreak;
