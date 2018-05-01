@@ -225,7 +225,7 @@ class App extends React.Component {
   }
 
   _triggerSidebar(event, data) {
-    console.log('Sidebar should trigger here');
+    Actions.triggerSidebar();
   }
 
   _isMdoc(currentFilePath) {
