@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import SidebarStore from '../stores/SidebarStore.js';
+import * as SidebarActions from '../actions/SidebarActions';
 
 class Footer extends React.Component {
   constructor() {
@@ -41,9 +42,17 @@ class Footer extends React.Component {
     };
   }
 
+  handleExpandOrCollapse() {
+    SidebarActions.setIsCollapsed();
+  }
+
   render() {
     return (
-      <div className="footer" style={this.getStyle()}>
+      <div
+        className="footer"
+        style={this.getStyle()}
+        onClick={this.handleExpandOrCollapse}
+      >
         <div className="hfLeft"> {this.state.footerLeft} </div>
         <div className="hfCenter"> {this.state.pageNumber} </div>
         <div className="hfRight"> {this.state.footerRight} </div>

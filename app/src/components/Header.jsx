@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import SidebarStore from '../stores/SidebarStore.js';
+import * as SidebarActions from '../actions/SidebarActions';
 
 class Header extends React.Component {
   constructor(props) {
@@ -54,9 +55,17 @@ class Header extends React.Component {
     });
   }
 
+  handleExpandOrCollapse() {
+    SidebarActions.setIsCollapsed();
+  }
+
   render() {
     return (
-      <div className="header" style={this.getStyle()}>
+      <div
+        className="header"
+        style={this.getStyle()}
+        onClick={this.handleExpandOrCollapse}
+      >
         <div className="hfLeft"> {this.state.headerLeft} </div>
         <div className="hfCenter"> {this.state.headerMiddle} </div>
         <div className="hfRight"> {this.state.headerRight} </div>
