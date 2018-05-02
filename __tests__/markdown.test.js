@@ -1188,6 +1188,25 @@ describe('Parser', () => {
     );
     expect(tokenStream.eof()).toBeTruthy();
   });
+  it('should parse Code blocks', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        '```bash\n' +
+          '$ bash -c "$(curl -fsSL https://test.com/start.sh)"\n' +
+          '```\n' +
+          '```\n' +
+          'var reason = 42;```'
+      )
+    );
+    var parser = new Parser(tokenStream);
+    var latex = parser.parseCodeblock()[0];
+    expect(latex.value).toEqual(
+      '$ bash -c "$(curl -fsSL https://test.com/start.sh)"\n'
+    );
+    latex = parser.parseCodeblock()[0];
+    expect(latex.value).toEqual('var reason = 42;');
+    expect(tokenStream.eof()).toBeTruthy();
+  });
 });
 
 // describe('Markdown parser', () => {

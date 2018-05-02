@@ -626,22 +626,6 @@ class Parser {
   }
 
   /**
-   * Parses a paragraph from the token stream.
-   * @access private
-   * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDParagraph[]}
-   */
-  parseParagraph() {
-    var component = new MDParagraph();
-    component.from = this.tokenStream.peek().from;
-    for (const sub of this.parseText()) {
-      component.add(sub);
-    }
-    component.to = component.last().to;
-    return [component];
-  }
-
-  /**
    * Parses a code block from the token stream.
    * @access private
    * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
@@ -649,11 +633,20 @@ class Parser {
   parseCodeblock() {
     var component = new MDCodeBlock();
     component.value = '';
-    var token = this.tokenStream.read(); // ```
+    var token = this.tokenStream.peek();
+    if (!token) this.tokenStream.croak('End of stream reached.');
+    if (token.type != TokenTypes.CODEBLOCK) {
+      throw new Error(`${token.type} is not a code block token.`);
+    }
+    this.tokenStream.read(); // ```
     var cache = [token];
     component.from = token.from;
     token = this.tokenStream.read(); // {language|\n|null}
     cache.push(token);
+    if (token.type == TokenTypes.CODEBLOCK) {
+      this.reinterpretAsText(cache);
+      return cache;
+    }
     if (this.tokenStream.eof()) {
       this.reinterpretAsText(cache);
       return cache;
@@ -668,8 +661,12 @@ class Parser {
       token = this.tokenStream.peek();
       switch (token.type) {
         case TokenTypes.CODEBLOCK:
-          this.tokenStream.read(); // ```
+          token = this.tokenStream.read(); // ```
           component.to = token.to;
+          token = this.tokenStream.peek();
+          if (token && token.type == TokenTypes.NEWLINE) {
+            this.tokenStream.read(); // Skip trailing newline
+          }
           return [component];
         default:
           token = this.tokenStream.read();
@@ -681,6 +678,22 @@ class Parser {
     cache = cache.concat(component.children);
     this.reinterpretAsText(cache);
     return cache;
+  }
+
+  /**
+   * Parses a paragraph from the token stream.
+   * @access private
+   * @param {Token} token Peeked token that triggered this parsing method.
+   * @returns {MDParagraph[]}
+   */
+  parseParagraph() {
+    var component = new MDParagraph();
+    component.from = this.tokenStream.peek().from;
+    for (const sub of this.parseText()) {
+      component.add(sub);
+    }
+    component.to = component.last().to;
+    return [component];
   }
 
   // Inline elements:
@@ -2059,27 +2072,16 @@ const markdown = {
 // }
 var tokenStream = new TokenStream(
   new CharacterStream(
-    // '1. One\n' +
-    // '3. Two\n' +
-    // '3. Three\n' +
-    // 'still three\n' +
-    // '4. Four\n' +
-    // '    3. Sublist starting at 3\n' +
-    // '	2. nonsensical numbering and tyb instead of spaces\n' +
-    // '5.   Five\n' +
-    // '		* Sublist 2 levels deeper and different type\n' +
-    // '6. Last element\n' +
-    // '\n' +
-    '* New type\n' +
-      'Extra text\n' +
-      '```js\n' +
-      'var a = 0;\n' +
+    '```bash\n' +
+      '$ bash -c "$(curl -fsSL https://test.com/start.sh)"\n' +
       '```\n' +
-      '* Test\n'
+      '```\n' +
+      'var reason = 42;```'
   )
 );
 var parser = new Parser(tokenStream);
-var list = parser.parseList();
+var codeblock = parser.parseCodeblock();
+codeblock = parser.parseCodeblock();
 //var listItem = parser.parseListItem(parser.peekListHead());
 //var components = parser.parse();
 //console.log(components[0].toString());
