@@ -601,6 +601,10 @@ class Parser {
     component.value = '';
     var token = this.tokenStream.read(); // $$
     var cache = [token];
+    if (this.tokenStream.eof()) {
+      this.reinterpretAsText(cache);
+      return cache;
+    }
     component.from = token.from;
     while (!this.tokenStream.eof()) {
       token = this.tokenStream.peek();
@@ -634,7 +638,6 @@ class Parser {
     var component = new MDCodeBlock();
     component.value = '';
     var token = this.tokenStream.peek();
-    if (!token) this.tokenStream.croak('End of stream reached.');
     if (token.type != TokenTypes.CODEBLOCK) {
       throw new Error(`${token.type} is not a code block token.`);
     }
@@ -1042,11 +1045,13 @@ class Parser {
     } else {
       text = new MDText();
       text.value = '';
-      text.from = token.from;
+      if (token) text.from = token.from;
       list.push(text);
     }
-    text.value += token.value;
-    text.to = token.to;
+    if (token) {
+      text.value += token.value;
+      text.to = token.to;
+    }
   }
 
   /**
