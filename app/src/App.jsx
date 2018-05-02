@@ -14,7 +14,9 @@ import {
   GET_HTML_CONTENT,
   GET_PDF_CONTENT,
   OPEN_FILE_FROM_PATH,
-  SET_FILE_PATH
+  SET_FILE_PATH,
+  HANDLE_PREVIEW_ZOOM,
+  TRIGGER_SIDEBAR
 } from '../utils/constants';
 
 import Sidebar from './components/Sidebar.jsx';
@@ -44,6 +46,9 @@ class App extends React.Component {
     this.setFilePath = (event, data) => this._setFilePath(event, data);
     this.getHTMLContent = (event, data) => this._getHTMLContent(event, data);
     this.getPDFContent = (event, data) => this._getPDFContent(event, data);
+    this.handlePreviewZoom = (event, data) =>
+      this._handlePreviewZoom(event, data);
+    this.triggerSidebar = (event, data) => this._triggerSidebar(event, data);
 
     // prepare metadata helpers
     this.metaDataHelpers = [
@@ -93,6 +98,8 @@ class App extends React.Component {
     ipcRenderer.on(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.on(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.on(SET_FILE_PATH, this.setFilePath);
+    ipcRenderer.on(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
+    ipcRenderer.on(TRIGGER_SIDEBAR, this.triggerSidebar);
   }
 
   componentWillUnmount() {
@@ -101,6 +108,8 @@ class App extends React.Component {
     ipcRenderer.removeListener(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.removeListener(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.removeListener(SET_FILE_PATH, this.setFilePath);
+    ipcRenderer.removeListener(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
+    ipcRenderer.removeListener(TRIGGER_SIDEBAR, this.triggerSidebar);
   }
 
   _getDocumentContent(event, data) {
@@ -175,7 +184,7 @@ class App extends React.Component {
   _processMdocContent(currentContent, currentFilePath) {
     // prepare editor content
     var editorContent = currentContent.slice(4, currentContent.size);
-    var indexOfMetadataEnd = editorContent.indexOf('---\n');
+    var indexOfMetadataEnd = editorContent.indexOf('---');
 
     // slice off metadata to get editor Content
     editorContent = editorContent.slice(
@@ -191,7 +200,7 @@ class App extends React.Component {
   }
 
   _setSidebarContent(currentContent) {
-    var splitContent = currentContent.split('---\n');
+    var splitContent = currentContent.split('---');
     for (const metaDataHelper of this.metaDataHelpers) {
       if (!metaDataHelper.consume(splitContent[1])) {
         metaDataHelper.setDefault();
@@ -203,6 +212,20 @@ class App extends React.Component {
     this.setState({
       filePath: data
     });
+  }
+
+  _handlePreviewZoom(event, data) {
+    if (data == 'zoom-in') {
+      Actions.zoomIn();
+    } else if (data == 'zoom-out') {
+      Actions.zoomOut();
+    } else {
+      Actions.zoomReset();
+    }
+  }
+
+  _triggerSidebar(event, data) {
+    Actions.triggerSidebar();
   }
 
   _isMdoc(currentFilePath) {

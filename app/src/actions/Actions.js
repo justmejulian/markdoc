@@ -24,3 +24,15 @@ export function zoomOut() {
     type: 'ZOOM_OUT'
   });
 }
+
+export function zoomReset() {
+  dispatcher.dispatch({
+    type: 'ZOOM_RESET'
+  });
+}
+
+export function triggerSidebar() {
+  dispatcher.dispatch({
+    type: 'TRIGGER_SIDEBAR'
+  });
+}
