@@ -1121,12 +1121,25 @@ describe('Parser', () => {
   it('should parse list items', () => {
     var tokenStream = new TokenStream(new CharacterStream(listText));
     var parser = new Parser(tokenStream);
-    var listItem = parser.parseListItem();
+    var listItem = parser.parseListItem(parser.peekListHead());
+    expect(listItem.children.length).toBe(1);
+    expect(listItem.toString()).toEqual('One');
+    listItem = parser.parseListItem(parser.peekListHead());
+    expect(listItem.children.length).toBe(1);
+    expect(listItem.toString()).toEqual('Two');
+    listItem = parser.parseListItem(parser.peekListHead());
+    expect(listItem.children.length).toBe(3);
+    expect(listItem.toString()).toEqual('Three\nstill three');
+    listItem = parser.parseListItem(parser.peekListHead());
+    expect(listItem.children.length).toBe(3);
+    expect(listItem.toString()).toEqual(
+      'Four\nSublist starting at 3\nnonsensical numbering and tab instead of spaces'
+    );
 
     tokenStream = new TokenStream(new CharacterStream('# Header'));
     parser = new Parser(tokenStream);
     expect(() => {
-      parser.parseListItem();
+      parser.parseListItem(parser.peekListHead());
     }).toThrow();
   });
   it('should parse lists', () => {
@@ -1140,18 +1153,18 @@ describe('Parser', () => {
       ComponentTypes.NUMBEREDLIST
     );
     expect(list.children[3].children[2].children.length).toBe(2);
-    this.tokenStream.read(); // \n
+    tokenStream.read(); // \n
     list = parser.parseList();
     expect(list.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
     expect(list.children.length).toBe(1);
     expect(list.children[0].toString()).toEqual('New type\nExtra text');
-    this.tokenStream.read(); // Code block
-    this.tokenStream.read(); // Text
-    this.tokenStream.read(); // \n
-    this.tokenStream.read(); // Text
-    this.tokenStream.read(); // \n
-    this.tokenStream.read(); // Code block
-    this.tokenStream.read(); // \n
+    tokenStream.read(); // Code block
+    tokenStream.read(); // Text
+    tokenStream.read(); // \n
+    tokenStream.read(); // Text
+    tokenStream.read(); // \n
+    tokenStream.read(); // Code block
+    tokenStream.read(); // \n
     list = parser.parseList();
     expect(list.type).toEqual(ComponentTypes.UNNUMBEREDLIST);
     expect(list.children.length).toBe(1);

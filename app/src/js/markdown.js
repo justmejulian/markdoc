@@ -470,9 +470,7 @@ class Parser {
     var component = new MDBlockQuote();
     component.from = token.from;
     while (!this.tokenStream.eof()) {
-      for (const sub of this.parseText()) {
-        component.add(sub);
-      }
+      for (const sub of this.parseText()) component.add(sub);
       if (this.tokenStream.eof()) break;
       if (this.tokenStream.peek().type != TokenTypes.BLOCKQUOTE) break;
       component.add(this.appendSoftBreak(component.last()));
@@ -492,10 +490,13 @@ class Parser {
     var component = this.peekListHead();
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
-      if (!token) break;
       if (token.type != Tokens.LIST.type) break;
       // Definitely a list
-      var item = this.parseListItem();
+      var listHead = this.peekListHead();
+      if (listHead.level < component.level || listHead.type != component.type) {
+        break;
+      }
+      var item = this.parseListItem(component);
       component.add(item);
     }
     component.to = component.last().to;
@@ -505,73 +506,64 @@ class Parser {
   /**
    * Parses a list item
    * @access private
+   * @param {MDListBase} daddy Parent list
    * @returns {MDItem}
    */
-  parseListItem() {
+  parseListItem(daddy) {
     var token = this.tokenStream.peek();
     if (token.type != TokenTypes.LIST) {
       this.tokenStream.croak(`Cannot parse list item from ${token.type}`);
     }
-    var listHead = this.peekListHead();
     var item = new MDItem();
     item.from = token.from;
-    this.tokenStream.read(); // Skip list token
-    var run = true;
-    while (run && this.doesListContinue()) {
-      for (const sub of this.parseText()) {
-        item.add(sub);
-      }
-      while (true) {
-        if (this.tokenStream.eof()) break;
-        token = this.tokenStream.peek();
-        if (token.type == TokenTypes.LIST) {
-          var newListHead = this.peekListHead();
-          if (newListHead.level > listHead.level) {
-            // Sub list detected
+    this.tokenStream.read(); // Skip the list token
+    while (!this.tokenStream.eof()) {
+      token = this.tokenStream.peek();
+      switch (token.type) {
+        case TokenTypes.LIST:
+          if (item.isEmpty()) {
+            for (const sub of this.parseText()) item.add(sub);
+            break;
+          }
+          var listHead = this.peekListHead();
+          if (listHead.level > daddy.level) {
+            // Sublist
             item.add(this.appendSoftBreak(item.last()));
             item.add(this.parseList());
-            continue;
+          } else if (listHead.level < daddy.level) {
+            // Parent list
+            item.to = item.last().to;
+            return item;
+          } else {
+            // List of same parent
+            item.to = item.last().to;
+            return item;
           }
-          if (
-            newListHead.level < listHead.level ||
-            newListHead.type != listHead.type
-          ) {
-            // This is the last item of the current list.
-            run = false;
-          }
-          // Same type and level. continue
           break;
-        } else break;
-      }
-      if (this.doesListContinue()) {
-        item.add(this.appendSoftBreak(item.last()));
+        // Uncomment if those blocks should be allowed to be nested within lists:
+        case TokenTypes.BLOCKQUOTE:
+        // if (!item.isEmpty()) item.add(this.appendSoftBreak(item.last()));
+        // item.add(this.parseBlockquote());
+        // break;
+        case TokenTypes.CODEBLOCK:
+        // if (!item.isEmpty()) item.add(this.appendSoftBreak(item.last()));
+        // item.add(this.parseCodeblock());
+        // break;
+        case TokenTypes.LATEXBLOCK:
+        // if (!item.isEmpty()) item.add(this.appendSoftBreak(item.last()));
+        // item.add(this.parseLatexblock());
+        // break;
+        case TokenTypes.NEWLINE:
+          item.to = item.last().to;
+          return item;
+        default:
+          if (!item.isEmpty()) item.add(this.appendSoftBreak(item.last()));
+          for (const sub of this.parseText()) item.add(sub);
+          break;
       }
     }
     item.to = item.last().to;
     return item;
-  }
-
-  /**
-   * Checks if the list still continues
-   * @access private
-   * @returns {boolean}
-   */
-  doesListContinue() {
-    return (
-      !this.tokenStream.eof() &&
-      ![
-        TokenTypes.HEADER,
-        TokenTypes.BLOCKQUOTE,
-        TokenTypes.RULE,
-        TokenTypes.CODEBLOCK,
-        TokenTypes.TOC,
-        TokenTypes.TOF,
-        TokenTypes.PAGEBREAK,
-        TokenTypes.REFERENCE,
-        TokenTypes.LATEXBLOCK,
-        TokenTypes.NEWLINE
-      ].includes(this.tokenStream.peek().type)
-    );
   }
 
   /**
@@ -1290,6 +1282,9 @@ class MDComponent {
     if (this.children.length == 0) return null;
     return this.children[this.children.length - 1];
   }
+  isEmpty() {
+    return this.children.length == 0;
+  }
 
   toHtml() {
     var tags = [];
@@ -1560,9 +1555,8 @@ class MDOrderedList extends MDListBase {
   toString() {
     var index = this.start || 1;
     var tags = [];
-    if (this.level != 0) tags.push('');
     for (var component of this.children) {
-      tags.push('\t'.repeat(this.level) + component.toString());
+      tags.push(component.toString());
       index++;
     }
     return tags.join('\n');
@@ -1590,9 +1584,8 @@ class MDBulletList extends MDListBase {
   }
   toString() {
     var tags = [];
-    if (this.level != 0) tags.push('');
     for (var component of this.children) {
-      tags.push('\t'.repeat(this.level) + component.toString());
+      tags.push(component.toString());
     }
     return tags.join('\n');
   }
@@ -2029,18 +2022,18 @@ const markdown = {
 // }
 var tokenStream = new TokenStream(
   new CharacterStream(
-    '1. One\n' +
-      '3. Two\n' +
-      '3. Three\n' +
-      'still three\n' +
-      '4. Four\n' +
-      '    3. Sublist starting at 3\n' +
-      '	2. nonsensical numbering and tyb instead of spaces\n' +
-      '5.   Five\n' +
-      '		* Sublist 2 levels deeper and different type\n' +
-      '6. Last element\n' +
-      '\n' +
-      '* New type\n' +
+    // '1. One\n' +
+    // '3. Two\n' +
+    // '3. Three\n' +
+    // 'still three\n' +
+    // '4. Four\n' +
+    // '    3. Sublist starting at 3\n' +
+    // '	2. nonsensical numbering and tyb instead of spaces\n' +
+    // '5.   Five\n' +
+    // '		* Sublist 2 levels deeper and different type\n' +
+    // '6. Last element\n' +
+    // '\n' +
+    '* New type\n' +
       'Extra text\n' +
       '```js\n' +
       'var a = 0;\n' +
@@ -2049,8 +2042,9 @@ var tokenStream = new TokenStream(
   )
 );
 var parser = new Parser(tokenStream);
-//var list = parser.parseList()[0];
-var components = parser.parse();
+var list = parser.parseList();
+//var listItem = parser.parseListItem(parser.peekListHead());
+//var components = parser.parse();
 //console.log(components[0].toString());
 
 module.exports = markdown;
