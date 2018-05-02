@@ -118,6 +118,9 @@ class SidebarStore extends EventEmitter {
 
   handleActions(action) {
     switch (action.type) {
+      case 'TRIGGER_SIDEBAR':
+        this.emit('sidebarVisibility_changed');
+        break;
       case 'SET_HASTITLEPAGE':
         this.setHasTitlepage(action.text);
         this.emit('hasTitlepage_changed');
