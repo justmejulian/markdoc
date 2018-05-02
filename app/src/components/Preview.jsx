@@ -84,6 +84,7 @@ class Preview extends React.Component {
     var currentPage = this.state.currentPage;
     //console.log("currentWord: " + currentWord + " and words.length: " +this.state.words.length);
     if (currentWord < this.state.words.length - 1) {
+      console.log('Current height: ' + copyArray[currentPage].height);
       if (copyArray[currentPage].height < 700) {
         currentWord = currentWord + 1;
         //console.log('Current Word: ' + currentWord);
@@ -92,12 +93,17 @@ class Preview extends React.Component {
           this.state.words[currentWord] == '[newpage]' ||
           this.state.words[currentWord] == '<p>[newpage]' ||
           this.state.words[currentWord] == '[newpage]</p>' ||
-          this.state.words[currentWord] == '<p>[newpage]</p>'
+          this.state.words[currentWord] == '<p>[newpage]</p>' ||
+          this.state.words[currentWord] == '[newpage]</p><br/>' ||
+          this.state.words[currentWord] == '<p>[newpage]</p><br/>'
         ) {
-          copyArray[currentPage].height = 701;
+          console.log('new page found');
+          currentPage = currentPage + 1;
+          copyArray[currentPage] = { key: currentPage, html: '', height: 0 };
           this.setState(
             {
               pages: copyArray,
+              currentPage: currentPage,
               currentWord: currentWord
             },
             this.nextWord
@@ -125,7 +131,7 @@ class Preview extends React.Component {
           },
           this.nextWord
         );
-        //console.log("Page to big");
+        //console.log('Page to big');
         //console.log(this.state.pages);
       }
     }
