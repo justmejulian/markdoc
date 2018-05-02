@@ -80,3 +80,9 @@ export function setFooterRight(text) {
     text
   });
 }
+
+export function setIsCollapsed() {
+  dispatcher.dispatch({
+    type: 'SET_IS_COLLAPSED'
+  });
+}

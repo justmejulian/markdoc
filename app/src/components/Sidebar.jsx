@@ -26,6 +26,7 @@ export default class Sidebar extends Component {
     this.setHeaderInfo = this._setHeaderInfo.bind(this);
     this.setFooterInfo = this._setFooterInfo.bind(this);
     this.setDate = this._setDate.bind(this);
+    this.setIsCollapsed = this._setIsCollapsed.bind(this);
 
     this.state = {
       isCollapsed: true,
@@ -55,6 +56,7 @@ export default class Sidebar extends Component {
     SidebarStore.on('Title_changed', this.setTitle);
     SidebarStore.on('Author_changed', this.setAuthor);
     SidebarStore.on('Date_changed', this.setDate);
+    SidebarStore.on('isCollapsed_changed', this.setIsCollapsed);
   }
 
   // Unbind change listener
@@ -71,6 +73,7 @@ export default class Sidebar extends Component {
     SidebarStore.removeListener('Title_changed', this.setTitle);
     SidebarStore.removeListener('Author_changed', this.setAuthor);
     SidebarStore.removeListener('Date_changed', this.setDate);
+    SidebarStore.removeListener('isCollapsed_changed', this.setIsCollapsed);
   }
 
   _setTitle() {
@@ -119,6 +122,10 @@ export default class Sidebar extends Component {
     });
   }
 
+  _setIsCollapsed() {
+    this.setState({ isCollapsed: SidebarStore.isCollapsed });
+  }
+
   _setDate() {
     this.setState({
       date: SidebarStore.getDate()
@@ -131,7 +138,7 @@ export default class Sidebar extends Component {
   }
 
   _handleExpandOrCollapse() {
-    this.setState({ isCollapsed: !this.state.isCollapsed });
+    SidebarActions.setIsCollapsed();
   }
 
   _handleFieldChange(target) {
