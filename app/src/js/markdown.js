@@ -316,10 +316,12 @@ class Parser {
    * @constructs Parser
    * @static
    * @access public
-   * @param {MDDOM} dom The dom to construct the model in.
+   * @param {TokenStream} tokenStream The token stream to use as source.
+   * @param {MDDOM} [dom=null] The dom to construct the model in.
    * @returns {Parser} An instance of a Parser.
    */
-  constructor(tokenStream) {
+  constructor(tokenStream, dom) {
+    if (!dom) dom = new MDDOM();
     /**
      * Token stream.
      * @access private
@@ -331,7 +333,7 @@ class Parser {
      * @access public
      * @type {MDDOM}
      */
-    this.dom = null;
+    this.dom = dom;
   }
 
   /**
@@ -359,9 +361,8 @@ class Parser {
    * @returns {MDComponent[]} The parsed elements
    */
   static parseToArray(tokenStream, dom) {
-    var parser = new Parser(tokenStream);
-    parser.dom = dom;
-    return parser.parse();
+    var parser = new Parser(tokenStream, dom);
+    return parser.parse(dom);
   }
 
   /**
@@ -387,7 +388,7 @@ class Parser {
           break;
         case TokenTypes.LATEXBLOCK:
           for (const sub of this.parseLatexblock()) {
-            out.push(sub);
+            out.push(this.parseLatexblock());
           }
           break;
         case TokenTypes.CODEBLOCK:
@@ -591,6 +592,40 @@ class Parser {
   }
 
   /**
+   * Parses a LaTeX block from the token stream.
+   * @access private
+   * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
+   */
+  parseLatexblock() {
+    var component = new MDLatexBlock();
+    component.value = '';
+    var token = this.tokenStream.read(); // $$
+    var cache = [token];
+    component.from = token.from;
+    while (!this.tokenStream.eof()) {
+      token = this.tokenStream.peek();
+      switch (token.type) {
+        case TokenTypes.LATEXBLOCK:
+          cache.push(this.tokenStream.read()); // $$
+          component.to = token.to;
+          token = this.tokenStream.peek();
+          if (token && token.type == TokenTypes.NEWLINE) {
+            this.tokenStream.read(); // Skip trailing newline
+          }
+          return [component];
+        default:
+          token = this.tokenStream.read();
+          cache.push(token);
+          component.value += token.value;
+          break;
+      }
+    }
+    cache = cache.concat(component.children);
+    this.reinterpretAsText(cache);
+    return cache;
+  }
+
+  /**
    * Parses a paragraph from the token stream.
    * @access private
    * @param {Token} token Peeked token that triggered this parsing method.
@@ -609,11 +644,11 @@ class Parser {
   /**
    * Parses a code block from the token stream.
    * @access private
-   * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDCodeBlock[]}
+   * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
    */
   parseCodeblock() {
     var component = new MDCodeBlock();
+    component.value = '';
     var token = this.tokenStream.read(); // ```
     var cache = [token];
     component.from = token.from;
@@ -637,7 +672,9 @@ class Parser {
           component.to = token.to;
           return [component];
         default:
-          this.reinterpretAsText(component.children);
+          token = this.tokenStream.read();
+          cache.push(token);
+          component.value += token.value;
           break;
       }
     }

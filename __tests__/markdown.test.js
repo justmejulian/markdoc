@@ -1170,6 +1170,24 @@ describe('Parser', () => {
     expect(list.children.length).toBe(1);
     expect(list.children[0].toString()).toEqual('Test');
   });
+  it('should parse LaTeX blocks', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        '$$\\mathcal L\\left(f\\cdot g\\right)$$\n' +
+          '$$\n' +
+          '\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx\n' +
+          '$$'
+      )
+    );
+    var parser = new Parser(tokenStream);
+    var latex = parser.parseLatexblock()[0];
+    expect(latex.value).toEqual('\\mathcal L\\left(f\\cdot g\\right)');
+    latex = parser.parseLatexblock()[0];
+    expect(latex.value).toEqual(
+      '\n\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx\n'
+    );
+    expect(tokenStream.eof()).toBeTruthy();
+  });
 });
 
 // describe('Markdown parser', () => {
