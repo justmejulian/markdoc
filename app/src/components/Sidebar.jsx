@@ -47,7 +47,6 @@ export default class Sidebar extends Component {
   }
 
   componentWillMount() {
-    SidebarStore.on('sidebarVisibility_changed', this.handleExpandOrCollapse);
     SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
     SidebarStore.on('hasHeader_changed', this.setHasHeader);
     SidebarStore.on('hasFooter_changed', this.setHasFooter);
@@ -61,10 +60,6 @@ export default class Sidebar extends Component {
 
   // Unbind change listener
   componentWillUnmount() {
-    SidebarStore.removeListener(
-      'sidebarVisibility_changed',
-      this.handleExpandOrCollapse
-    );
     SidebarStore.removeListener('hasTitlepage_changed', this.setHasTitlepage);
     SidebarStore.removeListener('hasHeader_changed', this.setHasHeader);
     SidebarStore.removeListener('hasFooter_changed', this.setHasFooter);

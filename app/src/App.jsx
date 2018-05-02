@@ -225,7 +225,7 @@ class App extends React.Component {
   }
 
   _triggerSidebar(event, data) {
-    Actions.triggerSidebar();
+    SidebarActions.setIsCollapsed();
   }
 
   _isMdoc(currentFilePath) {

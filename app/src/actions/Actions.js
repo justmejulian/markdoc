@@ -30,9 +30,3 @@ export function zoomReset() {
     type: 'ZOOM_RESET'
   });
 }
-
-export function triggerSidebar() {
-  dispatcher.dispatch({
-    type: 'TRIGGER_SIDEBAR'
-  });
-}
