@@ -137,6 +137,28 @@ describe('InputStream', () => {
     expect(charStream.skip(20)).toEqual('');
     expect(charStream.pos).toEqual(16);
   });
+  it('should skip to the next row(for testing purposes)', () => {
+    var charStream = new CharacterStream('# header\n> quote\nanother line');
+    expect(charStream.pos).toBe(0);
+    expect(charStream.column).toBe(0);
+    expect(charStream.row).toBe(0);
+    var skipped = charStream.skipToNextRow();
+    expect(skipped).toEqual('# header\n');
+    expect(charStream.pos).toBe(9);
+    expect(charStream.column).toBe(0);
+    expect(charStream.row).toBe(1);
+    skipped = charStream.skipToNextRow();
+    expect(skipped).toEqual('> quote\n');
+    expect(charStream.pos).toBe(17);
+    expect(charStream.column).toBe(0);
+    expect(charStream.row).toBe(2);
+    skipped = charStream.skipToNextRow();
+    expect(skipped).toEqual('another line');
+    expect(charStream.pos).toBe(29);
+    expect(charStream.column).toBe(12);
+    expect(charStream.row).toBe(2);
+    expect(charStream.eof()).toBeTruthy();
+  });
 });
 
 describe('Token Regex', () => {
@@ -898,6 +920,22 @@ describe('TokenStream', () => {
     expect(token.from).toEqual([0, 17]);
     expect(token.to).toEqual([0, 17]);
     expect(tokenStream.read()).toBeNull();
+  });
+  it('should skip to the next row(for testing purposes)', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('# header\n> quote\nanother line')
+    );
+    var skipped = tokenStream.skipToNextRow();
+    expect(skipped[0].type).toEqual(TokenTypes.HEADER);
+    expect(skipped[1].type).toEqual(TokenTypes.TEXT);
+    expect(skipped[2].type).toEqual(TokenTypes.NEWLINE);
+    skipped = tokenStream.skipToNextRow();
+    expect(skipped[0].type).toEqual(TokenTypes.BLOCKQUOTE);
+    expect(skipped[1].type).toEqual(TokenTypes.TEXT);
+    expect(skipped[2].type).toEqual(TokenTypes.NEWLINE);
+    skipped = tokenStream.skipToNextRow();
+    expect(skipped[0].type).toEqual(TokenTypes.TEXT);
+    expect(tokenStream.eof()).toBeTruthy();
   });
 });
 

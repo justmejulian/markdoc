@@ -117,6 +117,20 @@ class CharacterStream {
     return value;
   }
   /**
+   * Skips to the next row of the source string and returns the skpped part
+   * @access public
+   * @returns {string}
+   */
+  skipToNextRow() {
+    var out = '';
+    while (!this.eof()) {
+      var char = this.read();
+      out += char;
+      if (char == '\n') break;
+    }
+    return out;
+  }
+  /**
    * Peeks the current character without incrementing the position.
    * @access public
    * @returns {string} The current character. The string is
@@ -246,6 +260,20 @@ class TokenStream {
    */
   peek() {
     return this.current || (this.current = this.read());
+  }
+  /**
+   * Skips to the next row and returns the tokens in between
+   * @access public
+   * @returns {Token[]}
+   */
+  skipToNextRow() {
+    var out = [];
+    while (!this.eof()) {
+      var token = this.read();
+      out.push(token);
+      if (token.type == TokenTypes.NEWLINE) break;
+    }
+    return out;
   }
   /**
    * Returns the token of the current position if it hasn't been peeked before
@@ -513,7 +541,7 @@ class Parser {
           }
           // Same type and level. continue
           break;
-        }
+        } else break;
       }
       if (this.doesListContinue()) {
         item.add(this.appendSoftBreak(item.last()));
