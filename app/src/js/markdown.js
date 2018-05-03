@@ -429,9 +429,7 @@ class Parser {
           this.tokenStream.read();
           break;
         default:
-          for (const sub of this.parseParagraph()) {
-            out.push(sub);
-          }
+          out.push(this.parseParagraph());
           break;
       }
     }
@@ -454,7 +452,7 @@ class Parser {
     var component = new MDHeader();
     component.level = token.value.split('#').length - 1;
     component.from = token.from;
-    for (const sub of this.parseText()) {
+    for (const sub of this.parseRow()) {
       component.add(sub);
     }
     component.to = component.last().to;
@@ -476,7 +474,7 @@ class Parser {
     var component = new MDBlockQuote();
     component.from = token.from;
     while (!this.tokenStream.eof()) {
-      for (const sub of this.parseText()) component.add(sub);
+      for (const sub of this.parseRow()) component.add(sub);
       if (this.tokenStream.eof()) break;
       if (this.tokenStream.peek().type != TokenTypes.BLOCKQUOTE) break;
       component.add(this.appendSoftBreak(component.last()));
@@ -542,7 +540,7 @@ class Parser {
       switch (token.type) {
         case TokenTypes.LIST:
           if (item.isEmpty()) {
-            for (const sub of this.parseText()) item.add(sub);
+            for (const sub of this.parseRow()) item.add(sub);
             break;
           }
           var listHead = this.peekListHead();
@@ -578,7 +576,7 @@ class Parser {
           return item;
         default:
           if (!item.isEmpty()) item.add(this.appendSoftBreak(item.last()));
-          for (const sub of this.parseText()) item.add(sub);
+          for (const sub of this.parseRow()) item.add(sub);
           break;
       }
     }
@@ -780,12 +778,12 @@ class Parser {
    * Parses a paragraph from the token stream.
    * @access private
    * @param {Token} token Peeked token that triggered this parsing method.
-   * @returns {MDParagraph[]}
+   * @returns {MDParagraph}
    */
   parseParagraph() {
     var component = new MDParagraph();
     component.from = this.tokenStream.peek().from;
-    for (const sub of this.parseText()) {
+    for (const sub of this.parseRow()) {
       component.add(sub);
     }
     component.to = component.last().to;
@@ -800,7 +798,7 @@ class Parser {
    * @returns {MDComponent[]} Either a one-element-array or a sequence of as
    *                          text reinterpreted elements.
    */
-  parseText() {
+  parseRow() {
     var out = [];
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
@@ -854,67 +852,86 @@ class Parser {
   }
 
   /**
+   * Parses a text based element and decides on the procedure.
+   * @access private
+   * @returns {MDComponent}
+   */
+  parseAnyString() {
+    if (this.tokenStream.eof())
+      this.tokenStream.croak('Unexpected end of stream');
+    var token = this.tokenStream.peek();
+    var component = null;
+    switch (token.type) {
+      case TokenTypes.BOLD:
+        component = this.parseBold();
+        break;
+      case TokenTypes.ITALICS:
+        component = this.parseItalics();
+        break;
+      case TokenTypes.STRIKETHROUGH:
+        component = this.parseStrikethrough();
+        break;
+      case TokenTypes.LATEXTOGGLE:
+        component = this.parseLatex();
+        break;
+      case TokenTypes.CODETOGGLE:
+        component = this.parseCode();
+        break;
+      case TokenTypes.LINKSTART:
+        component = this.parseLink();
+        break;
+      case TokenTypes.IMAGESTART:
+        component = this.parseImage();
+        break;
+      default:
+        component = this.parseText();
+        break;
+    }
+    return component;
+  }
+
+  /**
+   * Parses a text token from the token stream.
+   * @access private
+   * @returns {MDText}
+   */
+  parseText() {
+    var token = this.tokenStream.read();
+    var text = new MDText();
+    text.from = token.from;
+    text.to = token.to;
+    text.value = token.value;
+    return text;
+  }
+
+  /**
    * Parses the token stream for bold text.
    * @access private
-   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
+   * @returns {MDComponent} Either a one-element-array or a sequence of as
    *                          text reinterpreted elements.
    */
   parseBold() {
-    this.tokenStream.read();
+    if (this.tokenStream.eof())
+      this.tokenStream.croak('Unexpected end of stream');
+    var token = this.tokenStream.read(); // **
+    var chache = [token];
     var component = new MDTextBold();
     component.from = token.from;
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
-      switch (token.type) {
-        case TokenTypes.TEXT:
-          for (const sub of this.parseText()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.BOLD:
-          component.to = token.to;
-          this.tokenStream.read();
-          return [component];
-          break;
-        case TokenTypes.ITALICS:
-          for (const sub of this.parseItalics()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.STRIKETHROUGH:
-          for (const sub of this.parseStrikethrough()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.LATEXTOGGLE:
-          for (const sub of this.parseLatex()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.CODETOGGLE:
-          for (const sub of this.parseCode()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.LINK:
-          for (const sub of this.parseLink()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.IMAGE:
-          for (const sub of this.parseImage()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.NEWLINE: // Failed to complete sequence
-          this.reinterpretAsText(component.children);
-          return component.children;
-        default:
-          this.reinterpretAsText(component.children);
-          break;
+      if (token.type == TokenTypes.BOLD) {
+        // Bold finished
+        this.tokenStream.read();
+        component.to = token.to;
+        return component;
+      } else if (token.type == TokenTypes.NEWLINE) {
+        // Bold failed
+      } else {
+        chache.add(token);
+        component.add(this.parseAnyString());
       }
     }
-    return component.children;
+    return component;
   }
 
   /**
@@ -931,7 +948,7 @@ class Parser {
       var token = this.tokenStream.peek();
       switch (token.type) {
         case TokenTypes.TEXT:
-          for (const sub of this.parseText()) {
+          for (const sub of this.parseRow()) {
             component.add(sub);
           }
           break;
@@ -995,7 +1012,7 @@ class Parser {
       var token = this.tokenStream.peek();
       switch (token.type) {
         case TokenTypes.TEXT:
-          for (const sub of this.parseText()) {
+          for (const sub of this.parseRow()) {
             component.add(sub);
           }
           break;
@@ -1370,6 +1387,7 @@ const ComponentTypes = Object.freeze({
   PAGEBREAK: 'Page Break',
   RULE: 'Rule',
   PARAGRAPH: 'Paragraph',
+  SOFTBREAK: 'Soft Break',
   TEXT: 'Text',
   BOLD: 'Bold',
   ITALICS: 'Italics',

@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-  <file path="/home/alan/Dokumente/git/markdoc/__tests__/wordcounter.test.js">
-    <testCase name="WordCounter should count words in the document" duration="4"/>
-    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="1"/>
-    <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="1"/>
-    <testCase name="CharacterCounter should count every single character in the document" duration="1"/>
-    <testCase name="CharacterCounter should not count spaces" duration="0"/>
-    <testCase name="CharacterCounter should count special character" duration="0"/>
-    <testCase name="CharacterCounter should show zero, if no it has no text" duration="0"/>
-  </file>
   <file path="/home/alan/Dokumente/git/markdoc/__tests__/markdown.test.js">
-    <testCase name="InputStream should read strings correctly" duration="2"/>
+    <testCase name="InputStream should read strings correctly" duration="4"/>
     <testCase name="InputStream should peek characters correctly" duration="1"/>
     <testCase name="InputStream should detect the end of the string correctly" duration="1"/>
-    <testCase name="InputStream should keep track of the string position" duration="1"/>
+    <testCase name="InputStream should keep track of the string position" duration="0"/>
     <testCase name="InputStream should keep track of the current line and column" duration="1"/>
     <testCase name="InputStream should test regex" duration="1"/>
     <testCase name="InputStream should match regex" duration="0"/>
     <testCase name="InputStream should skip a certain amount of characters" duration="1"/>
-    <testCase name="InputStream should skip to the next row(for testing purposes)" duration="2"/>
+    <testCase name="InputStream should skip to the next row(for testing purposes)" duration="1"/>
     <testCase name="Token Regex should match headers appropriately" duration="0"/>
     <testCase name="Token Regex should match blockquotes appropriately" duration="1"/>
     <testCase name="Token Regex should match rules appropriately" duration="1"/>
@@ -51,10 +42,10 @@
     <testCase name="TokenStream should find proper code blocks" duration="1"/>
     <testCase name="TokenStream should find proper TOCs" duration="0"/>
     <testCase name="TokenStream should find proper TOFs" duration="1"/>
-    <testCase name="TokenStream should find proper pagebreaks" duration="0"/>
-    <testCase name="TokenStream should find proper references" duration="1"/>
-    <testCase name="TokenStream should find proper LaTeX blocks" duration="0"/>
-    <testCase name="TokenStream should find proper newlines" duration="1"/>
+    <testCase name="TokenStream should find proper pagebreaks" duration="1"/>
+    <testCase name="TokenStream should find proper references" duration="0"/>
+    <testCase name="TokenStream should find proper LaTeX blocks" duration="1"/>
+    <testCase name="TokenStream should find proper newlines" duration="0"/>
     <testCase name="TokenStream should find proper bold indicators" duration="1"/>
     <testCase name="TokenStream should find proper italics indicators" duration="0"/>
     <testCase name="TokenStream should find proper strikethrough indicators" duration="1"/>
@@ -68,17 +59,58 @@
     <testCase name="TokenStream should find proper latex indicators" duration="0"/>
     <testCase name="TokenStream should skip to the next row(for testing purposes)" duration="1"/>
     <testCase name="Parser should parse the right amount of components" duration="3"/>
-    <testCase name="Parser should parse headers" duration="1"/>
-    <testCase name="Parser should parse block quotes" duration="4"/>
-    <testCase name="Parser should parse rules" duration="1"/>
-    <testCase name="Parser should parse list heads" duration="2"/>
+    <testCase name="Parser should parse headers" duration="3"/>
+    <testCase name="Parser should parse block quotes" duration="2"/>
+    <testCase name="Parser should parse rules" duration="0"/>
+    <testCase name="Parser should parse list heads" duration="3"/>
     <testCase name="Parser should parse list items" duration="2"/>
-    <testCase name="Parser should parse lists" duration="1"/>
+    <testCase name="Parser should parse lists" duration="2"/>
     <testCase name="Parser should parse Code blocks" duration="1"/>
     <testCase name="Parser should parse TOCs" duration="1"/>
-    <testCase name="Parser should parse TOFs" duration="1"/>
-    <testCase name="Parser should parse pagebreaks" duration="0"/>
+    <testCase name="Parser should parse TOFs" duration="0"/>
+    <testCase name="Parser should parse pagebreaks" duration="4"/>
     <testCase name="Parser should parse references" duration="1"/>
     <testCase name="Parser should parse LaTeX blocks" duration="1"/>
+    <testCase name="Parser should parse softbreaks" duration="44">
+      <failure message="TypeError: parser.parseSoftbreak is not a function"><![CDATA[TypeError: parser.parseSoftbreak is not a function
+    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/markdown.test.js:1311:30)
+    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
+    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
+    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
+    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
+    </testCase>
+    <testCase name="Parser should parse a text token" duration="1"/>
+    <testCase name="Parser should parse text rows" duration="1">
+      <failure message="ReferenceError: roe is not defined"><![CDATA[ReferenceError: roe is not defined
+    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/markdown.test.js:1362:12)
+    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
+    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
+    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
+    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
+    </testCase>
+    <testCase name="Parser should parse bold text" duration="49">
+      <failure message="TypeError: chache.add is not a function"><![CDATA[TypeError: chache.add is not a function
+    at Parser.parseBold (/home/alan/Dokumente/git/markdoc/app/src/js/markdown.js:929:16)
+    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/markdown.test.js:1374:23)
+    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
+    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
+    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
+    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
+    </testCase>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/wordcounter.test.js">
+    <testCase name="WordCounter should count words in the document" duration="2"/>
+    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="1"/>
+    <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="0"/>
+    <testCase name="CharacterCounter should count every single character in the document" duration="0"/>
+    <testCase name="CharacterCounter should not count spaces" duration="1"/>
+    <testCase name="CharacterCounter should count special character" duration="0"/>
+    <testCase name="CharacterCounter should show zero, if no it has no text" duration="0"/>
   </file>
 </testExecutions>

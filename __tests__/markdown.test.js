@@ -1301,6 +1301,75 @@ describe('Parser', () => {
     expect(substitutes.type).not.toEqual(ComponentTypes.LATEXBLOCK);
     expect(tokenStream.eof()).toBeTruthy();
   });
+  it('should parse softbreaks', () => {
+    var tokenStream = new TokenStream(new CharacterStream('ABC\n' + '\n'));
+    var parser = new Parser(tokenStream);
+    tokenStream.read(); // ABC
+    var softbreak = parser.parseSoftbreak();
+    expect(softbreak).not.toBeNull();
+    expect(softbreak.type).toEqual(ComponentTypes.SOFTBREAK);
+    expect(softbreak.from).toEqual([0, 3]);
+    expect(softbreak.to).toEqual([0, 3]);
+    softbreak = parser.parseSoftbreak();
+    expect(softbreak).not.toBeNull();
+    expect(softbreak.type).toEqual(ComponentTypes.SOFTBREAK);
+    expect(softbreak.from).toEqual([1, 0]);
+    expect(softbreak.to).toEqual([1, 0]);
+    expect(tokenStream.eof()).toBeTruthy();
+  });
+  // it("should parse paragraphs", () => {
+  //   var tokenStream = new TokenStream(new CharacterStream(
+  //     "Paragraph 1\n" +
+  //     "\n" +
+  //     "Paragraph 2\n" +
+  //     "Still paragraph 2"
+  //   ));
+  //   var parser = new Parser(tokenStream);
+  //   var paragraph = parser.parseParagraph();
+  //   expect(paragraph).not.toBeNull();
+  //   expect(paragraph.type).toEqual(ComponentTypes.PARAGRAPH);
+  //   expect(paragraph.children.length).toBe(1);
+  //   tokenStream.skipToNextRow(); // \n
+  //   paragraph = parser.parseParagraph();
+  //   expect(paragraph).not.toBeNull();
+  //   expect(paragraph.type).toEqual(ComponentTypes.PARAGRAPH);
+  //   expect(paragraph.children.length).toBe(3);
+  //   expect(tokenStream.eof()).toBeTruthy();
+  // });
+  it('should parse a text token', () => {
+    var tokenStream = new TokenStream(new CharacterStream('Lorem Ipsum.'));
+    var parser = new Parser(tokenStream);
+    var text = parser.parseText();
+    expect(text).not.toBeNull();
+    expect(text.type).toEqual(ComponentTypes.TEXT);
+    expect(text.from).toEqual([0, 0]);
+    expect(text.to).toEqual([0, 11]);
+    expect(text.value).toEqual('Lorem Ipsum.');
+  });
+  it('should parse text rows', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('Lorem Ipsum.\n' + '`inline code`')
+    );
+    var parser = new Parser(tokenStream);
+    var row = parser.parseRow();
+    expect(row.length).toBe(1);
+    expect(roe[0].type).toEqual(ComponentTypes.TEXT);
+    tokenStream.skipToNextRow();
+    row = parser.parseRow();
+    expect(row.length).toBe(1);
+    expect(row[0].type).toEqual(ComponentTypes.INLINECODE);
+  });
+  it('should parse bold text', () => {
+    var tokenStream = new TokenStream(new CharacterStream('**Lorem Ipsum.**'));
+    var parser = new Parser(tokenStream);
+    var bold = parser.parseBold()[0];
+    expect(bold).not.toBeNull();
+    expect(bold.type).toEqual(ComponentTypes.BOLD);
+    expect(bold.from).toEqual([0, 0]);
+    expect(bold.to).toEqual([0, 15]);
+    expect(bold.children.length).toBe(1);
+    expect(bold.first().value).toEqual('Lorem Ipsum.');
+  });
 });
 
 // describe('Markdown parser', () => {
