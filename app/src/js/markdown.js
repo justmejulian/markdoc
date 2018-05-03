@@ -2194,7 +2194,11 @@ const markdown = {
 //   console.log(token);
 // }
 var tokenStream = new TokenStream(
-  new CharacterStream('# Header\n' + '[TOC]\n' + '[TOC]')
+  new CharacterStream(
+    '# References:\n' +
+      '[ref id 1]: https://duckduckgo.com/index.html\n' +
+      '[ref id 2]: https://duckduckgo.com/ "alt text"'
+  )
 );
 var parser = new Parser(tokenStream);
 tokenStream.skipToNextRow();

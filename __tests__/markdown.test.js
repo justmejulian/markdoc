@@ -1261,7 +1261,7 @@ describe('Parser', () => {
     var tokenStream = new TokenStream(
       new CharacterStream(
         '# References:\n' +
-          '[ref id 1]: https://duckduckgo.com/index.html' +
+          '[ref id 1]: https://duckduckgo.com/index.html\n' +
           '[ref id 2]: https://duckduckgo.com/ "alt text"'
       )
     );
