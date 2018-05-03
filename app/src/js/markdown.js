@@ -374,8 +374,10 @@ class Parser {
   parse() {
     var out = [];
     var comp = null;
+    this.dom.headers = [];
     this.dom.toc = null;
     this.dom.tof = null;
+    this.dom.references = [];
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
       switch (token.type) {
@@ -416,9 +418,7 @@ class Parser {
           out.push(this.parsePagebreak());
           break;
         case TokenTypes.REFERENCE:
-          for (const sub of this.parseReference()) {
-            out.push(sub);
-          }
+          out.push(this.parseReference());
           break;
         case TokenTypes.LATEXBLOCK:
           for (const sub of this.parseLatexblock()) {
@@ -458,6 +458,7 @@ class Parser {
       component.add(sub);
     }
     component.to = component.last().to;
+    this.dom.headers.push(component);
     return component;
   }
 
@@ -714,6 +715,26 @@ class Parser {
     component.from = token.from;
     component.to = token.to;
     this.tokenStream.read(); // \n
+    return component;
+  }
+
+  /**
+   * Parses a reference from the token stream.
+   * @access private
+   * @returns {MDReference}
+   */
+  parseReference() {
+    var token = this.tokenStream.read();
+    var component = new MDReference();
+    component.from = token.from;
+    component.to = token.to;
+    component.referenceId = token.match[1];
+    component.url = token.match[2];
+    if (token.match[4]) {
+      component.alt = token.match[4];
+    }
+    this.tokenStream.read(); // Skip \n
+    this.dom.references.push(component);
     return component;
   }
 
@@ -1047,6 +1068,7 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseLink() {
+    var token = this.tokenStream.read();
     var link = new MDLink();
     link.from = token.from;
     link.destination = token.match[4].value;
@@ -1950,6 +1972,12 @@ class MDDOM extends MDComponent {
      * @type {MDTOF}
      */
     this.tof = null;
+    /**
+     * References within the document.
+     * @access public
+     * @type {MDReference[]}
+     */
+    this.references = [];
   }
   static parse(source) {
     var dom = new MDDOM();

@@ -1258,8 +1258,27 @@ describe('Parser', () => {
     expect(pagebreak.type).toEqual(ComponentTypes.PAGEBREAK);
   });
   it('should parse references', () => {
-    var tokenStream = new TokenStream(new CharacterStream('# Header\n'));
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        '# References:\n' +
+          '[ref id 1]: https://duckduckgo.com/index.html' +
+          '[ref id 2]: https://duckduckgo.com/ "alt text"'
+      )
+    );
     var parser = new Parser(tokenStream);
+    tokenStream.skipToNextRow();
+    var parsed = parser.parse();
+    var reference = parsed[0];
+    expect(reference).not.toBeNull();
+    expect(reference.type).toEqual(ComponentTypes.REFERENCE);
+    expect(reference.referenceId).toEqual('ref id 1');
+    expect(reference.url).toEqual('https://duckduckgo.com/index.html');
+    reference = parsed[1];
+    expect(reference).not.toBeNull();
+    expect(reference.type).toEqual(ComponentTypes.REFERENCE);
+    expect(reference.referenceId).toEqual('ref id 2');
+    expect(reference.url).toEqual('https://duckduckgo.com/');
+    expect(reference.alt).toEqual('alt text');
   });
   it('should parse LaTeX blocks', () => {
     var tokenStream = new TokenStream(
