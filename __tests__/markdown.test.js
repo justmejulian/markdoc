@@ -1007,6 +1007,19 @@ describe('Parser', () => {
       parser.parseBlockquote();
     }).toThrow();
   });
+  it('should parse rules', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('# Header\n' + '---\n' + '---')
+    );
+    var parser = new Parser(tokenStream);
+    tokenStream.skipToNextRow();
+    var rule = parser.parseRule();
+    expect(rule).not.toBeNull();
+    expect(rule.type).toEqual(ComponentTypes.RULE);
+    rule = parser.parseRule();
+    expect(rule.type).toEqual(ComponentTypes.RULE);
+    expect(tokenStream.eof()).toBeTruthy();
+  });
   const listText =
     '1. One\n' +
     '3. Two\n' +
@@ -1170,27 +1183,6 @@ describe('Parser', () => {
     expect(list.children.length).toBe(1);
     expect(list.children[0].toString()).toEqual('Test');
   });
-  it('should parse LaTeX blocks', () => {
-    var tokenStream = new TokenStream(
-      new CharacterStream(
-        '$$\\mathcal L\\left(f\\cdot g\\right)$$\n' +
-          '$$\n' +
-          '\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx\n' +
-          '$$\n' +
-          '$$end'
-      )
-    );
-    var parser = new Parser(tokenStream);
-    var latex = parser.parseLatexblock()[0];
-    expect(latex.value).toEqual('\\mathcal L\\left(f\\cdot g\\right)');
-    latex = parser.parseLatexblock()[0];
-    expect(latex.value).toEqual(
-      '\n\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx\n'
-    );
-    var substitutes = parser.parseLatexblock()[0];
-    expect(substitutes.type).not.toEqual(ComponentTypes.LATEXBLOCK);
-    expect(tokenStream.eof()).toBeTruthy();
-  });
   it('should parse Code blocks', () => {
     var tokenStream = new TokenStream(
       new CharacterStream(
@@ -1218,6 +1210,77 @@ describe('Parser', () => {
     expect(() => {
       parser.parseCodeblock();
     }).toThrow();
+  });
+  it('should parse TOCs', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('# Header\n' + '[TOC]\n' + '[TOC]')
+    );
+    var parser = new Parser(tokenStream);
+    tokenStream.skipToNextRow();
+    var parsed = parser.parse();
+    var toc = parsed[0];
+    expect(toc).not.toBeNull();
+    expect(toc.type).toEqual(ComponentTypes.TOC);
+    expect(parser.dom.toc).toEqual(toc);
+    toc = parsed[1];
+    expect(toc).not.toBeNull();
+    expect(toc.type).not.toEqual(ComponentTypes.TOC);
+    expect(parser.dom.toc).not.toEqual(toc);
+  });
+  it('should parse TOFs', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('# Header\n' + '[TOF]\n' + '[TOF]')
+    );
+    var parser = new Parser(tokenStream);
+    tokenStream.skipToNextRow();
+    var parsed = parser.parse();
+    var tof = parsed[0];
+    expect(tof).not.toBeNull();
+    expect(tof.type).toEqual(ComponentTypes.TOF);
+    expect(parser.dom.tof).toEqual(tof);
+    tof = parsed[1];
+    expect(tof).not.toBeNull();
+    expect(tof.type).not.toEqual(ComponentTypes.TOF);
+    expect(parser.dom.tof).not.toEqual(tof);
+  });
+  it('should parse pagebreaks', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('# Header\n' + '[PB]\n' + '[PB]')
+    );
+    var parser = new Parser(tokenStream);
+    tokenStream.skipToNextRow();
+    var parsed = parser.parse();
+    var pagebreak = parsed[0];
+    expect(pagebreak).not.toBeNull();
+    expect(pagebreak.type).toEqual(ComponentTypes.PAGEBREAK);
+    pagebreak = parsed[1];
+    expect(pagebreak).not.toBeNull();
+    expect(pagebreak.type).toEqual(ComponentTypes.PAGEBREAK);
+  });
+  it('should parse references', () => {
+    var tokenStream = new TokenStream(new CharacterStream('# Header\n'));
+    var parser = new Parser(tokenStream);
+  });
+  it('should parse LaTeX blocks', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        '$$\\mathcal L\\left(f\\cdot g\\right)$$\n' +
+          '$$\n' +
+          '\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx\n' +
+          '$$\n' +
+          '$$end'
+      )
+    );
+    var parser = new Parser(tokenStream);
+    var latex = parser.parseLatexblock()[0];
+    expect(latex.value).toEqual('\\mathcal L\\left(f\\cdot g\\right)');
+    latex = parser.parseLatexblock()[0];
+    expect(latex.value).toEqual(
+      '\n\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx\n'
+    );
+    var substitutes = parser.parseLatexblock()[0];
+    expect(substitutes.type).not.toEqual(ComponentTypes.LATEXBLOCK);
+    expect(tokenStream.eof()).toBeTruthy();
   });
 });
 

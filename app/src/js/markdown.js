@@ -374,6 +374,8 @@ class Parser {
   parse() {
     var out = [];
     var comp = null;
+    this.dom.toc = null;
+    this.dom.tof = null;
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
       switch (token.type) {
@@ -383,42 +385,44 @@ class Parser {
         case TokenTypes.BLOCKQUOTE:
           out.push(this.parseBlockquote());
           break;
+        case TokenTypes.RULE:
+          out.push(this.parseRule());
+          break;
         case TokenTypes.LIST:
           out.push(this.parseList());
-          break;
-        case TokenTypes.LATEXBLOCK:
-          for (const sub of this.parseLatexblock()) {
-            out.push(this.parseLatexblock());
-          }
           break;
         case TokenTypes.CODEBLOCK:
           for (const sub of this.parseCodeblock()) {
             out.push(sub);
           }
           break;
+        case TokenTypes.TOC:
+          if (!this.dom.toc) {
+            this.dom.toc = this.parseTOC();
+            out.push(this.dom.toc);
+          } else {
+            out.push(this.parseParagraph());
+          }
+          break;
+        case TokenTypes.TOF:
+          if (!this.dom.tof) {
+            this.dom.tof = this.parseTOF();
+            out.push(this.dom.tof);
+          } else {
+            out.push(this.parseParagraph());
+          }
+          break;
+        case TokenTypes.PAGEBREAK:
+          out.push(this.parsePagebreak());
+          break;
         case TokenTypes.REFERENCE:
           for (const sub of this.parseReference()) {
             out.push(sub);
           }
           break;
-        case TokenTypes.TOC:
-          for (const sub of this.parseTOC()) {
-            out.push(sub);
-          }
-          break;
-        case TokenTypes.TOF:
-          for (const sub of this.parseTOF()) {
-            out.push(sub);
-          }
-          break;
-        case TokenTypes.PAGEBREAK:
-          for (const sub of this.parsePagebreak()) {
-            out.push(sub);
-          }
-          break;
-        case TokenTypes.RULE:
-          for (const sub of this.parseRule()) {
-            out.push(sub);
+        case TokenTypes.LATEXBLOCK:
+          for (const sub of this.parseLatexblock()) {
+            out.push(this.parseLatexblock());
           }
           break;
         case TokenTypes.NEWLINE: // Ignore empty line
@@ -478,6 +482,20 @@ class Parser {
       this.tokenStream.read(); // "> "
     }
     component.to = component.last().to;
+    return component;
+  }
+
+  /**
+   * Parses a rule from the token stream.
+   * @access private
+   * @returns {MDThematicBreak}
+   */
+  parseRule() {
+    var token = this.tokenStream.read(); // ---
+    var component = new MDThematicBreak();
+    component.from = token.from;
+    component.to = token.to;
+    this.tokenStream.read(); // \n
     return component;
   }
 
@@ -592,44 +610,6 @@ class Parser {
   }
 
   /**
-   * Parses a LaTeX block from the token stream.
-   * @access private
-   * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
-   */
-  parseLatexblock() {
-    var component = new MDLatexBlock();
-    component.value = '';
-    var token = this.tokenStream.read(); // $$
-    var cache = [token];
-    if (this.tokenStream.eof()) {
-      this.reinterpretAsText(cache);
-      return cache;
-    }
-    component.from = token.from;
-    while (!this.tokenStream.eof()) {
-      token = this.tokenStream.peek();
-      switch (token.type) {
-        case TokenTypes.LATEXBLOCK:
-          cache.push(this.tokenStream.read()); // $$
-          component.to = token.to;
-          token = this.tokenStream.peek();
-          if (token && token.type == TokenTypes.NEWLINE) {
-            this.tokenStream.read(); // Skip trailing newline
-          }
-          return [component];
-        default:
-          token = this.tokenStream.read();
-          cache.push(token);
-          component.value += token.value;
-          break;
-      }
-    }
-    cache = cache.concat(component.children);
-    this.reinterpretAsText(cache);
-    return cache;
-  }
-
-  /**
    * Parses a code block from the token stream.
    * @access private
    * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
@@ -665,6 +645,98 @@ class Parser {
       switch (token.type) {
         case TokenTypes.CODEBLOCK:
           token = this.tokenStream.read(); // ```
+          component.to = token.to;
+          token = this.tokenStream.peek();
+          if (token && token.type == TokenTypes.NEWLINE) {
+            this.tokenStream.read(); // Skip trailing newline
+          }
+          return [component];
+        default:
+          token = this.tokenStream.read();
+          cache.push(token);
+          component.value += token.value;
+          break;
+      }
+    }
+    cache = cache.concat(component.children);
+    this.reinterpretAsText(cache);
+    return cache;
+  }
+
+  /**
+   * Parses a TOC from the token stream.
+   * @access private
+   * @returns {MDComponent} Either the TOC of a paragraph if the toc has
+   *                        already been parsed
+   */
+  parseTOC() {
+    if (!this.dom.toc) {
+      var token = this.tokenStream.read(); // [TOC]
+      var component = new MDTOC();
+      this.dom.toc = component;
+      component.from = token.from;
+      component.to = token.to;
+      this.tokenStream.read(); // \n|EOF
+      return component;
+    } else {
+      return this.parseParagraph();
+    }
+  }
+
+  /**
+   * Parses a TOF from the token stream.
+   * @access private
+   * @returns {MDComponent} Either the TOF of a paragraph if the tof has
+   *                        already been parsed
+   */
+  parseTOF() {
+    if (!this.dom.tof) {
+      var token = this.tokenStream.read(); // [TOF]
+      var component = new MDTOF();
+      this.dom.tof = component;
+      component.from = token.from;
+      component.to = token.to;
+      this.tokenStream.read(); // \n|EOF
+      return component;
+    } else {
+      return this.parseParagraph();
+    }
+  }
+
+  /**
+   * Parses a pagebreak from the token stream.
+   * @access private
+   * @returns {MDPageBreak}
+   */
+  parsePagebreak() {
+    var token = this.tokenStream.read(); // [PB]
+    var component = new MDPageBreak();
+    component.from = token.from;
+    component.to = token.to;
+    this.tokenStream.read(); // \n
+    return component;
+  }
+
+  /**
+   * Parses a LaTeX block from the token stream.
+   * @access private
+   * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
+   */
+  parseLatexblock() {
+    var component = new MDLatexBlock();
+    component.value = '';
+    var token = this.tokenStream.read(); // $$
+    var cache = [token];
+    if (this.tokenStream.eof()) {
+      this.reinterpretAsText(cache);
+      return cache;
+    }
+    component.from = token.from;
+    while (!this.tokenStream.eof()) {
+      token = this.tokenStream.peek();
+      switch (token.type) {
+        case TokenTypes.LATEXBLOCK:
+          cache.push(this.tokenStream.read()); // $$
           component.to = token.to;
           token = this.tokenStream.peek();
           if (token && token.type == TokenTypes.NEWLINE) {
@@ -1860,6 +1932,24 @@ class MDPageBreak extends MDComponent {
 class MDDOM extends MDComponent {
   constructor() {
     super(ComponentTypes.DOM);
+    /**
+     * List of headers to be used by the TOC.
+     * @access public
+     * @type {MDHeader[]}
+     */
+    this.headers = [];
+    /**
+     * Table of contents of the parsed markdown document.
+     * @access public
+     * @type {MDTOC}
+     */
+    this.toc = null;
+    /**
+     * Table of figures of the parsed markdown document.
+     * @access public
+     * @type {MDTOF}
+     */
+    this.tof = null;
   }
   static parse(source) {
     var dom = new MDDOM();
@@ -2076,17 +2166,12 @@ const markdown = {
 //   console.log(token);
 // }
 var tokenStream = new TokenStream(
-  new CharacterStream(
-    '```bash\n' +
-      '$ bash -c "$(curl -fsSL https://test.com/start.sh)"\n' +
-      '```\n' +
-      '```\n' +
-      'var reason = 42;```'
-  )
+  new CharacterStream('# Header\n' + '[TOC]\n' + '[TOC]')
 );
 var parser = new Parser(tokenStream);
-var codeblock = parser.parseCodeblock();
-codeblock = parser.parseCodeblock();
+tokenStream.skipToNextRow();
+var parsed = parser.parse();
+var toc = parsed[0];
 //var listItem = parser.parseListItem(parser.peekListHead());
 //var components = parser.parse();
 //console.log(components[0].toString());
