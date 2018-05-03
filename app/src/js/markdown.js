@@ -155,7 +155,10 @@ class CharacterStream {
    */
   croak(msg) {
     throw new Error(
-      `${msg} (${this.row}:${this.column}): ${this.source.substr(this.pos)}`
+      `${msg} (${this.row}:${this.column}): "${this.source.substr(
+        this.pos,
+        15
+      )}"`
     );
   }
 }
@@ -455,6 +458,7 @@ class Parser {
     for (const sub of this.parseRow()) {
       component.add(sub);
     }
+    if (!this.tokenStream.eof()) this.tokenStream.read(); // Skip \n
     component.to = component.last().to;
     this.dom.headers.push(component);
     return component;
@@ -475,6 +479,7 @@ class Parser {
     component.from = token.from;
     while (!this.tokenStream.eof()) {
       for (const sub of this.parseRow()) component.add(sub);
+      if (!this.tokenStream.eof()) this.tokenStream.read(); // Skip \n
       if (this.tokenStream.eof()) break;
       if (this.tokenStream.peek().type != TokenTypes.BLOCKQUOTE) break;
       component.add(this.appendSoftBreak(component.last()));
@@ -541,6 +546,7 @@ class Parser {
         case TokenTypes.LIST:
           if (item.isEmpty()) {
             for (const sub of this.parseRow()) item.add(sub);
+            if (!this.tokenStream.eof()) this.tokenStream.read(); // Skip \n
             break;
           }
           var listHead = this.peekListHead();
@@ -548,12 +554,7 @@ class Parser {
             // Sublist
             item.add(this.appendSoftBreak(item.last()));
             item.add(this.parseList());
-          } else if (listHead.level < daddy.level) {
-            // Parent list
-            item.to = item.last().to;
-            return item;
           } else {
-            // List of same parent
             item.to = item.last().to;
             return item;
           }
@@ -577,6 +578,7 @@ class Parser {
         default:
           if (!item.isEmpty()) item.add(this.appendSoftBreak(item.last()));
           for (const sub of this.parseRow()) item.add(sub);
+          if (!this.tokenStream.eof()) this.tokenStream.read(); // Skip \n
           break;
       }
     }
@@ -793,6 +795,19 @@ class Parser {
   // Inline elements:
 
   /**
+   * Parses a soft break from the token stream.
+   * @access private
+   * @returns {MDSoftBreak}
+   */
+  parseSoftbreak() {
+    var token = this.tokenStream.read();
+    var softBreak = new MDSoftBreak();
+    softBreak.from = token.from;
+    softBreak.to = token.to;
+    return softBreak;
+  }
+
+  /**
    * Parses Text until next newline. Converts unexpected tokens to text as well.
    * @access private
    * @returns {MDComponent[]} Either a one-element-array or a sequence of as
@@ -803,48 +818,11 @@ class Parser {
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
       switch (token.type) {
-        case TokenTypes.BOLD:
-          for (const sub of this.parseBold()) {
-            out.push(sub);
-          }
-          break;
-        case TokenTypes.ITALICS:
-          for (const sub of this.parseItalics()) {
-            out.push(sub);
-          }
-          break;
-        case TokenTypes.STRIKETHROUGH:
-          for (const sub of this.parseStrikethrough()) {
-            out.push(sub);
-          }
-          break;
-        case TokenTypes.IMAGESTART:
-          for (const sub of this.parseImage()) {
-            out.push(sub);
-          }
-          break;
-        case TokenTypes.LINKSTART:
-          for (const sub of this.parseLink()) {
-            out.push(sub);
-          }
-          break;
-        case TokenTypes.CODE:
-          for (const sub of this.parseCode()) {
-            out.push(sub);
-          }
-          break;
-        case TokenTypes.LATEX:
-          for (const sub of this.parseLatex()) {
-            out.push(sub);
-          }
-          break;
         case TokenTypes.NEWLINE:
-          this.tokenStream.read(); // Skip the newline
           return out;
           break;
         default:
-          // Unexpected token(or text) detected. Reinterpret as text.
-          this.reinterpretAsText(out);
+          out.push(this.parseAnyString());
           break;
       }
     }
@@ -907,27 +885,28 @@ class Parser {
   /**
    * Parses the token stream for bold text.
    * @access private
-   * @returns {MDComponent} Either a one-element-array or a sequence of as
-   *                          text reinterpreted elements.
+   * @returns {MDComponent} Either a bold element or a text replacement
    */
   parseBold() {
     if (this.tokenStream.eof())
       this.tokenStream.croak('Unexpected end of stream');
     var token = this.tokenStream.read(); // **
-    var chache = [token];
+    var cache = [token];
     var component = new MDTextBold();
     component.from = token.from;
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
       if (token.type == TokenTypes.BOLD) {
         // Bold finished
-        this.tokenStream.read();
+        this.tokenStream.read(); // **
         component.to = token.to;
         return component;
       } else if (token.type == TokenTypes.NEWLINE) {
         // Bold failed
+        this.reinterpretAsText(cache);
+        return cache[0]; // TODO: Fix this ugly thing
       } else {
-        chache.add(token);
+        cache.push(token);
         component.add(this.parseAnyString());
       }
     }
@@ -937,65 +916,32 @@ class Parser {
   /**
    * Parses the token stream for italicalised text.
    * @access private
-   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
-   *                          text reinterpreted elements.
+   * @returns {MDComponent} Either an italics element or a text replacement
    */
   parseItalics() {
-    this.tokenStream.read();
+    if (this.tokenStream.eof())
+      this.tokenStream.croak('Unexpected end of stream');
+    var token = this.tokenStream.read(); // _
+    var cache = [token];
     var component = new MDTextItalics();
     component.from = token.from;
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
-      switch (token.type) {
-        case TokenTypes.TEXT:
-          for (const sub of this.parseRow()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.BOLD:
-          for (const sub of this.parseBold()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.ITALICS:
-          component.to = token.to;
-          this.tokenStream.read();
-          return [component];
-          break;
-        case TokenTypes.STRIKETHROUGH:
-          for (const sub of this.parseStrikethrough()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.LATEXTOGGLE:
-          for (const sub of this.parseLatex()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.CODETOGGLE:
-          for (const sub of this.parseCode()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.LINK:
-          for (const sub of this.parseLink()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.IMAGE:
-          for (const sub of this.parseImage()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.NEWLINE: // Failed to complete sequence
-          this.reinterpretAsText(component.children);
-          return component.children;
-        default:
-          this.reinterpretAsText(component.children);
-          break;
+      if (token.type == TokenTypes.ITALICS) {
+        // Italics finished
+        this.tokenStream.read(); // _
+        component.to = token.to;
+        return component;
+      } else if (token.type == TokenTypes.NEWLINE) {
+        // Italics failed
+        this.reinterpretAsText(cache);
+        return cache[0]; // TODO: Fix this ugly thing
+      } else {
+        cache.push(token);
+        component.add(this.parseAnyString());
       }
     }
-    return component.children;
+    return component;
   }
 
   /**
@@ -1480,8 +1426,9 @@ class MDComponent {
 
 // text components:
 class MDText extends MDComponent {
-  constructor() {
-    super(ComponentTypes.TEXT);
+  constructor(type) {
+    if (!type) type = ComponentTypes.TEXT;
+    super(type);
   }
   toHtml() {
     if (this.value) return this.value;
@@ -1639,6 +1586,9 @@ class MDImage extends MDComponent {
 }
 
 class MDSoftBreak extends MDComponent {
+  constructor() {
+    super(ComponentTypes.SOFTBREAK);
+  }
   toHtml() {
     return ` <br/> `;
   }
@@ -2211,17 +2161,9 @@ const markdown = {
 // while (token = tokenStream.read()) {
 //   console.log(token);
 // }
-var tokenStream = new TokenStream(
-  new CharacterStream(
-    '# References:\n' +
-      '[ref id 1]: https://duckduckgo.com/index.html\n' +
-      '[ref id 2]: https://duckduckgo.com/ "alt text"'
-  )
-);
+var tokenStream = new TokenStream(new CharacterStream('**Lorem Ipsum.**'));
 var parser = new Parser(tokenStream);
-tokenStream.skipToNextRow();
-var parsed = parser.parse();
-var toc = parsed[0];
+var bold = parser.parseBold();
 //var listItem = parser.parseListItem(parser.peekListHead());
 //var components = parser.parse();
 //console.log(components[0].toString());
