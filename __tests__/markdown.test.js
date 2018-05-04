@@ -1448,7 +1448,14 @@ describe('Parser', () => {
   });
   it('should parse any string sequence', () => {
     var tokenStream = new TokenStream(
-      new CharacterStream('Lorem Ipsum.\n' + '**bold text**')
+      new CharacterStream(
+        'Lorem Ipsum.\n' +
+          '**bold text**\n' +
+          '_Italics_\n' +
+          '~~strikethrough~~\n' +
+          '$x = \\dot y$\n' +
+          '`var a = 42;`'
+      )
     );
     var parser = new Parser(tokenStream);
     var element = parser.parseAnyString();
@@ -1469,10 +1476,52 @@ describe('Parser', () => {
     expect(element.first().value).toEqual('bold text');
     expect(element.first().from).toEqual([1, 2]);
     expect(element.first().to).toEqual([1, 10]);
+
+    tokenStream.skipToNextRow();
+    element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.ITALICS);
+    expect(element.from).toEqual([2, 0]);
+    expect(element.to).toEqual([2, 8]);
+    expect(element.children.length).toBe(1);
+    expect(element.first().type).toEqual(ComponentTypes.TEXT);
+    expect(element.first().value).toEqual('Italics');
+    expect(element.first().from).toEqual([2, 1]);
+    expect(element.first().to).toEqual([2, 7]);
+
+    tokenStream.skipToNextRow();
+    element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.STRIKETHROUGH);
+    expect(element.from).toEqual([3, 0]);
+    expect(element.to).toEqual([3, 16]);
+    expect(element.children.length).toBe(1);
+    expect(element.first().type).toEqual(ComponentTypes.TEXT);
+    expect(element.first().value).toEqual('strikethrough');
+    expect(element.first().from).toEqual([3, 2]);
+    expect(element.first().to).toEqual([3, 14]);
+
+    tokenStream.skipToNextRow();
+    element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.INLINELATEX);
+    expect(element.from).toEqual([4, 0]);
+    expect(element.to).toEqual([4, 11]);
+    expect(element.children.length).toBe(0);
+    expect(element.value).toEqual('x = \\dot y');
+
+    tokenStream.skipToNextRow();
+    element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.INLINECODE);
+    expect(element.from).toEqual([5, 0]);
+    expect(element.to).toEqual([5, 12]);
+    expect(element.children.length).toBe(0);
+    expect(element.value).toEqual('var a = 42;');
   });
   it('should parse text rows', () => {
     var tokenStream = new TokenStream(
-      new CharacterStream('Lorem Ipsum.\n' + '`inline code`')
+      new CharacterStream('Lorem Ipsum.\n`inline code`')
     );
     var parser = new Parser(tokenStream);
     var row = parser.parseRow();

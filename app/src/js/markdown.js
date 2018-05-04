@@ -849,10 +849,10 @@ class Parser {
       case TokenTypes.STRIKETHROUGH:
         component = this.parseStrikethrough();
         break;
-      case TokenTypes.LATEXTOGGLE:
+      case TokenTypes.LATEX:
         component = this.parseLatex();
         break;
-      case TokenTypes.CODETOGGLE:
+      case TokenTypes.CODE:
         component = this.parseCode();
         break;
       case TokenTypes.LINKSTART:
@@ -950,7 +950,32 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseLatex() {
-    return this.parseFormat(new MDTextLaTeX(), TokenTypes.LATEX);
+    if (this.tokenStream.eof())
+      this.tokenStream.croak('Unexpected end of stream');
+    var token = this.tokenStream.read(); // delimiter
+    if (token.type != TokenTypes.LATEX)
+      this.tokenStream.croak(
+        `Token mismatch. ${token.type} != ${TokenTypes.LATEX}`
+      );
+    var cache = [token];
+    var component = new MDTextLaTeX();
+    component.value = '';
+    component.from = token.from;
+    while (!this.tokenStream.eof()) {
+      var token = this.tokenStream.peek();
+      if (token.type == TokenTypes.LATEX) {
+        this.tokenStream.read(); // delimiter
+        component.to = token.to;
+        return component;
+      } else if (token.type == TokenTypes.NEWLINE) {
+        return this.reinterpretAsText(cache);
+      } else {
+        token = this.tokenStream.read();
+        cache.push(token);
+        component.value += token.value;
+      }
+    }
+    return this.reinterpretAsText(cache);
   }
 
   /**
@@ -960,7 +985,32 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseCode() {
-    return this.parseFormat(new MDTextCode(), TokenTypes.CODE);
+    if (this.tokenStream.eof())
+      this.tokenStream.croak('Unexpected end of stream');
+    var token = this.tokenStream.read(); // delimiter
+    if (token.type != TokenTypes.CODE)
+      this.tokenStream.croak(
+        `Token mismatch. ${token.type} != ${TokenTypes.CODE}`
+      );
+    var cache = [token];
+    var component = new MDTextCode();
+    component.value = '';
+    component.from = token.from;
+    while (!this.tokenStream.eof()) {
+      var token = this.tokenStream.peek();
+      if (token.type == TokenTypes.CODE) {
+        this.tokenStream.read(); // delimiter
+        component.to = token.to;
+        return component;
+      } else if (token.type == TokenTypes.NEWLINE) {
+        return this.reinterpretAsText(cache);
+      } else {
+        token = this.tokenStream.read();
+        cache.push(token);
+        component.value += token.value;
+      }
+    }
+    return this.reinterpretAsText(cache);
   }
 
   /**
@@ -2094,5 +2144,7 @@ var tokenStream = new TokenStream(
 );
 var parser = new Parser(tokenStream);
 var row = parser.parseRow();
+tokenStream.skipToNextRow();
+row = parser.parseRow();
 
 module.exports = markdown;
