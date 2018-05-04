@@ -1035,6 +1035,46 @@ class Parser {
     return this.reinterpretAsText(cache);
   }
 
+  parseImageOrLinkEnd(component) {
+    var token = this.tokenStream.read(); // [|![
+    var cache = [token];
+    component.from = token.from;
+    token = this.tokenStream.peek();
+    if (this.tokenStream.eof() || token.type == TokenTypes.IMGLINKEND) {
+      return this.reinterpretAsText(cache);
+    }
+    while (!this.tokenStream.eof()) {
+      token = this.tokenStream.peek();
+      if (token.type == TokenTypes.IMGLINKEND) {
+        if (token.match[1] == '') {
+          // Plain reference
+          component.children = [];
+          cache.shift(); // [|![
+          var textEl = this.reinterpretAsText(cache);
+          component.referenceId = textEl.value;
+        } else if (token.match[5]) {
+          // Reference
+          component.referenceId = token.match[5];
+        } else {
+          // Link provided
+          component.url = token.match[2];
+          if (token.match[4]) {
+            // Tooltip
+            component.alt = token.match[4];
+          }
+        }
+        break;
+      }
+      cache.push(token);
+      if (this.paragraphContinues()) {
+        component.add(this.parseAnyString());
+      } else {
+        return this.reinterpretAsText(cache);
+      }
+    }
+    return component;
+  }
+
   /**
    * Parses the token stream for a link.
    * @access private
@@ -1042,16 +1082,7 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseLink() {
-    var token = this.tokenStream.read();
-    var link = new MDLink();
-    link.from = token.from;
-    link.destination = token.match[4].value;
-    link.add(this._parse_text(token.match[4]));
-    if (token.match.length - 1 > 4 && token.match[5]) {
-      link.title = token.match[5];
-    }
-    link.to = link.last().from;
-    return link;
+    return this.parseImageOrLinkEnd(new MDLink());
   }
 
   /**
@@ -1061,22 +1092,7 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseImage() {
-    var img = new MDImage();
-    img.from = token.from;
-    img.to = token.to;
-    if (token.match[1].startsWith('[')) {
-      img.alt = token.match[2];
-      img.link = token.match[3];
-      if (token.match[4].length > 0) {
-        img.text = token.match[5];
-      }
-    } else {
-      img.link = token.match[2];
-      if (token.match[3].length > 0) {
-        img.text = token.match[4];
-      }
-    }
-    return img;
+    return this.parseImageOrLinkEnd(new MDImage());
   }
 
   // Helpers:
@@ -1222,8 +1238,6 @@ const TokenTypes = Object.freeze({
   STRIKETHROUGH: 'Strikethrough',
   IMAGESTART: 'ImageStart',
   LINKSTART: 'LinkStart',
-  IMGLINKINLINE: 'Image/LinkInline',
-  IMGLINKREFERENCE: 'Image-/LinkReference',
   IMGLINKEND: 'Image-/LinkEnd',
   CODE: 'Code',
   LATEX: 'LaTeX',
@@ -1253,15 +1267,10 @@ const Tokens = Object.freeze({
   STRIKETHROUGH: new Token(TokenTypes.STRIKETHROUGH, /~~/),
   IMAGESTART: new Token(TokenTypes.IMAGESTART, /!\[/),
   LINKSTART: new Token(TokenTypes.LINKSTART, /\[/),
-  IMGLINKINLINE: new Token(
-    TokenTypes.IMGLINKINLINE,
-    /\]\([^\s\(\)\[\]]+((?=\))| ")/
+  IMGLINKEND: new Token(
+    TokenTypes.IMGLINKEND,
+    /\](\(([^\s\(\)\[\]]+)(\)| "([^"]+)"\))|\[([^\[\]"]+)\]|)/
   ),
-  IMGLINKREFERENCE: new Token(
-    TokenTypes.IMGLINKREFERENCE,
-    /\]\[([^\s\(\)\[\]]([^\(\)\[\]]+[^\s\(\)\[\]]|)(?=\]))/
-  ),
-  IMGLINKEND: new Token(TokenTypes.IMGLINKEND, /("\)|\)|\])/),
   CODE: new Token(TokenTypes.CODE, /`/),
   LATEX: new Token(TokenTypes.LATEX, /\$/),
   TEXT: new Token(TokenTypes.TEXT, /.+/),
@@ -1298,8 +1307,6 @@ const Tokens = Object.freeze({
       this.STRIKETHROUGH,
       this.IMAGESTART,
       this.LINKSTART,
-      this.IMGLINKINLINE,
-      this.IMGLINKREFERENCE,
       this.IMGLINKEND,
       this.CODE,
       this.LATEX

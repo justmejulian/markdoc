@@ -373,51 +373,13 @@ describe('Token Regex', () => {
     expect(pattern.test('{alt text](test.jpg)')).toBeFalsy();
     expect(pattern.test('!(test)')).toBeFalsy();
   });
-  it('should match image-/link-inline indicators appropriately', () => {
-    var pattern = Tokens.IMGLINKINLINE.pattern;
-    // Matches:
-    expect(pattern.test('![alt text](test.jpg)')).toBeTruthy();
-    expect(pattern.test('![alt text](test.jpg "')).toBeTruthy();
-    expect(pattern.test('text](test.jpg)')).toBeTruthy();
-    expect(pattern.test('lt text](test.jp "')).toBeTruthy();
-    // Mismatches:
-    expect(pattern.test('![alt text]( test.jpg)')).toBeFalsy();
-    expect(pattern.test('text](test.jpg"')).toBeFalsy();
-    expect(pattern.test('text](tes[]')).toBeFalsy();
-    expect(pattern.test('text](tes()')).toBeFalsy();
-    expect(pattern.test('![alt text][1]')).toBeFalsy();
-    expect(pattern.test('![alt text][1 ]')).toBeFalsy();
-    expect(pattern.test('![alt text][ 1]')).toBeFalsy();
-    expect(pattern.test('![alt text][link// text]')).toBeFalsy();
-    expect(pattern.test('![alt text][li[]]')).toBeFalsy();
-    expect(pattern.test('![alt text][li()')).toBeFalsy();
-    expect(pattern.test('[alt text]: test.jpg')).toBeFalsy();
-    expect(pattern.test('!(test)')).toBeFalsy();
-  });
-  it('should match image-/link-inline indicators appropriately', () => {
-    var pattern = Tokens.IMGLINKREFERENCE.pattern;
-    // Matches:
-    expect(pattern.test('![alt text][1]')).toBeTruthy();
-    expect(pattern.test('![alt text][1022]')).toBeTruthy();
-    expect(pattern.test('![alt text][logo]')).toBeTruthy();
-    expect(pattern.test('![alt text][logo 3]')).toBeTruthy();
-    expect(pattern.test('![alt text][link// text]')).toBeTruthy();
-    // Mismatches:
-    expect(pattern.test('![alt text][1 ]')).toBeFalsy();
-    expect(pattern.test('![alt text][ 1]')).toBeFalsy();
-    expect(pattern.test('sad![alt text](test.jpg)')).toBeFalsy();
-    expect(pattern.test('![alt text](test.jpg)')).toBeFalsy();
-    expect(pattern.test('![alt text](test.jpg "hi there")')).toBeFalsy();
-    expect(pattern.test('[alt text]: test.jpg')).toBeFalsy();
-    expect(pattern.test('!(test)')).toBeFalsy();
-  });
   it('should match image-/link-end indicators appropriately', () => {
     var pattern = Tokens.IMGLINKEND.pattern;
     // Matches:
-    expect(pattern.test('alt text(test.jpg)')).toBeTruthy();
-    expect(pattern.test('!alt text(test.jpg "hi there")')).toBeTruthy();
-    expect(pattern.test('!alt text[1]')).toBeTruthy();
-    expect(pattern.test('sa(test.jpg)')).toBeTruthy();
+    expect(pattern.test('[alt text](test.jpg)')).toBeTruthy();
+    expect(pattern.test('![alt text](test.jpg "hi there")')).toBeTruthy();
+    expect(pattern.test('![alt text][1]')).toBeTruthy();
+    expect(pattern.test('sa](test.jpg)')).toBeTruthy();
     // Mismatches:
     expect(pattern.test('alt text: test.jpg')).toBeFalsy();
     expect(pattern.test('!(test')).toBeFalsy();
@@ -810,61 +772,25 @@ describe('TokenStream', () => {
     expect(token.from).toEqual([0, 5]);
     expect(token.to).toEqual([0, 5]);
   });
-  it('should find proper image-/link inline indicators', () => {
-    var tokenStream = new TokenStream(
-      new CharacterStream(
-        'Pic: ![alt text](test.jpg)\n![alt text][1]\n![alt text][ref]'
-      )
-    );
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    var token = tokenStream.read();
-    expect(token.type).toEqual(TokenTypes.IMGLINKINLINE);
-    expect(token.from).toEqual([0, 15]);
-    expect(token.to).toEqual([0, 24]);
-  });
-  it('should find proper image-/link reference indicators', () => {
-    var tokenStream = new TokenStream(
-      new CharacterStream(
-        'Pic: ![alt text](test.jpg)\n![alt text][1]\n![alt text][ref]'
-      )
-    );
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    var token = tokenStream.read();
-    expect(token.type).toEqual(TokenTypes.IMGLINKREFERENCE);
-    expect(token.from).toEqual([1, 10]);
-    expect(token.to).toEqual([1, 12]);
-  });
   it('should find proper image-/link end indicators', () => {
     var tokenStream = new TokenStream(
       new CharacterStream(
         'Pic: ![alt text](test.jpg)\n![alt text](test.jpg "label")'
       )
     );
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    var token = tokenStream.read();
+    tokenStream.read(); // "Pic: "
+    tokenStream.read(); // ![
+    tokenStream.read(); // "alt text"
+    var token = tokenStream.read(); // ](test.jpg)
     expect(token.type).toEqual(TokenTypes.IMGLINKEND);
-    expect(token.from).toEqual([0, 25]);
+    expect(token.from).toEqual([0, 15]);
     expect(token.to).toEqual([0, 25]);
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    tokenStream.read();
-    token = tokenStream.read();
+    tokenStream.read(); // \n
+    tokenStream.read(); // ![
+    tokenStream.read(); // "alt text"
+    token = tokenStream.read(); // ](test.jpg "label")
     expect(token.type).toEqual(TokenTypes.IMGLINKEND);
-    expect(token.from).toEqual([1, 27]);
+    expect(token.from).toEqual([1, 10]);
     expect(token.to).toEqual([1, 28]);
   });
   it('should find proper code indicators', () => {
@@ -1530,6 +1456,106 @@ describe('Parser', () => {
     row = parser.parseRow();
     expect(row.length).toBe(1);
     expect(row[0].type).toEqual(ComponentTypes.INLINECODE);
+  });
+  it('should parse links', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        '[linktext](https://duckduckgo.com/)\n' +
+          '[link text](https://duckduckgo.com/ "tooltip")\n' +
+          '[link **text**](https://duckduckgo.com/ "tooltip 2")\n' +
+          '[link reference][ref id]\n' +
+          '[single ref]'
+      )
+    );
+    var parser = new Parser(tokenStream);
+    var link = parser.parseLink();
+    expect(link).not.toBeNull();
+    expect(link.type).toEqual(ComponentTypes.LINK);
+    expect(link.children.length).toBe(1);
+    expect(link.children[0].value).toEqual('linktext');
+    expect(link.url).toEqual('https://duckduckgo.com/');
+
+    tokenStream.skipToNextRow();
+    link = parser.parseLink();
+    expect(link).not.toBeNull();
+    expect(link.type).toEqual(ComponentTypes.LINK);
+    expect(link.children.length).toBe(1);
+    expect(link.children[0].value).toEqual('link text');
+    expect(link.url).toEqual('https://duckduckgo.com/');
+    expect(link.alt).toEqual('tooltip');
+
+    tokenStream.skipToNextRow();
+    link = parser.parseLink();
+    expect(link).not.toBeNull();
+    expect(link.type).toEqual(ComponentTypes.LINK);
+    expect(link.children.length).toBe(2);
+    expect(link.url).toEqual('https://duckduckgo.com/');
+    expect(link.alt).toEqual('tooltip 2');
+
+    tokenStream.skipToNextRow();
+    link = parser.parseLink();
+    expect(link).not.toBeNull();
+    expect(link.type).toEqual(ComponentTypes.LINK);
+    expect(link.children.length).toBe(1);
+    expect(link.children[0].value).toEqual('link reference');
+    expect(link.referenceId).toEqual('ref id');
+
+    tokenStream.skipToNextRow();
+    link = parser.parseLink();
+    expect(link).not.toBeNull();
+    expect(link.type).toEqual(ComponentTypes.LINK);
+    expect(link.children.length).toBe(0);
+    expect(link.referenceId).toEqual('single ref');
+  });
+  it('should parse images', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        '![linktext](https://duckduckgo.com/)\n' +
+          '![link text](https://duckduckgo.com/ "tooltip")\n' +
+          '![link **text**](https://duckduckgo.com/ "tooltip 2")\n' +
+          '![link reference][ref id]\n' +
+          '![single ref]'
+      )
+    );
+    var parser = new Parser(tokenStream);
+    var image = parser.parseImage();
+    expect(image).not.toBeNull();
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.children.length).toBe(1);
+    expect(image.children[0].value).toEqual('linktext');
+    expect(image.url).toEqual('https://duckduckgo.com/');
+
+    tokenStream.skipToNextRow();
+    image = parser.parseImage();
+    expect(image).not.toBeNull();
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.children.length).toBe(1);
+    expect(image.children[0].value).toEqual('link text');
+    expect(image.url).toEqual('https://duckduckgo.com/');
+    expect(image.alt).toEqual('tooltip');
+
+    tokenStream.skipToNextRow();
+    image = parser.parseImage();
+    expect(image).not.toBeNull();
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.children.length).toBe(2);
+    expect(image.url).toEqual('https://duckduckgo.com/');
+    expect(image.alt).toEqual('tooltip 2');
+
+    tokenStream.skipToNextRow();
+    image = parser.parseImage();
+    expect(image).not.toBeNull();
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.children.length).toBe(1);
+    expect(image.children[0].value).toEqual('link reference');
+    expect(image.referenceId).toEqual('ref id');
+
+    tokenStream.skipToNextRow();
+    image = parser.parseImage();
+    expect(image).not.toBeNull();
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.children.length).toBe(0);
+    expect(image.referenceId).toEqual('single ref');
   });
 });
 
