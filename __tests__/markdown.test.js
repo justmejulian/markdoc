@@ -6,7 +6,8 @@ const {
   Token,
   Tokens,
   TokenTypes,
-  Parser
+  Parser,
+  LatexParser
 } = markdown.parser;
 const {
   ComponentTypes,
@@ -1199,12 +1200,14 @@ describe('Parser', () => {
     expect(reference.type).toEqual(ComponentTypes.REFERENCE);
     expect(reference.referenceId).toEqual('ref id 1');
     expect(reference.url).toEqual('https://duckduckgo.com/index.html');
+    expect(reference).toEqual(parser.dom.references[0]);
     reference = parsed[1];
     expect(reference).not.toBeNull();
     expect(reference.type).toEqual(ComponentTypes.REFERENCE);
     expect(reference.referenceId).toEqual('ref id 2');
     expect(reference.url).toEqual('https://duckduckgo.com/');
     expect(reference.alt).toEqual('alt text');
+    expect(reference).toEqual(parser.dom.references[1]);
   });
   it('should parse LaTeX blocks', () => {
     var tokenStream = new TokenStream(
@@ -1556,6 +1559,56 @@ describe('Parser', () => {
     expect(image.type).toEqual(ComponentTypes.IMAGE);
     expect(image.children.length).toBe(0);
     expect(image.referenceId).toEqual('single ref');
+  });
+  // it("Should parse a document correctly", () => {
+  //   var tokenStream = new TokenStream(new CharacterStream(
+
+  //   ));
+  // });
+});
+
+describe('LaTeX Parser', () => {
+  it('should cache parse requests', () => {
+    var cacheSize = 2;
+    var latexParser = new LatexParser(cacheSize);
+    var math = 'x = \\dot x';
+    var parsed = latexParser.parse(math);
+    expect(parsed).not.toEqual(math);
+    expect(latexParser.has(math));
+    expect(latexParser.keys.length).toBe(1);
+    expect(latexParser.values.length).toBe(1);
+    expect(latexParser.keys.includes(math)).toBeTruthy();
+    expect(latexParser.values.includes(parsed)).toBeTruthy();
+
+    var math2 = '\\int_0^\\infty';
+    parsed = latexParser.parse(math2);
+    expect(parsed).not.toEqual(math2);
+    expect(latexParser.has(math2)).toBeTruthy();
+    expect(latexParser.has(math)).toBeTruthy();
+    expect(latexParser.keys.length).toBe(cacheSize);
+    expect(latexParser.values.length).toBe(cacheSize);
+    expect(latexParser.keys.includes(math2)).toBeTruthy();
+    expect(latexParser.values.includes(parsed)).toBeTruthy();
+
+    parsed = latexParser.parse(math2);
+    expect(parsed).not.toEqual(math2);
+    expect(latexParser.has(math2)).toBeTruthy();
+    expect(latexParser.has(math)).toBeTruthy();
+    expect(latexParser.keys.length).toBe(cacheSize);
+    expect(latexParser.values.length).toBe(cacheSize);
+    expect(latexParser.keys.includes(math2)).toBeTruthy();
+    expect(latexParser.values.includes(parsed)).toBeTruthy();
+
+    var math3 = '\\mathcal L';
+    parsed = latexParser.parse(math3);
+    expect(parsed).not.toEqual(math3);
+    expect(latexParser.has(math3)).toBeTruthy();
+    expect(latexParser.has(math2)).toBeTruthy();
+    expect(latexParser.has(math)).toBeFalsy();
+    expect(latexParser.keys.length).toBe(cacheSize);
+    expect(latexParser.values.length).toBe(cacheSize);
+    expect(latexParser.keys.includes(math3)).toBeTruthy();
+    expect(latexParser.values.includes(parsed)).toBeTruthy();
   });
 });
 

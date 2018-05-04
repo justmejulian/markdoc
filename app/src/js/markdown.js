@@ -343,13 +343,13 @@ class Parser {
    * Parses a token stream and returns a DOM containing the parsed elements.
    * @access public
    * @static
-   * @param {TokenStream} tokenStream The token stream to use as source.
+   * @param {string} string The string to use as source.
    * @param {MDDOM} [dom=null] The dom to use as a reference.
    * @returns {MDDOM} The completed DOM
    */
-  static parseToDOM(tokenStream, dom) {
+  static parseToDOM(string, dom) {
     if (!dom) dom = new MDDOM();
-    for (const component of Parser.parseToArray(tokenStream, dom)) {
+    for (const component of Parser.parseToArray(string, dom)) {
       dom.add(component);
     }
     return dom;
@@ -359,11 +359,12 @@ class Parser {
    * Parses a token stream and returns an array of the parsed elements.
    * @access public
    * @static
-   * @param {TokenStream} tokenStream The token stream to use as source.
+   * @param {string} string The string to use as source.
    * @param {MDDOM} [dom=null] The dom to use as a reference.
    * @returns {MDComponent[]} The parsed elements
    */
-  static parseToArray(tokenStream, dom) {
+  static parseToArray(string, dom) {
+    var tokenStream = new TokenStream(new CharacterStream(string));
     var parser = new Parser(tokenStream, dom);
     return parser.parse(dom);
   }
@@ -660,8 +661,7 @@ class Parser {
       }
     }
     cache = cache.concat(component.children);
-    this.reinterpretAsText(cache);
-    return cache;
+    return [this.reinterpretAsText(cache)];
   }
 
   /**
@@ -1355,6 +1355,39 @@ const ComponentTypes = Object.freeze({
   INLINECODE: 'Inline Code',
   INLINELATEX: 'Inline LaTeX'
 });
+
+/**
+ * Parser for LaTeX code
+ */
+class LatexParser {
+  constructor(cacheSize) {
+    this.keys = [];
+    this.values = [];
+    this.cacheSize = cacheSize;
+  }
+  parse(latex) {
+    if (this.has(latex)) {
+      return this.get(latex);
+    }
+    var html = katex.renderToString(latex);
+    this.add(latex, html);
+    return html;
+  }
+  has(latex) {
+    return this.keys.includes(latex);
+  }
+  get(latex) {
+    return this.values[this.keys.indexOf(latex)];
+  }
+  add(latex, html) {
+    while (this.keys.length >= this.cacheSize) {
+      this.keys.shift();
+      this.values.shift();
+    }
+    this.keys.push(latex);
+    this.values.push(html);
+  }
+}
 
 class TokenFilter {
   constructor() {}
@@ -2141,7 +2174,8 @@ const markdown = {
     Token: Token,
     Tokens,
     TokenTypes: TokenTypes,
-    Parser: Parser
+    Parser: Parser,
+    LatexParser: LatexParser
   },
   ComponentTypes: ComponentTypes,
   Component: MDComponent,
@@ -2168,14 +2202,11 @@ const markdown = {
   InlineLatex: MDTextLaTeX
 };
 
-var tokenStream = new TokenStream(
-  new CharacterStream(
-    'Paragraph 1\n' + '\n' + 'Paragraph 2\n' + 'Still paragraph 2'
-  )
-);
-var parser = new Parser(tokenStream);
-var paragraph = parser.parseParagraph();
-tokenStream.skipToNextRow(); // \n
-paragraph = parser.parseParagraph();
+// Test debug:
+var cacheSize = 2;
+var latexParser = new LatexParser(cacheSize);
+latexParser.parse('x = \\dot x');
+latexParser.parse('\\int_0^\\infty');
+latexParser.parse('x = \\dot x');
 
 module.exports = markdown;
