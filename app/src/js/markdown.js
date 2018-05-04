@@ -902,15 +902,13 @@ class Parser {
         component.to = token.to;
         return component;
       } else if (token.type == TokenTypes.NEWLINE) {
-        // Bold failed
-        this.reinterpretAsText(cache);
-        return cache[0]; // TODO: Fix this ugly thing
+        return this.reinterpretAsText(cache);
       } else {
         cache.push(token);
         component.add(this.parseAnyString());
       }
     }
-    return component;
+    return this.reinterpretAsText(cache);
   }
 
   /**
@@ -1089,26 +1087,20 @@ class Parser {
   }
 
   /**
-   * Reinterprets unexpected tokens as text and appends them to either the last
-   * text element or as a new element to the list.
+   * Reinterprets a token list as text after a failed format parsing.
    * @access private
-   * @param {MDComponent[]} list The existing list of components
+   * @param {Token[]} tokens The existing list of components.
+   * @returns {MDText}
    */
-  reinterpretAsText(list) {
-    var text = null;
-    var token = this.tokenStream.read();
-    if (list.length > 0 && list[list.length - 1].type == TokenTypes.TEXT) {
-      text = list[list.length - 1];
-    } else {
-      text = new MDText();
-      text.value = '';
-      if (token) text.from = token.from;
-      list.push(text);
-    }
-    if (token) {
+  reinterpretAsText(tokens) {
+    var text = new MDText();
+    text.value = '';
+    text.from = tokens[0].from;
+    for (const token of tokens) {
       text.value += token.value;
-      text.to = token.to;
     }
+    text.to = tokens[tokens.length - 1].to;
+    return text;
   }
 
   /**
