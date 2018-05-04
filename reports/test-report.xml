@@ -34,32 +34,32 @@
     <testCase name="Token Regex should match latex indicators appropriately" duration="0"/>
     <testCase name="TokenStream should find the correct amount of tokens" duration="1"/>
     <testCase name="TokenStream should tokenize to the correct types" duration="0"/>
-    <testCase name="TokenStream should record the correct columns and rows" duration="2"/>
+    <testCase name="TokenStream should record the correct columns and rows" duration="5"/>
     <testCase name="TokenStream should find proper header tokens" duration="2"/>
     <testCase name="TokenStream should find proper blockquotes" duration="0"/>
-    <testCase name="TokenStream should find proper rules" duration="3"/>
+    <testCase name="TokenStream should find proper rules" duration="1"/>
     <testCase name="TokenStream should find proper lists" duration="1"/>
-    <testCase name="TokenStream should find proper code blocks" duration="1"/>
-    <testCase name="TokenStream should find proper TOCs" duration="0"/>
-    <testCase name="TokenStream should find proper TOFs" duration="1"/>
-    <testCase name="TokenStream should find proper pagebreaks" duration="0"/>
+    <testCase name="TokenStream should find proper code blocks" duration="0"/>
+    <testCase name="TokenStream should find proper TOCs" duration="1"/>
+    <testCase name="TokenStream should find proper TOFs" duration="0"/>
+    <testCase name="TokenStream should find proper pagebreaks" duration="1"/>
     <testCase name="TokenStream should find proper references" duration="1"/>
-    <testCase name="TokenStream should find proper LaTeX blocks" duration="1"/>
-    <testCase name="TokenStream should find proper newlines" duration="0"/>
-    <testCase name="TokenStream should find proper bold indicators" duration="1"/>
+    <testCase name="TokenStream should find proper LaTeX blocks" duration="0"/>
+    <testCase name="TokenStream should find proper newlines" duration="1"/>
+    <testCase name="TokenStream should find proper bold indicators" duration="0"/>
     <testCase name="TokenStream should find proper italics indicators" duration="0"/>
     <testCase name="TokenStream should find proper strikethrough indicators" duration="1"/>
     <testCase name="TokenStream should find proper image start indicators" duration="0"/>
     <testCase name="TokenStream should find proper link start indicators" duration="0"/>
-    <testCase name="TokenStream should find proper image-/link inline indicators" duration="1"/>
-    <testCase name="TokenStream should find proper image-/link reference indicators" duration="0"/>
+    <testCase name="TokenStream should find proper image-/link inline indicators" duration="0"/>
+    <testCase name="TokenStream should find proper image-/link reference indicators" duration="1"/>
     <testCase name="TokenStream should find proper image-/link end indicators" duration="1"/>
     <testCase name="TokenStream should find proper code indicators" duration="0"/>
     <testCase name="TokenStream should find proper latex indicators" duration="1"/>
     <testCase name="TokenStream should find proper latex indicators" duration="0"/>
     <testCase name="TokenStream should skip to the next row(for testing purposes)" duration="1"/>
-    <testCase name="Parser should parse the right amount of components" duration="2"/>
-    <testCase name="Parser should parse headers" duration="2"/>
+    <testCase name="Parser should parse the right amount of components" duration="3"/>
+    <testCase name="Parser should parse headers" duration="1"/>
     <testCase name="Parser should parse block quotes" duration="1"/>
     <testCase name="Parser should parse rules" duration="1"/>
     <testCase name="Parser should parse list heads" duration="3"/>
@@ -72,16 +72,31 @@
     <testCase name="Parser should parse references" duration="5"/>
     <testCase name="Parser should parse LaTeX blocks" duration="1"/>
     <testCase name="Parser should parse softbreaks" duration="1"/>
-    <testCase name="Parser should parse a text token" duration="1"/>
+    <testCase name="Parser should parse a text token" duration="0"/>
     <testCase name="Parser should reinterpret failed formatting as text" duration="0"/>
-    <testCase name="Parser should parse bold text" duration="2"/>
-    <testCase name="Parser should parse italicized text" duration="1"/>
+    <testCase name="Parser should parse bold text" duration="3"/>
+    <testCase name="Parser should parse italicized text" duration="2"/>
     <testCase name="Parser should parse strikethrough text" duration="1"/>
     <testCase name="Parser should parse any string sequence" duration="1"/>
+    <testCase name="Parser should parse text rows" duration="50">
+      <failure message="Error: expect(received).toBe(expected) // Object.is equality"><![CDATA[Error: expect(received).toBe(expected) // Object.is equality
+
+Expected value to be:
+  1
+Received:
+  3
+    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/markdown.test.js:1484:24)
+    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
+    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
+    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
+    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
+    </testCase>
   </file>
   <file path="/home/alan/Dokumente/git/markdoc/__tests__/wordcounter.test.js">
     <testCase name="WordCounter should count words in the document" duration="1"/>
-    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="0"/>
+    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="1"/>
     <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="1"/>
     <testCase name="CharacterCounter should count every single character in the document" duration="1"/>
     <testCase name="CharacterCounter should not count spaces" duration="0"/>

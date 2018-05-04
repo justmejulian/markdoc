@@ -1470,20 +1470,19 @@ describe('Parser', () => {
     expect(element.first().from).toEqual([1, 2]);
     expect(element.first().to).toEqual([1, 10]);
   });
-  // it("should parse text rows", () => {
-  //   var tokenStream = new TokenStream(new CharacterStream(
-  //     "Lorem Ipsum.\n" +
-  //     "`inline code`"
-  //   ));
-  //   var parser = new Parser(tokenStream);
-  //   var row = parser.parseRow();
-  //   expect(row.length).toBe(1);
-  //   expect(row[0].type).toEqual(ComponentTypes.TEXT);
-  //   tokenStream.skipToNextRow();
-  //   row = parser.parseRow();
-  //   expect(row.length).toBe(1);
-  //   expect(row[0].type).toEqual(ComponentTypes.INLINECODE);
-  // });
+  it('should parse text rows', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('Lorem Ipsum.\n' + '`inline code`')
+    );
+    var parser = new Parser(tokenStream);
+    var row = parser.parseRow();
+    expect(row.length).toBe(1);
+    expect(row[0].type).toEqual(ComponentTypes.TEXT);
+    tokenStream.skipToNextRow();
+    row = parser.parseRow();
+    expect(row.length).toBe(1);
+    expect(row[0].type).toEqual(ComponentTypes.INLINECODE);
+  });
 });
 
 // describe('Markdown parser', () => {

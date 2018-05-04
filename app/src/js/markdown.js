@@ -923,9 +923,9 @@ class Parser {
   }
 
   /**
-   * Parses the token stream for italicalised text.
+   * Parses the token stream for italicized text.
    * @access private
-   * @returns {MDComponent} Either an italics element or a text replacement
+   * @returns {MDComponent} Either an italics element or a text replacement.
    */
   parseItalics() {
     return this.parseFormat(new MDTextItalics(), TokenTypes.ITALICS);
@@ -934,8 +934,7 @@ class Parser {
   /**
    * Parses the token stream for strikethrough text.
    * @access private
-   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
-   *                          text reinterpreted elements.
+   * @returns {MDComponent} Either an strikethrough element or a text replacement.
    */
   parseStrikethrough() {
     return this.parseFormat(
@@ -950,7 +949,9 @@ class Parser {
    * @returns {MDComponent[]} Either a one-element-array or a sequence of as
    *                          text reinterpreted elements.
    */
-  parseLatex() {}
+  parseLatex() {
+    return this.parseFormat(new MDTextLaTeX(), TokenTypes.LATEX);
+  }
 
   /**
    * Parses the token stream for inline code.
@@ -958,7 +959,9 @@ class Parser {
    * @returns {MDComponent[]} Either a one-element-array or a sequence of as
    *                          text reinterpreted elements.
    */
-  parseCode() {}
+  parseCode() {
+    return this.parseFormat(new MDTextCode(), TokenTypes.CODE);
+  }
 
   /**
    * Parses the token stream for a link.
@@ -2086,16 +2089,10 @@ const markdown = {
   InlineLatex: MDTextLaTeX
 };
 
-// var tokenStream = new TokenStream(new CharacterStream('Check:\n\nx=y\n'));
-// var token = null;
-// while (token = tokenStream.read()) {
-//   console.log(token);
-// }
-var tokenStream = new TokenStream(new CharacterStream('**Lorem Ipsum.**'));
+var tokenStream = new TokenStream(
+  new CharacterStream('Lorem Ipsum.\n' + '`inline code`')
+);
 var parser = new Parser(tokenStream);
-var bold = parser.parseBold();
-//var listItem = parser.parseListItem(parser.peekListHead());
-//var components = parser.parse();
-//console.log(components[0].toString());
+var row = parser.parseRow();
 
 module.exports = markdown;
