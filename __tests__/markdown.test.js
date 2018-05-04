@@ -1361,7 +1361,7 @@ describe('Parser', () => {
   });
   it('should parse bold text', () => {
     var tokenStream = new TokenStream(
-      new CharacterStream('**Lorem Ipsum.**\n' + '**Failed 1\n' + '**Failed 2')
+      new CharacterStream('**Lorem Ipsum.**\n**Failed 1\n**Failed 2')
     );
     var parser = new Parser(tokenStream);
     var bold = parser.parseBold();
@@ -1387,6 +1387,64 @@ describe('Parser', () => {
     expect(bold.value).toEqual('**Failed 2');
     expect(bold.from).toEqual([2, 0]);
     expect(bold.to).toEqual([2, 9]);
+  });
+  it('should parse italicized text', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('_Lorem Ipsum._\n_Failed 1\n_Failed 2')
+    );
+    var parser = new Parser(tokenStream);
+    var italics = parser.parseItalics();
+    expect(italics).not.toBeNull();
+    expect(italics.type).toEqual(ComponentTypes.ITALICS);
+    expect(italics.from).toEqual([0, 0]);
+    expect(italics.to).toEqual([0, 13]);
+    expect(italics.children.length).toBe(1);
+    expect(italics.first().value).toEqual('Lorem Ipsum.');
+
+    tokenStream.skipToNextRow();
+    italics = parser.parseItalics();
+    expect(italics).not.toBeNull();
+    expect(italics.type).toEqual(ComponentTypes.TEXT);
+    expect(italics.value).toEqual('_Failed 1');
+    expect(italics.from).toEqual([1, 0]);
+    expect(italics.to).toEqual([1, 8]);
+
+    tokenStream.skipToNextRow();
+    italics = parser.parseItalics();
+    expect(italics).not.toBeNull();
+    expect(italics.type).toEqual(ComponentTypes.TEXT);
+    expect(italics.value).toEqual('_Failed 2');
+    expect(italics.from).toEqual([2, 0]);
+    expect(italics.to).toEqual([2, 8]);
+  });
+  it('should parse strikethrough text', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('~~Lorem Ipsum.~~\n~~Failed 1\n~~Failed 2')
+    );
+    var parser = new Parser(tokenStream);
+    var strike = parser.parseStrikethrough();
+    expect(strike).not.toBeNull();
+    expect(strike.type).toEqual(ComponentTypes.STRIKETHROUGH);
+    expect(strike.from).toEqual([0, 0]);
+    expect(strike.to).toEqual([0, 15]);
+    expect(strike.children.length).toBe(1);
+    expect(strike.first().value).toEqual('Lorem Ipsum.');
+
+    tokenStream.skipToNextRow();
+    strike = parser.parseStrikethrough();
+    expect(strike).not.toBeNull();
+    expect(strike.type).toEqual(ComponentTypes.TEXT);
+    expect(strike.value).toEqual('~~Failed 1');
+    expect(strike.from).toEqual([1, 0]);
+    expect(strike.to).toEqual([1, 9]);
+
+    tokenStream.skipToNextRow();
+    strike = parser.parseStrikethrough();
+    expect(strike).not.toBeNull();
+    expect(strike.type).toEqual(ComponentTypes.TEXT);
+    expect(strike.value).toEqual('~~Failed 2');
+    expect(strike.from).toEqual([2, 0]);
+    expect(strike.to).toEqual([2, 9]);
   });
   it('should parse any string sequence', () => {
     var tokenStream = new TokenStream(

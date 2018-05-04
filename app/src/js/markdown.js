@@ -883,22 +883,24 @@ class Parser {
   }
 
   /**
-   * Parses the token stream for bold text.
+   * Parses a format which starts and ends with the `delimiter` element.
    * @access private
-   * @returns {MDComponent} Either a bold element or a text replacement
+   * @param {MDComponent} component The component to parse for.
+   * @param {TokenTypes} delimiter The token to delimit the format.
+   * @returns {MDComponent}
    */
-  parseBold() {
+  parseFormat(component, delimiter) {
     if (this.tokenStream.eof())
       this.tokenStream.croak('Unexpected end of stream');
-    var token = this.tokenStream.read(); // **
+    var token = this.tokenStream.read(); // delimiter
+    if (token.type != delimiter)
+      this.tokenStream.croak(`Token mismatch. ${token.type} != ${delimiter}`);
     var cache = [token];
-    var component = new MDTextBold();
     component.from = token.from;
     while (!this.tokenStream.eof()) {
       var token = this.tokenStream.peek();
-      if (token.type == TokenTypes.BOLD) {
-        // Bold finished
-        this.tokenStream.read(); // **
+      if (token.type == delimiter) {
+        this.tokenStream.read(); // delimiter
         component.to = token.to;
         return component;
       } else if (token.type == TokenTypes.NEWLINE) {
@@ -912,34 +914,21 @@ class Parser {
   }
 
   /**
+   * Parses the token stream for bold text.
+   * @access private
+   * @returns {MDComponent} Either a bold element or a text replacement
+   */
+  parseBold() {
+    return this.parseFormat(new MDTextBold(), TokenTypes.BOLD);
+  }
+
+  /**
    * Parses the token stream for italicalised text.
    * @access private
    * @returns {MDComponent} Either an italics element or a text replacement
    */
   parseItalics() {
-    if (this.tokenStream.eof())
-      this.tokenStream.croak('Unexpected end of stream');
-    var token = this.tokenStream.read(); // _
-    var cache = [token];
-    var component = new MDTextItalics();
-    component.from = token.from;
-    while (!this.tokenStream.eof()) {
-      var token = this.tokenStream.peek();
-      if (token.type == TokenTypes.ITALICS) {
-        // Italics finished
-        this.tokenStream.read(); // _
-        component.to = token.to;
-        return component;
-      } else if (token.type == TokenTypes.NEWLINE) {
-        // Italics failed
-        this.reinterpretAsText(cache);
-        return cache[0]; // TODO: Fix this ugly thing
-      } else {
-        cache.push(token);
-        component.add(this.parseAnyString());
-      }
-    }
-    return component;
+    return this.parseFormat(new MDTextItalics(), TokenTypes.ITALICS);
   }
 
   /**
@@ -949,61 +938,10 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseStrikethrough() {
-    this.tokenStream.read();
-    var component = new MDTextStrikethrough();
-    component.from = token.from;
-    while (!this.tokenStream.eof()) {
-      var token = this.tokenStream.peek();
-      switch (token.type) {
-        case TokenTypes.TEXT:
-          for (const sub of this.parseRow()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.BOLD:
-          for (const sub of this.parseBold()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.ITALICS:
-          for (const sub of this.parseItalics()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.STRIKETHROUGH:
-          component.to = token.to;
-          this.tokenStream.read();
-          return [component];
-          break;
-        case TokenTypes.LATEXTOGGLE:
-          for (const sub of this.parseLatex()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.CODETOGGLE:
-          for (const sub of this.parseCode()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.LINK:
-          for (const sub of this.parseLink()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.IMAGE:
-          for (const sub of this.parseImage()) {
-            component.add(sub);
-          }
-          break;
-        case TokenTypes.NEWLINE: // Failed to complete sequence
-          this.reinterpretAsText(component.children);
-          return component.children;
-        default:
-          this.reinterpretAsText(component.children);
-          break;
-      }
-    }
-    return component.children;
+    return this.parseFormat(
+      new MDTextStrikethrough(),
+      TokenTypes.STRIKETHROUGH
+    );
   }
 
   /**
