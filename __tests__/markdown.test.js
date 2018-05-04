@@ -1317,25 +1317,24 @@ describe('Parser', () => {
     expect(softbreak.to).toEqual([1, 0]);
     expect(tokenStream.eof()).toBeTruthy();
   });
-  // it("should parse paragraphs", () => {
-  //   var tokenStream = new TokenStream(new CharacterStream(
-  //     "Paragraph 1\n" +
-  //     "\n" +
-  //     "Paragraph 2\n" +
-  //     "Still paragraph 2"
-  //   ));
-  //   var parser = new Parser(tokenStream);
-  //   var paragraph = parser.parseParagraph();
-  //   expect(paragraph).not.toBeNull();
-  //   expect(paragraph.type).toEqual(ComponentTypes.PARAGRAPH);
-  //   expect(paragraph.children.length).toBe(1);
-  //   tokenStream.skipToNextRow(); // \n
-  //   paragraph = parser.parseParagraph();
-  //   expect(paragraph).not.toBeNull();
-  //   expect(paragraph.type).toEqual(ComponentTypes.PARAGRAPH);
-  //   expect(paragraph.children.length).toBe(3);
-  //   expect(tokenStream.eof()).toBeTruthy();
-  // });
+  it('should parse paragraphs', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        'Paragraph 1\n' + '\n' + 'Paragraph 2\n' + 'Still paragraph 2'
+      )
+    );
+    var parser = new Parser(tokenStream);
+    var paragraph = parser.parseParagraph();
+    expect(paragraph).not.toBeNull();
+    expect(paragraph.type).toEqual(ComponentTypes.PARAGRAPH);
+    expect(paragraph.children.length).toBe(1);
+    tokenStream.skipToNextRow(); // \n
+    paragraph = parser.parseParagraph();
+    expect(paragraph).not.toBeNull();
+    expect(paragraph.type).toEqual(ComponentTypes.PARAGRAPH);
+    expect(paragraph.children.length).toBe(3);
+    expect(tokenStream.eof()).toBeTruthy();
+  });
   it('should parse a text token', () => {
     var tokenStream = new TokenStream(new CharacterStream('Lorem Ipsum.'));
     var parser = new Parser(tokenStream);

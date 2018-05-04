@@ -785,11 +785,33 @@ class Parser {
   parseParagraph() {
     var component = new MDParagraph();
     component.from = this.tokenStream.peek().from;
-    for (const sub of this.parseRow()) {
-      component.add(sub);
+    while (true) {
+      for (const sub of this.parseRow()) {
+        component.add(sub);
+      }
+      if (this.tokenStream.eof()) break;
+      var softBreak = this.parseSoftbreak();
+      if (!this.paragraphContinues()) break;
+      component.add(softBreak);
     }
     component.to = component.last().to;
-    return [component];
+    return component;
+  }
+
+  /**
+   * Checks if the paragraph still continues based on the first token of the
+   * current row.
+   * @access private
+   * @returns {boolean}
+   */
+  paragraphContinues() {
+    if (this.tokenStream.eof()) return false;
+    var token = this.tokenStream.peek();
+    var textTypes = Tokens.inline().map((tkn, i, arr) => {
+      return tkn.type;
+    });
+    textTypes.push(TokenTypes.TEXT);
+    return textTypes.includes(token.type);
   }
 
   // Inline elements:
@@ -2140,11 +2162,13 @@ const markdown = {
 };
 
 var tokenStream = new TokenStream(
-  new CharacterStream('Lorem Ipsum.\n' + '`inline code`')
+  new CharacterStream(
+    'Paragraph 1\n' + '\n' + 'Paragraph 2\n' + 'Still paragraph 2'
+  )
 );
 var parser = new Parser(tokenStream);
-var row = parser.parseRow();
-tokenStream.skipToNextRow();
-row = parser.parseRow();
+var paragraph = parser.parseParagraph();
+tokenStream.skipToNextRow(); // \n
+paragraph = parser.parseParagraph();
 
 module.exports = markdown;
