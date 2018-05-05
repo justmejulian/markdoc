@@ -165,7 +165,7 @@ class CharacterStream {
 }
 
 /**
- * Provides a token stream based on an character stream
+ * Provides a token stream based on an character stream.
  */
 class TokenStream {
   /**
@@ -312,7 +312,7 @@ class TokenStream {
 }
 
 /**
- * Parses Markdown input to an object representation
+ * Parses Markdown input to an object representation.
  */
 class Parser {
   /**
@@ -454,7 +454,7 @@ class Parser {
     if (token.type != TokenTypes.HEADER) {
       this.tokenStream.croak(`Cannot parse header from ${token.type}`);
     }
-    var component = new MDHeader();
+    var component = new MDHeader(this.dom);
     component.level = token.value.split('#').length - 1;
     component.from = token.from;
     for (const sub of this.parseRow()) {
@@ -477,7 +477,7 @@ class Parser {
     if (token.type != TokenTypes.BLOCKQUOTE) {
       this.tokenStream.croak(`Cannot parse block quote from ${token.type}`);
     }
-    var component = new MDBlockQuote();
+    var component = new MDBlockQuote(this.dom);
     component.from = token.from;
     while (!this.tokenStream.eof()) {
       for (const sub of this.parseRow()) component.add(sub);
@@ -498,7 +498,7 @@ class Parser {
    */
   parseRule() {
     var token = this.tokenStream.read(); // ---
-    var component = new MDThematicBreak();
+    var component = new MDThematicBreak(this.dom);
     component.from = token.from;
     component.to = token.to;
     this.tokenStream.read(); // \n
@@ -539,7 +539,7 @@ class Parser {
     if (token.type != TokenTypes.LIST) {
       this.tokenStream.croak(`Cannot parse list item from ${token.type}`);
     }
-    var item = new MDItem();
+    var item = new MDItem(this.dom);
     item.from = token.from;
     this.tokenStream.read(); // Skip the list token
     while (!this.tokenStream.eof()) {
@@ -601,10 +601,10 @@ class Parser {
     }
     var component = null;
     if (token.match[2].endsWith('.')) {
-      component = new MDOrderedList();
+      component = new MDOrderedList(this.dom);
       component.start = 1 * token.match[2].split('.')[0];
     } else {
-      component = new MDBulletList();
+      component = new MDBulletList(this.dom);
     }
     var indentStr = token.match[0].split(token.match[2])[0];
     component.level = indentStr.replace(/(    |\t)/g, '_').length;
@@ -618,7 +618,7 @@ class Parser {
    * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
    */
   parseCodeblock() {
-    var component = new MDCodeBlock();
+    var component = new MDCodeBlock(this.dom);
     component.value = '';
     var token = this.tokenStream.peek();
     if (token.type != TokenTypes.CODEBLOCK) {
@@ -675,7 +675,7 @@ class Parser {
   parseTOC() {
     if (!this.dom.toc) {
       var token = this.tokenStream.read(); // [TOC]
-      var component = new MDTOC();
+      var component = new MDTOC(this.dom);
       this.dom.toc = component;
       component.from = token.from;
       component.to = token.to;
@@ -695,7 +695,7 @@ class Parser {
   parseTOF() {
     if (!this.dom.tof) {
       var token = this.tokenStream.read(); // [TOF]
-      var component = new MDTOF();
+      var component = new MDTOF(this.dom);
       this.dom.tof = component;
       component.from = token.from;
       component.to = token.to;
@@ -713,7 +713,7 @@ class Parser {
    */
   parsePagebreak() {
     var token = this.tokenStream.read(); // [PB]
-    var component = new MDPageBreak();
+    var component = new MDPageBreak(this.dom);
     component.from = token.from;
     component.to = token.to;
     this.tokenStream.read(); // \n
@@ -727,7 +727,7 @@ class Parser {
    */
   parseReference() {
     var token = this.tokenStream.read();
-    var component = new MDReference();
+    var component = new MDReference(this.dom);
     component.from = token.from;
     component.to = token.to;
     component.referenceId = token.match[1];
@@ -746,7 +746,7 @@ class Parser {
    * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
    */
   parseLatexblock() {
-    var component = new MDLatexBlock();
+    var component = new MDLatexBlock(this.dom);
     component.value = '';
     var token = this.tokenStream.read(); // $$
     var cache = [token];
@@ -787,7 +787,7 @@ class Parser {
    * @returns {MDParagraph}
    */
   parseParagraph() {
-    var component = new MDParagraph();
+    var component = new MDParagraph(this.dom);
     component.from = this.tokenStream.peek().from;
     while (true) {
       for (const sub of this.parseRow()) {
@@ -827,7 +827,7 @@ class Parser {
    */
   parseSoftbreak() {
     var token = this.tokenStream.read();
-    var softBreak = new MDSoftBreak();
+    var softBreak = new MDSoftBreak(this.dom);
     softBreak.from = token.from;
     softBreak.to = token.to;
     return softBreak;
@@ -901,7 +901,7 @@ class Parser {
    */
   parseText() {
     var token = this.tokenStream.read();
-    var text = new MDText();
+    var text = new MDText(this.dom);
     text.from = token.from;
     text.to = token.to;
     text.value = token.value;
@@ -945,7 +945,7 @@ class Parser {
    * @returns {MDComponent} Either a bold element or a text replacement
    */
   parseBold() {
-    return this.parseFormat(new MDTextBold(), TokenTypes.BOLD);
+    return this.parseFormat(new MDTextBold(this.dom), TokenTypes.BOLD);
   }
 
   /**
@@ -954,7 +954,7 @@ class Parser {
    * @returns {MDComponent} Either an italics element or a text replacement.
    */
   parseItalics() {
-    return this.parseFormat(new MDTextItalics(), TokenTypes.ITALICS);
+    return this.parseFormat(new MDTextItalics(this.dom), TokenTypes.ITALICS);
   }
 
   /**
@@ -964,7 +964,7 @@ class Parser {
    */
   parseStrikethrough() {
     return this.parseFormat(
-      new MDTextStrikethrough(),
+      new MDTextStrikethrough(this.dom),
       TokenTypes.STRIKETHROUGH
     );
   }
@@ -984,7 +984,7 @@ class Parser {
         `Token mismatch. ${token.type} != ${TokenTypes.LATEX}`
       );
     var cache = [token];
-    var component = new MDTextLaTeX();
+    var component = new MDTextLaTeX(this.dom);
     component.value = '';
     component.from = token.from;
     while (!this.tokenStream.eof()) {
@@ -1020,7 +1020,7 @@ class Parser {
         `Token mismatch. ${token.type} != ${TokenTypes.CODE}`
       );
     var cache = [token];
-    var component = new MDTextCode();
+    var component = new MDTextCode(this.dom);
     component.value = '';
     component.from = token.from;
     while (!this.tokenStream.eof()) {
@@ -1077,6 +1077,7 @@ class Parser {
         if (component.type == ComponentTypes.IMAGE) {
           this.dom.images.push(component);
         }
+        this.tokenStream.read(); // end token
         break;
       }
       cache.push(token);
@@ -1096,7 +1097,7 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseLink() {
-    return this.parseImageOrLinkEnd(new MDLink());
+    return this.parseImageOrLinkEnd(new MDLink(this.dom));
   }
 
   /**
@@ -1106,7 +1107,7 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseImage() {
-    return this.parseImageOrLinkEnd(new MDImage());
+    return this.parseImageOrLinkEnd(new MDImage(this.dom));
   }
 
   // Helpers:
@@ -1116,7 +1117,7 @@ class Parser {
    * @param {MDComponent[]} chached The elements chached for the failed block
    */
   blockFail(chached) {
-    var paragraph = new MDParagraph();
+    var paragraph = new MDParagraph(this.dom);
     paragraph.from = chached.from;
     for (const component of chached) {
       paragraph.add(component);
@@ -1136,7 +1137,7 @@ class Parser {
    * @returns {MDText}
    */
   reinterpretAsText(tokens) {
-    var text = new MDText();
+    var text = new MDText(this.dom);
     text.value = '';
     text.from = tokens[0].from;
     for (const token of tokens) {
@@ -1154,7 +1155,7 @@ class Parser {
    * @returns {MDSoftBreak}
    */
   appendSoftBreak(component) {
-    var softBreak = new MDSoftBreak();
+    var softBreak = new MDSoftBreak(this.dom);
     softBreak.from = component.to;
     softBreak.from[1]++;
     softBreak.to = softBreak.from;
@@ -1163,7 +1164,7 @@ class Parser {
 }
 
 /**
- * Representation of a Token
+ * Representation of a Token.
  */
 class Token {
   /**
@@ -1233,7 +1234,7 @@ class Token {
 }
 
 /**
- * A representation of the type of a token
+ * A representation of the type of a token.
  */
 class TokenType {
   /**
@@ -1369,7 +1370,7 @@ const Tokens = Object.freeze({
 });
 
 /**
- * A representation of the type of a markdown component
+ * A representation of the type of a markdown component.
  */
 class ComponentType {
   /**
@@ -1400,7 +1401,7 @@ class ComponentType {
 }
 
 /**
- * Enum of available component types
+ * Enum of available component types.
  */
 const ComponentTypes = Object.freeze({
   DOM: new ComponentType('DOM', false),
@@ -1408,6 +1409,7 @@ const ComponentTypes = Object.freeze({
   BLOCKQUOTE: new ComponentType('Block Quote', false),
   NUMBEREDLIST: new ComponentType('Numbered List', false),
   UNNUMBEREDLIST: new ComponentType('Unnumbered List', false),
+  ITEM: new ComponentType('List Item', false),
   LATEXBLOCK: new ComponentType('LaTeX Block', false),
   CODEBLOCK: new ComponentType('Code Block', false),
   REFERENCE: new ComponentType('Reference', false),
@@ -1428,7 +1430,7 @@ const ComponentTypes = Object.freeze({
 });
 
 /**
- * Parser for LaTeX code
+ * Parser for LaTeX code.
  */
 class LatexParser {
   /**
@@ -1511,10 +1513,11 @@ class LatexParser {
   }
 }
 
+//################
 // DOM Components:
 
 /**
- * Object representation of a markdown element
+ * Object representation of a markdown element.
  */
 class MDComponent {
   /**
@@ -1523,9 +1526,10 @@ class MDComponent {
    * @static
    * @access private
    * @param {ComponentType} type The ComponentType.
+   * @param {MDDOM} dom The DOM for reference.
    * @returns {MDComponent}
    */
-  constructor(type) {
+  constructor(type, dom) {
     /**
      * The type of the component.
      * @access public
@@ -1533,6 +1537,13 @@ class MDComponent {
      * @type {ComponentType}
      */
     this.type = type;
+    /**
+     * The DOM for reference.
+     * @access public
+     * @readonly
+     * @type {MDDOM}
+     */
+    this.dom = dom;
     /**
      * The parent component.
      * @access public
@@ -1625,6 +1636,7 @@ class MDComponent {
   /**
    * Converts the component into an HTML-string.
    * @access public
+   * @abstract
    * @returns {string}
    */
   toHtml() {
@@ -1638,6 +1650,7 @@ class MDComponent {
   /**
    * Converts the component into a string.
    * @access public
+   * @abstract
    * @returns {string}
    */
   toString() {
@@ -1651,6 +1664,7 @@ class MDComponent {
   /**
    * Converts the component into a markdown formatted string.
    * @access public
+   * @abstract
    * @returns {string}
    */
   toMarkDown() {
@@ -1663,133 +1677,249 @@ class MDComponent {
 }
 
 // text components:
+
+/**
+ * A component for simple strings.
+ */
 class MDText extends MDComponent {
-  constructor(type) {
-    if (!type) type = ComponentTypes.TEXT;
-    super(type);
+  /**
+   * Creates a new text component.
+   * @constructs MDText
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDText}
+   */
+  constructor(dom) {
+    super(ComponentTypes.TEXT, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
-    if (this.value) return this.value;
-    return super.toHtml();
+    return this.value;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
     return this.value;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     return this.value;
   }
 }
 
-class MDTextBold extends MDText {
-  constructor() {
-    super(ComponentTypes.BOLD);
+/**
+ * A component for bold text.
+ */
+class MDTextBold extends MDComponent {
+  /**
+   * Creates a new bold component.
+   * @constructs MDTextBold
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDTextBold}
+   */
+  constructor(dom) {
+    super(ComponentTypes.BOLD, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<strong>${super.toHtml()}</strong>`;
   }
-  toString() {
-    var tags = [];
-    for (var component of this.children) {
-      tags.push(component.toString());
-    }
-    return tags.join('');
-  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
-    var tags = [];
-    for (var component of this.children) {
-      tags.push(component.toMarkDown());
-    }
-    return `**${tags.join('')}**`;
+    return `**${super.toMarkDown()}**`;
   }
 }
 
-class MDTextItalics extends MDText {
-  constructor() {
-    super(ComponentTypes.ITALICS);
+/**
+ * A component for italicised text.
+ */
+class MDTextItalics extends MDComponent {
+  /**
+   * Creates a new italics component.
+   * @constructs MDTextItalics
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDTextItalics}
+   */
+  constructor(dom) {
+    super(ComponentTypes.ITALICS, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<em>${super.toHtml()}</em>`;
   }
-  toString() {
-    var tags = [];
-    for (var component of this.children) {
-      tags.push(component.toString());
-    }
-    return tags.join('');
-  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
-    var tags = [];
-    for (var component of this.children) {
-      tags.push(component.toMarkDown());
-    }
-    return `_${tags.join('')}_`;
+    return `_${super.toMarkDown()}_`;
   }
 }
 
-class MDTextStrikethrough extends MDText {
-  constructor() {
-    super(ComponentTypes.STRIKETHROUGH);
+/**
+ * A component for strikethrough text.
+ */
+class MDTextStrikethrough extends MDComponent {
+  /**
+   * Creates a new strikethrough component.
+   * @constructs MDTextStrikethrough
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDTextStrikethrough}
+   */
+  constructor(dom) {
+    super(ComponentTypes.STRIKETHROUGH, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<s>${super.toHtml()}</s>`;
   }
-  toString() {
-    var tags = [];
-    for (var component of this.children) {
-      tags.push(component.toString());
-    }
-    return tags.join('');
-  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
-    var tags = [];
-    for (var component of this.children) {
-      tags.push(component.toMarkDown());
-    }
-    return `~~${tags.join('')}~~`;
+    return `~~${super.toMarkDown()}~~`;
   }
 }
 
-class MDTextCode extends MDText {
-  constructor() {
-    super(ComponentTypes.INLINECODE);
+/**
+ * A component for inline code.
+ */
+class MDTextCode extends MDComponent {
+  /**
+   * Creates a new inline code component.
+   * @constructs MDTextCode
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDTextCode}
+   */
+  constructor(dom) {
+    super(ComponentTypes.INLINECODE, dom);
+    /**
+     * The literal code enclosed within this component.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.value = '';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<code>${this.value}</code>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
     return this.value;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     return `\`${this.value}\``;
   }
 }
 
-class MDTextLaTeX extends MDText {
-  constructor() {
-    super(ComponentTypes.INLINELATEX);
+/**
+ * A component for inline LaTeX.
+ */
+class MDTextLaTeX extends MDComponent {
+  /**
+   * Creates a new inline LaTeX component.
+   * @constructs MDTextLaTeX
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDTextLaTeX}
+   */
+  constructor(dom) {
+    super(ComponentTypes.INLINELATEX, dom);
+    /**
+     * The literal code enclosed within this component.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.value = '';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<span>${super.toHtml()}</span>`;
   }
-  toString() {
-    var tags = [];
-    for (var component of this.children) {
-      tags.push(component.toString());
-    }
-    return tags.join('');
-  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
-    var tags = [];
-    for (var component of this.children) {
-      tags.push(component.toMarkDown());
-    }
-    return `\$${tags.join('')}\$`;
+    return `\$${super.toMarkDown()}\$`;
   }
 }
 
+/**
+ * A component for links.
+ */
 class MDLink extends MDComponent {
-  constructor() {
-    super(ComponentTypes.LINK);
+  /**
+   * Creates a new link component.
+   * @constructs MDLink
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDLink}
+   */
+  constructor(dom) {
+    super(ComponentTypes.LINK, dom);
     /**
      * The tooltip text. Optional.
      * @access public
@@ -1812,16 +1942,25 @@ class MDLink extends MDComponent {
      */
     this.referenceId = '';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     if (this.referenceId) {
       // TODO: Do some reference resolving
-      return `<span>[${super.toHtml()}][${this.referenceId}]</span>`;
     }
     if (this.alt) {
       return `<a href="${this.url}" title="${this.alt}">${super.toHtml()}</a>`;
     }
     return `<a href="${this.url}">${super.toHtml()}</a>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     if (this.referenceId) {
       return `[${super.toMarkDown()}][${this.referenceId}]`;
@@ -1833,31 +1972,108 @@ class MDLink extends MDComponent {
   }
 }
 
+/**
+ * A component for image.
+ */
 class MDImage extends MDComponent {
-  constructor() {
-    super(ComponentTypes.IMAGE);
+  /**
+   * Creates a new image component.
+   * @constructs MDImage
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDImage}
+   */
+  constructor(dom) {
+    super(ComponentTypes.IMAGE, dom);
+    /**
+     * The tooltip text. Optional.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.alt = '';
+    /**
+     * The url to direct to.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.url = '';
+    /**
+     * The reference the component points to. Optional.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.referenceId = '';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
+    if (this.referenceId) {
+      // TODO: Do some reference resolving
+    }
     if (this.id) {
       return `<img src="${this.url}" id="${this.id}" alt="${super.toHtml()}"/>`;
     }
     return `<img src="${this.url}" alt="${super.toHtml()}"/>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
-    return `![${super.toMarkDown()}](${this.url} "${this.title}")`;
+    if (this.referenceId) {
+      return `![${super.toMarkDown()}][${this.referenceId}]`;
+    }
+    if (this.alt) {
+      return `![${super.toMarkDown()}](${this.url} "${this.alt}")`;
+    }
+    return `![${super.toMarkDown()}](${this.url})`;
   }
 }
 
+/**
+ * A component for a soft break.
+ */
 class MDSoftBreak extends MDComponent {
-  constructor() {
-    super(ComponentTypes.SOFTBREAK);
+  /**
+   * Creates a new soft break component.
+   * @constructs MDSoftBreak
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDSoftBreak}
+   */
+  constructor(dom) {
+    super(ComponentTypes.SOFTBREAK, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
-    return ` <br/> `;
+    return '<br/>';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
     return '\n';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     return '\n';
   }
@@ -1865,10 +2081,33 @@ class MDSoftBreak extends MDComponent {
 
 // per line components:
 
+/**
+ * A component for a header.
+ */
 class MDHeader extends MDComponent {
-  constructor() {
-    super(ComponentTypes.HEADER);
+  /**
+   * Creates a new header component.
+   * @constructs MDHeader
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDHeader}
+   */
+  constructor(dom) {
+    super(ComponentTypes.HEADER, dom);
+    /**
+     * Level of the header. 0 = Highest level header, 6 = lowest level header.
+     * @access public
+     * @readonly
+     * @type {number}
+     */
+    this.level = 0;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     if (this.id) {
       return `<h${this.level} id="${this.id}">${super.toHtml()}</h${
@@ -1877,53 +2116,117 @@ class MDHeader extends MDComponent {
     }
     return `<h${this.level}>${super.toHtml()}</h${this.level}>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     return `${'#'.repeat(this.level)} ${super.toMarkDown()}`;
   }
 }
 
+/**
+ * A component for a paragraph.
+ */
 class MDParagraph extends MDComponent {
-  constructor() {
-    super(ComponentTypes.PARAGRAPH);
+  /**
+   * Creates a new paragraph component.
+   * @constructs MDParagraph
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDParagraph}
+   */
+  constructor(dom) {
+    super(ComponentTypes.PARAGRAPH, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<p>${super.toHtml()}</p>`;
   }
-  toString() {
-    return super.toString();
-  }
-  toMarkDown() {
-    return super.toMarkDown();
-  }
 }
 
+/**
+ * A component for a list.
+ */
 class MDListBase extends MDComponent {
-  constructor(type) {
-    super(type);
+  /**
+   * Creates a list component.
+   * @constructs MDListBase
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDListBase}
+   */
+  constructor(type, dom) {
+    super(type, dom);
   }
 }
 
+/**
+ * A component for a numbered list.
+ */
 class MDOrderedList extends MDListBase {
-  constructor() {
-    super(ComponentTypes.NUMBEREDLIST);
+  /**
+   * Creates a numbered list component.
+   * @constructs MDOrderedList
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDOrderedList}
+   */
+  constructor(dom) {
+    super(ComponentTypes.NUMBEREDLIST, dom);
+    /**
+     * The indentation level of the list. Defaults to 0.
+     * @access public
+     * @readonly
+     * @type {number}
+     */
+    this.level = 0;
+    /**
+     * The start number of the list. Defaults to 1.
+     * @access public
+     * @readonly
+     * @type {number}
+     */
+    this.start = 1;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     if (this.start != 1) {
       return `<ol start="${this.start}">${super.toHtml()}</ol>`;
     }
     return `<ol>${super.toHtml()}</ol>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
-    var index = this.start || 1;
     var tags = [];
     for (var component of this.children) {
       tags.push(component.toString());
-      index++;
     }
     return tags.join('\n');
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
-    var index = this.start || 1;
+    var index = this.start;
     var tags = [];
     if (this.level != 0) tags.push('');
     for (var component of this.children) {
@@ -1936,13 +2239,41 @@ class MDOrderedList extends MDListBase {
   }
 }
 
+/**
+ * A component for an unnumbered list.
+ */
 class MDBulletList extends MDListBase {
-  constructor() {
-    super(ComponentTypes.UNNUMBEREDLIST);
+  /**
+   * Creates an unnumbered list component.
+   * @constructs MDBulletList
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDBulletList}
+   */
+  constructor(dom) {
+    super(ComponentTypes.UNNUMBEREDLIST, dom);
+    /**
+     * The indentation level of the list. Defaults to 0.
+     * @access public
+     * @readonly
+     * @type {number}
+     */
+    this.level = 0;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<ul>${super.toHtml()}</ul>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
     var tags = [];
     for (var component of this.children) {
@@ -1950,32 +2281,74 @@ class MDBulletList extends MDListBase {
     }
     return tags.join('\n');
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     var tags = [];
     if (this.level != 0) tags.push('');
     for (var component of this.children) {
-      tags.push('\t'.repeat(this.level) + '- ' + component.toMarkDown());
+      tags.push('\t'.repeat(this.level) + '* ' + component.toMarkDown());
     }
     return tags.join('\n') + '\n';
   }
 }
 
+/**
+ * A component for a list item.
+ */
 class MDItem extends MDComponent {
+  /**
+   * Creates a list item component.
+   * @constructs MDItem
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDItem}
+   */
+  constructor(dom) {
+    super(ComponentTypes.ITEM, dom);
+  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
-    return `<li>${super.toHtml()}</li>`;
+    return `<li>${super.toHtml().replace(/^\n+|\n+$/, '')}</li>`;
   }
 }
 
+/**
+ * A component for a block quote.
+ */
 class MDBlockQuote extends MDComponent {
-  constructor() {
-    super(ComponentTypes.BLOCKQUOTE);
+  /**
+   * Creates a block quote component.
+   * @constructs MDBlockQuote
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDBlockQuote}
+   */
+  constructor(dom) {
+    super(ComponentTypes.BLOCKQUOTE, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<blockquote>${super.toHtml()}</blockquote>`;
   }
-  toString() {
-    return super.toString();
-  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     var tags = [];
     for (var component of this.children) {
@@ -1985,88 +2358,339 @@ class MDBlockQuote extends MDComponent {
   }
 }
 
+/**
+ * A component for a code block.
+ */
 class MDCodeBlock extends MDComponent {
-  constructor() {
-    super(ComponentTypes.CODEBLOCK);
+  /**
+   * Creates a code block component.
+   * @constructs MDCodeBlock
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDCodeBlock}
+   */
+  constructor(dom) {
+    super(ComponentTypes.CODEBLOCK, dom);
+    /**
+     * The language of the code snippet. Defaults to "".
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.language = '';
+    /**
+     * The content of the code block.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.value = '';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
-    if (this.language) return `<pre><code>${this.value}</code></pre>`;
-    return `<pre><code class="${this.language} language-${this.language}">${
-      this.value
-    }</code></pre>`;
+    var classStr = '';
+    if (this.language) {
+      classStr = ` class="${this.language} language-${this.language}"`;
+    }
+    return `<pre><code"${classStr}>${this.value}</code></pre>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
-    return `Math: ${this.value}`;
+    return '';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     return '```' + this.language + '\n' + this.value + '```\n';
   }
 }
 
+/**
+ * A component for a rule.
+ */
 class MDThematicBreak extends MDComponent {
-  constructor() {
-    super(ComponentTypes.RULE);
+  /**
+   * Creates a rule component.
+   * @constructs MDThematicBreak
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDThematicBreak}
+   */
+  constructor(dom) {
+    super(ComponentTypes.RULE, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return '<hr/>';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
     return '';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     return '---';
   }
 }
 
+/**
+ * A component for a reference.
+ */
+class MDReference extends MDComponent {
+  /**
+   * Creates a reference component.
+   * @constructs MDReference
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDReference}
+   */
+  constructor(dom) {
+    super(ComponentTypes.REFERENCE, dom);
+    /**
+     * The tooltip text. Optional.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.alt = '';
+    /**
+     * The url to direct to.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.url = '';
+    /**
+     * The id through which this reference can be found with.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.referenceId = '';
+  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
+  toHtml() {
+    return ``;
+  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
+  toString() {
+    return '';
+  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
+  toMarkDown() {
+    if (this.alt) return `[${this.referenceId}]: ${this.url} "${this.alt}"`;
+    return `[${this.referenceId}]: ${this.url}`;
+  }
+}
+
 // New elements
 
+/**
+ * A component for a table of contents.
+ */
 class MDTOC extends MDComponent {
-  constructor() {
-    super(ComponentTypes.TOC);
+  /**
+   * Creates a table of contents component.
+   * @constructs MDTOC
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDTOC}
+   */
+  constructor(dom) {
+    super(ComponentTypes.TOC, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
-    //TODO: Decide on a proper HTML tag
+    //TODO: resolve header list
     return `<div id="toc" class="toc">${super.toHtml()}</div>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
     return '\n';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     return '[TOC]\n';
   }
 }
 
+/**
+ * A component for a table of figures.
+ */
 class MDTOF extends MDComponent {
-  constructor() {
-    super(ComponentTypes.TOF);
+  /**
+   * Creates a table of figures component.
+   * @constructs MDTOF
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDTOF}
+   */
+  constructor(dom) {
+    super(ComponentTypes.TOF, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<div id="tof" class="tof">${super.toHtml()}</div>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
     return '\n';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     return '[TOF]\n';
   }
 }
 
+/**
+ * A component for a page break.
+ */
 class MDPageBreak extends MDComponent {
-  constructor() {
-    super(ComponentTypes.PAGEBREAK);
+  /**
+   * Creates a table of page break.
+   * @constructs MDPageBreak
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDPageBreak}
+   */
+  constructor(dom) {
+    super(ComponentTypes.PAGEBREAK, dom);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     return `<div class="pagebreak"/>`;
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
     return '\n';
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     return '[PB]\n';
   }
 }
 
-// Central class
+/**
+ * A component for a LaTeX block.
+ */
+class MDLatexBlock extends MDComponent {
+  /**
+   * Creates a LaTeX block component.
+   * @constructs MDLatexBlock
+   * @static
+   * @access private
+   * @param {MDDOM} dom The DOM for reference.
+   * @returns {MDLatexBlock}
+   */
+  constructor(dom) {
+    super(ComponentTypes.LATEXBLOCK, dom);
+  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
+  toHtml() {
+    return `<div class="katex">${this.dom.latexParser.parse(this.value)}</div>`;
+  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
+  toString() {
+    return '';
+  }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
+  toMarkDown() {
+    return `$$${this.dom.latexParser.parse(this.value)}$$`;
+  }
+}
+
+/**
+ * DOM holding all the markdown components in a tree structure.
+ */
 class MDDOM extends MDComponent {
   /**
    * Creates a new instance of a DOM.
@@ -2076,7 +2700,7 @@ class MDDOM extends MDComponent {
    * @returns {MDDOM}
    */
   constructor() {
-    super(ComponentTypes.DOM);
+    super(ComponentTypes.DOM, null);
     /**
      * List of headers to be used by the TOC.
      * @access public
@@ -2123,6 +2747,11 @@ class MDDOM extends MDComponent {
   static parse(source) {
     return Parser.parseToDOM(source);
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     var lines = [];
     for (var component of this.children) {
@@ -2130,6 +2759,11 @@ class MDDOM extends MDComponent {
     }
     return lines.join('\n').trim();
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toString() {
     var lines = [];
     for (var component of this.children) {
@@ -2137,24 +2771,17 @@ class MDDOM extends MDComponent {
     }
     return lines.join('\n').trim();
   }
+
+  /**
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     var lines = [];
     for (var component of this.children) {
       lines.push(component.toMarkDown());
     }
     return lines.join('\n').trim();
-  }
-}
-
-class MDLatexBlock extends MDComponent {
-  constructor() {
-    super(ComponentTypes.LATEXBLOCK);
-  }
-}
-
-class MDReference extends MDComponent {
-  constructor() {
-    super(ComponentTypes.REFERENCE);
   }
 }
 

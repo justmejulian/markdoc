@@ -1638,6 +1638,112 @@ describe('Parser', () => {
     expect(dom.children[4].type).toEqual(ComponentTypes.UNNUMBEREDLIST);
     expect(dom.headers.length).toBe(1);
   });
+  const source =
+    '# Testheader 1\n' +
+    'Bla**blabla**.\n' +
+    '## Second test header\n' +
+    '[TOC]\n' +
+    '\n' +
+    '1. first\n' +
+    '2. second';
+  it('should parse headers correctly', () => {
+    var dom = DOM.parse('# Header');
+    expect(dom.toString()).toEqual('Header');
+  });
+  it('should parse formatted paragraphs correctly', () => {
+    var dom = DOM.parse(
+      '**Hi _th`ere`_**! Image: ![alt text](./img.png); Ref: [alt text2](https://duckduckgo.com/)'
+    );
+    expect(dom.toString()).toEqual('Hi there! Image: alt text; Ref: alt text2');
+  });
+  it('should parse an ordered list correctly', () => {
+    var dom = DOM.parse(
+      '1. first\n' +
+        '3. second!\n' +
+        '2. third though!\n' +
+        '\n' +
+        '5. fourth\n' +
+        '6. fifth'
+    );
+    expect(dom.toString()).toEqual(
+      'first\n' + 'second!\n' + 'third though!\n' + 'fourth\n' + 'fifth'
+    );
+    expect(dom.toMarkDown()).toEqual(
+      '1. first\n' +
+        '2. second!\n' +
+        '3. third though!\n' +
+        '\n' +
+        '5. fourth\n' +
+        '6. fifth'
+    );
+  });
+  it('should parse an unordered list correctly', () => {
+    var dom = DOM.parse('* first\n* second\n* third');
+    expect(dom.toString()).toEqual('first\nsecond\nthird');
+  });
+  it('should parse nested lists correctly', () => {
+    var dom = DOM.parse('1. item one\n2. item two\n	* sublist\n	* sublist');
+    expect(dom.toMarkDown()).toEqual(
+      '1. item one\n2. item two\n	* sublist\n	* sublist'
+    );
+  });
+  it('should output Html code correctly', () => {
+    var dom = DOM.parse(
+      '# Testheader 1\n' +
+        'Bla**blabla**.\n' +
+        '## Second test header\n' +
+        '1. first\n' +
+        '2. second'
+    );
+    expect(dom.toHtml()).toEqual(
+      '<h1>Testheader 1</h1>\n' +
+        '<p>Bla<strong>blabla</strong>.</p>\n' +
+        '<h2>Second test header</h2>\n' +
+        '<ol><li>first</li><li>second</li></ol>'
+    );
+  });
+  it('should output the same source when calling toMarkDown() after parsing', () => {
+    var dom = DOM.parse(source);
+    expect(dom.toMarkDown()).toEqual(source);
+  });
+  it('should correctly convert markdown to formatless string', () => {
+    var dom = DOM.parse(source);
+    expect(dom.toString()).toEqual(
+      'Testheader 1\n' +
+        'Blablabla.\n' +
+        'Second test header\n' +
+        '\n' +
+        '\n' +
+        'first\n' +
+        'second'
+    );
+  });
+  it('should parse the right source positions', () => {
+    var dom = DOM.parse(source);
+    var header = dom.children[0];
+    expect(header.from).toEqual([0, 0]);
+    expect(header.to).toEqual([0, 13]);
+  });
+  it('should parse one TOC and only one', () => {
+    var dom = DOM.parse('# Header\n' + '[TOC]\n' + '\n' + '[TOC]');
+    var count = 0;
+    for (const child of dom.children) {
+      if (child instanceof TOC) count++;
+    }
+    expect(count).toEqual(1);
+    expect(dom.toc).toBeDefined();
+  });
+  it('should parse one TOF and only one', () => {
+    var dom = DOM.parse(
+      '![alt text](./img.png)\n' + '[TOF]\n' + '\n' + '[TOF]'
+    );
+    var count = 0;
+    for (const child of dom.children) {
+      if (child instanceof TOF) count++;
+    }
+    expect(count).toEqual(1);
+    expect(dom.tof).toBeDefined();
+  });
 });
 
 describe('LaTeX Parser', () => {
@@ -1707,119 +1813,5 @@ describe('LaTeX Parser', () => {
     expect(latexParser.values.length).toBe(cacheSize);
     expect(latexParser.keys.includes(math3)).toBeTruthy();
     expect(latexParser.values.includes(parsed)).toBeTruthy();
-  });
-});
-
-describe('Markdown parser', () => {
-  const source =
-    '# Testheader 1\n' +
-    'Bla**blabla**.\n' +
-    '## Second test header\n' +
-    '[TOC]\n' +
-    '\n' +
-    '1. first\n' +
-    '2. second';
-  it('should parse headers correctly', () => {
-    var dom = DOM.parse('# Header');
-    expect(dom.toString()).toEqual('Header');
-  });
-  it('should parse formatted paragraphs correctly', () => {
-    var dom = DOM.parse(
-      '**Hi _th`ere`_**! Image: ![alt text](./img.png); Ref: [alt text2](https://duckduckgo.com/)'
-    );
-    expect(dom.toString()).toEqual('Hi there! Image: alt text; Ref: alt text2');
-  });
-  it('should parse an ordered list correctly', () => {
-    var dom = DOM.parse(
-      '1. first\n' +
-        '3. second!\n' +
-        '2. third though!\n' +
-        '\n' +
-        '5. fourth\n' +
-        '6. fifth'
-    );
-    expect(dom.toString()).toEqual(
-      'first\n' + 'second!\n' + 'third though!\n' + 'fourth\n' + 'fifth'
-    );
-    expect(dom.toMarkDown()).toEqual(
-      '1. first\n' +
-        '2. second!\n' +
-        '3. third though!\n' +
-        '4. fourth\n' +
-        '5. fifth'
-    );
-  });
-  it('should parse an unordered list correctly', () => {
-    var dom = DOM.parse('- first\n' + '- second\n' + '- third');
-    expect(dom.toString()).toEqual('first\nsecond\nthird');
-  });
-  it('should parse nested lists correctly', () => {
-    var dom = DOM.parse(
-      '1. item one\n' + '2. item two\n' + '	- sublist\n' + '	- sublist'
-    );
-    expect(dom.toMarkDown()).toEqual(
-      '1. item one\n' + '2. item two\n' + '	- sublist\n' + '	- sublist'
-    );
-  });
-  it('should output Html code correctly', () => {
-    var dom = DOM.parse(
-      '# Testheader 1\n' +
-        'Bla**blabla**.\n' +
-        '## Second test header\n' +
-        '1. first\n' +
-        '2. second'
-    );
-    expect(dom.toHtml()).toEqual(
-      '<h1>Testheader 1</h1>\n' +
-        '<p>Bla<strong>blabla</strong>.</p>\n' +
-        '<h2>Second test header</h2>\n' +
-        '<ol><li><p>first</p></li><li><p>second</p></li></ol>'
-    );
-  });
-  it('should output the same source when calling toMarkDown() after parsing', () => {
-    var dom = DOM.parse(source);
-    expect(dom.toMarkDown()).toEqual(source);
-  });
-  it('should correctly convert markdown to formatless string', () => {
-    var dom = DOM.parse(source);
-    expect(dom.toString()).toEqual(
-      'Testheader 1\n' +
-        'Blablabla.\n' +
-        'Second test header\n' +
-        '\n' +
-        '\n' +
-        'first\n' +
-        'second'
-    );
-  });
-  it('should parse the right source positions', () => {
-    var dom = DOM.parse(source);
-    var header = dom.children[0];
-    expect(header.from.row).toEqual(1);
-    expect(header.from.column).toEqual(1);
-    expect(header.to.row).toEqual(1);
-    expect(header.to.column).toEqual(14);
-  });
-  it('should parse one TOC and only one', () => {
-    var dom = DOM.parse('# Header\n' + '[TOC]\n' + '\n' + '[TOC]');
-    var count = 0;
-    for (const child of dom.children) {
-      if (child instanceof TOC) count++;
-    }
-    expect(count).toEqual(1);
-    expect(dom.toc).toBeDefined();
-    expect(dom.toc.children.length).toEqual(1);
-  });
-  it('should parse one TOF and only one', () => {
-    var dom = DOM.parse(
-      '![alt text](./img.png)\n' + '[TOF]\n' + '\n' + '[TOF]'
-    );
-    var count = 0;
-    for (const child of dom.children) {
-      if (child instanceof TOC) count++;
-    }
-    expect(count).toEqual(1);
-    expect(dom.tof).toBeDefined();
-    expect(dom.tof.children.length).toEqual(1);
   });
 });
