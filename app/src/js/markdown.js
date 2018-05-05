@@ -2228,7 +2228,6 @@ class MDOrderedList extends MDListBase {
   toMarkDown() {
     var index = this.start;
     var tags = [];
-    if (this.level != 0) tags.push('');
     for (var component of this.children) {
       tags.push(
         '\t'.repeat(this.level) + index + '. ' + component.toMarkDown()
@@ -2288,7 +2287,6 @@ class MDBulletList extends MDListBase {
    */
   toMarkDown() {
     var tags = [];
-    if (this.level != 0) tags.push('');
     for (var component of this.children) {
       tags.push('\t'.repeat(this.level) + '* ' + component.toMarkDown());
     }
