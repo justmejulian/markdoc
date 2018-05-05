@@ -148,7 +148,6 @@ class App extends React.Component {
       );
     }
 
-    console.log('Test: ' + pagesAsString);
     ipcRenderer.send(GET_PDF_CONTENT, {
       currentWindow,
       currentFilePath,
@@ -307,7 +306,13 @@ class MetaDataHelper {
     var match = regex.exec(string);
     if (match == null) return false;
     var value = match[1];
-    this.setter(value);
+    if (value == 'true') {
+      this.setter(true);
+    } else if (value == 'false') {
+      this.setter(false);
+    } else {
+      this.setter(value);
+    }
     return true;
   }
   setDefault() {
