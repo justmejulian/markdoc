@@ -33,15 +33,15 @@ export default class Sidebar extends Component {
       hasTitlepage: SidebarStore.getHasTitlepage(),
       hasHeader: SidebarStore.getHasHeader(),
       hasFooter: SidebarStore.getHasFooter(),
-      title: '',
-      author: '',
-      date: moment(),
-      headerLeft: '',
-      headerMiddle: '',
-      headerRight: '',
-      footerLeft: '',
+      title: SidebarStore.getTitle(),
+      author: SidebarStore.getAuthor(),
+      date: moment(this._prepareDate(SidebarStore.getDate())),
+      headerLeft: SidebarStore.getHeaderLeft(),
+      headerMiddle: SidebarStore.getHeaderMiddle(),
+      headerRight: SidebarStore.getHeaderRight(),
+      footerLeft: SidebarStore.getFooterLeft(),
       footerMiddle: '',
-      footerRight: '',
+      footerRight: SidebarStore.getFooterRight(),
       isHovering: false
     };
   }
@@ -123,8 +123,13 @@ export default class Sidebar extends Component {
 
   _setDate() {
     this.setState({
-      date: SidebarStore.getDate()
+      date: moment(this._prepareDate(SidebarStore.getDate()))
     });
+  }
+
+  _prepareDate(strDate) {
+    var splitDate = strDate.split('/');
+    return splitDate[2] + '-' + splitDate[1] + '-' + splitDate[0];
   }
 
   _handleDateChange(date) {
