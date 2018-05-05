@@ -648,6 +648,7 @@ class Parser {
         case TokenTypes.CODEBLOCK:
           token = this.tokenStream.read(); // ```
           component.to = token.to;
+          component.value = component.value.replace(/^\n+|\n+$/g, '');
           token = this.tokenStream.peek();
           if (token && token.type == TokenTypes.NEWLINE) {
             this.tokenStream.read(); // Skip trailing newline

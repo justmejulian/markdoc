@@ -1125,7 +1125,7 @@ describe('Parser', () => {
     var parser = new Parser(tokenStream);
     var code = parser.parseCodeblock()[0];
     expect(code.value).toEqual(
-      '$ bash -c "$(curl -fsSL https://test.com/start.sh)"\n'
+      '$ bash -c "$(curl -fsSL https://test.com/start.sh)"'
     );
     code = parser.parseCodeblock()[0];
     expect(code.value).toEqual('var reason = 42;');
@@ -1577,11 +1577,67 @@ describe('Parser', () => {
     expect(image.referenceId).toEqual('single ref');
     expect(parser.dom.images.includes(image)).toBeTruthy();
   });
-  // it("Should parse a document correctly", () => {
-  //   var tokenStream = new TokenStream(new CharacterStream(
-
-  //   ));
-  // });
+  it('Should parse a document to an array', () => {
+    var arr = Parser.parseToArray(
+      '# Introduction\n' +
+        'Even though a day too late; **May the fourth be with you!**\n' +
+        "Now let's get back to _buisness_:\n" +
+        '\n' +
+        '```js\n' +
+        'var content = "...";\n' +
+        'var dom = Parser.parseToDOM(content);\n' +
+        '```\n' +
+        '\n' +
+        'Will parse the `content`-variable as a markdown source to an ' +
+        'object-oriented representation.\n' +
+        'The resulting `dom`-object provides:\n' +
+        '\n' +
+        '* **headers**: A list of the headers found in the document.\n' +
+        '* **toc**: The table of contents, if found.\n' +
+        '* **tof**: The table of figures, if found.\n' +
+        '* **references**: A list of the references found in the document.\n' +
+        '* **images**: A list of the images found in the document.\n' +
+        '* **latexParser**: The latex parser with cache, which was used ' +
+        'during the parsing.\n'
+    );
+    expect(arr.length).toBe(5);
+    expect(arr[0].type).toEqual(ComponentTypes.HEADER);
+    expect(arr[1].type).toEqual(ComponentTypes.PARAGRAPH);
+    expect(arr[2].type).toEqual(ComponentTypes.CODEBLOCK);
+    expect(arr[3].type).toEqual(ComponentTypes.PARAGRAPH);
+    expect(arr[4].type).toEqual(ComponentTypes.UNNUMBEREDLIST);
+  });
+  it('Should parse a document to a DOM', () => {
+    var dom = Parser.parseToDOM(
+      '# Introduction\n' +
+        'Even though a day too late; **May the fourth be with you!**\n' +
+        "Now let's get back to _buisness_:\n" +
+        '\n' +
+        '```js\n' +
+        'var content = "...";\n' +
+        'var dom = Parser.parseToDOM(content);\n' +
+        '```\n' +
+        '\n' +
+        'Will parse the `content`-variable as a markdown source to an ' +
+        'object-oriented representation.\n' +
+        'The resulting `dom`-object provides:\n' +
+        '\n' +
+        '* **headers**: A list of the headers found in the document.\n' +
+        '* **toc**: The table of contents, if found.\n' +
+        '* **tof**: The table of figures, if found.\n' +
+        '* **references**: A list of the references found in the document.\n' +
+        '* **images**: A list of the images found in the document.\n' +
+        '* **latexParser**: The latex parser with cache, which was used ' +
+        'during the parsing.\n'
+    );
+    expect(dom.children.length).toBe(5);
+    expect(dom.children[0].type).toEqual(ComponentTypes.HEADER);
+    expect(dom.children[1].type).toEqual(ComponentTypes.PARAGRAPH);
+    expect(dom.children[2].type).toEqual(ComponentTypes.CODEBLOCK);
+    expect(dom.children[3].type).toEqual(ComponentTypes.PARAGRAPH);
+    expect(dom.children[4].type).toEqual(ComponentTypes.UNNUMBEREDLIST);
+    expect(dom.headers.length).toBe(1);
+  });
 });
 
 describe('LaTeX Parser', () => {
