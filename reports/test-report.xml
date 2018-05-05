@@ -1,108 +1,241 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
   <file path="D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\markdown.test.js">
-    <testCase name="InputStream should read strings correctly" duration="4"/>
-    <testCase name="InputStream should peek characters correctly" duration="1"/>
+    <testCase name="InputStream should read strings correctly" duration="15"/>
+    <testCase name="InputStream should peek characters correctly" duration="0"/>
     <testCase name="InputStream should detect the end of the string correctly" duration="0"/>
-    <testCase name="InputStream should keep track of the string position" duration="1"/>
+    <testCase name="InputStream should keep track of the string position" duration="0"/>
     <testCase name="InputStream should keep track of the current line and column" duration="0"/>
-    <testCase name="InputStream should test regex" duration="1"/>
+    <testCase name="InputStream should test regex" duration="0"/>
     <testCase name="InputStream should match regex" duration="0"/>
-    <testCase name="InputStream should skip a certain amount of characters" duration="1"/>
-    <testCase name="InputStream should skip to the next row(for testing purposes)" duration="1"/>
+    <testCase name="InputStream should skip a certain amount of characters" duration="0"/>
+    <testCase name="InputStream should skip to the next row(for testing purposes)" duration="0"/>
     <testCase name="Token Regex should match headers appropriately" duration="0"/>
-    <testCase name="Token Regex should match blockquotes appropriately" duration="1"/>
+    <testCase name="Token Regex should match blockquotes appropriately" duration="0"/>
     <testCase name="Token Regex should match rules appropriately" duration="0"/>
-    <testCase name="Token Regex should match lists appropriately" duration="6"/>
+    <testCase name="Token Regex should match lists appropriately" duration="0"/>
     <testCase name="Token Regex should match code blocks appropriately" duration="0"/>
     <testCase name="Token Regex should match TOCs appropriately" duration="0"/>
-    <testCase name="Token Regex should match TOFs appropriately" duration="1"/>
+    <testCase name="Token Regex should match TOFs appropriately" duration="0"/>
     <testCase name="Token Regex should match pagebreaks appropriately" duration="0"/>
     <testCase name="Token Regex should match references appropriately" duration="0"/>
     <testCase name="Token Regex should match latex blocks appropriately" duration="0"/>
     <testCase name="Token Regex should match newlines appropriately" duration="0"/>
-    <testCase name="Token Regex should match bold text indicators appropriately" duration="1"/>
+    <testCase name="Token Regex should match bold text indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match italics text indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match strikethrough text indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match image start indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match link start indicators appropriately" duration="0"/>
-    <testCase name="Token Regex should match image-/link-end indicators appropriately" duration="1"/>
+    <testCase name="Token Regex should match image-/link-end indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match code indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match latex indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match latex indicators appropriately" duration="0"/>
-    <testCase name="TokenStream should find the correct amount of tokens" duration="1"/>
+    <testCase name="TokenStream should find the correct amount of tokens" duration="0"/>
     <testCase name="TokenStream should tokenize to the correct types" duration="0"/>
-    <testCase name="TokenStream should record the correct columns and rows" duration="1"/>
-    <testCase name="TokenStream should find proper header tokens" duration="2"/>
+    <testCase name="TokenStream should record the correct columns and rows" duration="0"/>
+    <testCase name="TokenStream should find proper header tokens" duration="0"/>
     <testCase name="TokenStream should find proper blockquotes" duration="0"/>
-    <testCase name="TokenStream should find proper rules" duration="1"/>
-    <testCase name="TokenStream should find proper lists" duration="1"/>
-    <testCase name="TokenStream should find proper code blocks" duration="1"/>
+    <testCase name="TokenStream should find proper rules" duration="0"/>
+    <testCase name="TokenStream should find proper lists" duration="16"/>
+    <testCase name="TokenStream should find proper code blocks" duration="0"/>
     <testCase name="TokenStream should find proper TOCs" duration="0"/>
-    <testCase name="TokenStream should find proper TOFs" duration="1"/>
-    <testCase name="TokenStream should find proper pagebreaks" duration="1"/>
-    <testCase name="TokenStream should find proper references" duration="1"/>
-    <testCase name="TokenStream should find proper LaTeX blocks" duration="1"/>
-    <testCase name="TokenStream should find proper newlines" duration="1"/>
+    <testCase name="TokenStream should find proper TOFs" duration="0"/>
+    <testCase name="TokenStream should find proper pagebreaks" duration="0"/>
+    <testCase name="TokenStream should find proper references" duration="0"/>
+    <testCase name="TokenStream should find proper LaTeX blocks" duration="0"/>
+    <testCase name="TokenStream should find proper newlines" duration="0"/>
     <testCase name="TokenStream should find proper bold indicators" duration="0"/>
-    <testCase name="TokenStream should find proper italics indicators" duration="1"/>
-    <testCase name="TokenStream should find proper strikethrough indicators" duration="1"/>
+    <testCase name="TokenStream should find proper italics indicators" duration="0"/>
+    <testCase name="TokenStream should find proper strikethrough indicators" duration="0"/>
     <testCase name="TokenStream should find proper image start indicators" duration="0"/>
-    <testCase name="TokenStream should find proper link start indicators" duration="1"/>
-    <testCase name="TokenStream should find proper image-/link end indicators" duration="1"/>
+    <testCase name="TokenStream should find proper link start indicators" duration="0"/>
+    <testCase name="TokenStream should find proper image-/link end indicators" duration="0"/>
     <testCase name="TokenStream should find proper code indicators" duration="0"/>
-    <testCase name="TokenStream should find proper latex indicators" duration="1"/>
-    <testCase name="TokenStream should find proper latex indicators" duration="1"/>
-    <testCase name="TokenStream should skip to the next row(for testing purposes)" duration="1"/>
-    <testCase name="Parser should parse the right amount of components" duration="6"/>
-    <testCase name="Parser should parse headers" duration="1"/>
-    <testCase name="Parser should parse block quotes" duration="2"/>
+    <testCase name="TokenStream should find proper latex indicators" duration="0"/>
+    <testCase name="TokenStream should find proper latex indicators" duration="0"/>
+    <testCase name="TokenStream should skip to the next row(for testing purposes)" duration="0"/>
+    <testCase name="Parser should parse the right amount of components" duration="0"/>
+    <testCase name="Parser should parse headers" duration="0"/>
+    <testCase name="Parser should parse block quotes" duration="0"/>
     <testCase name="Parser should parse rules" duration="0"/>
-    <testCase name="Parser should parse list heads" duration="4"/>
-    <testCase name="Parser should parse list items" duration="2"/>
-    <testCase name="Parser should parse lists" duration="2"/>
-    <testCase name="Parser should parse Code blocks" duration="2"/>
-    <testCase name="Parser should parse TOCs" duration="1"/>
-    <testCase name="Parser should parse TOFs" duration="1"/>
-    <testCase name="Parser should parse pagebreaks" duration="1"/>
-    <testCase name="Parser should parse references" duration="2"/>
-    <testCase name="Parser should parse LaTeX blocks" duration="13"/>
-    <testCase name="Parser should parse softbreaks" duration="1"/>
-    <testCase name="Parser should parse paragraphs" duration="2"/>
-    <testCase name="Parser should parse any string sequence" duration="9"/>
-    <testCase name="Parser should parse text rows" duration="1"/>
-    <testCase name="Parser should parse a text token" duration="1"/>
-    <testCase name="Parser should reinterpret failed formatting as text" duration="1"/>
-    <testCase name="Parser should parse bold text" duration="2"/>
-    <testCase name="Parser should parse italicized text" duration="2"/>
-    <testCase name="Parser should parse strikethrough text" duration="9"/>
-    <testCase name="Parser should parse inline latex" duration="3"/>
-    <testCase name="Parser should parse links" duration="3"/>
-    <testCase name="Parser should parse images" duration="1"/>
-    <testCase name="Parser Should parse a document to an array" duration="5"/>
-    <testCase name="Parser Should parse a document to a DOM" duration="1"/>
+    <testCase name="Parser should parse list heads" duration="0"/>
+    <testCase name="Parser should parse list items" duration="0"/>
+    <testCase name="Parser should parse lists" duration="0"/>
+    <testCase name="Parser should parse Code blocks" duration="0"/>
+    <testCase name="Parser should parse TOCs" duration="0"/>
+    <testCase name="Parser should parse TOFs" duration="16"/>
+    <testCase name="Parser should parse pagebreaks" duration="0"/>
+    <testCase name="Parser should parse references" duration="0"/>
+    <testCase name="Parser should parse LaTeX blocks" duration="0"/>
+    <testCase name="Parser should parse softbreaks" duration="0"/>
+    <testCase name="Parser should parse paragraphs" duration="0"/>
+    <testCase name="Parser should parse any string sequence" duration="0"/>
+    <testCase name="Parser should parse text rows" duration="0"/>
+    <testCase name="Parser should parse a text token" duration="0"/>
+    <testCase name="Parser should reinterpret failed formatting as text" duration="0"/>
+    <testCase name="Parser should parse bold text" duration="0"/>
+    <testCase name="Parser should parse italicized text" duration="0"/>
+    <testCase name="Parser should parse strikethrough text" duration="0"/>
+    <testCase name="Parser should parse inline latex" duration="0"/>
+    <testCase name="Parser should parse links" duration="0"/>
+    <testCase name="Parser should parse images" duration="0"/>
+    <testCase name="Parser Should parse a document to an array" duration="15"/>
+    <testCase name="Parser Should parse a document to a DOM" duration="0"/>
     <testCase name="Parser should parse headers correctly" duration="0"/>
-    <testCase name="Parser should parse formatted paragraphs correctly" duration="1"/>
-    <testCase name="Parser should parse an ordered list correctly" duration="1"/>
+    <testCase name="Parser should parse formatted paragraphs correctly" duration="0"/>
+    <testCase name="Parser should parse an ordered list correctly" duration="0"/>
     <testCase name="Parser should parse an unordered list correctly" duration="0"/>
     <testCase name="Parser should parse nested lists correctly" duration="0"/>
-    <testCase name="Parser should output Html code correctly" duration="1"/>
-    <testCase name="Parser should output the same source when calling toMarkDown() after parsing" duration="1"/>
-    <testCase name="Parser should correctly convert markdown to formatless string" duration="1"/>
+    <testCase name="Parser should output Html code correctly" duration="0"/>
+    <testCase name="Parser should output the same source when calling toMarkDown() after parsing" duration="0"/>
+    <testCase name="Parser should correctly convert markdown to formatless string" duration="0"/>
     <testCase name="Parser should parse the right source positions" duration="0"/>
     <testCase name="Parser should parse one TOC and only one" duration="0"/>
-    <testCase name="Parser should parse one TOF and only one" duration="1"/>
+    <testCase name="Parser should parse one TOF and only one" duration="0"/>
     <testCase name="LaTeX Parser should parse latex" duration="0"/>
-    <testCase name="LaTeX Parser should know if an expression has been parsed before" duration="1"/>
+    <testCase name="LaTeX Parser should know if an expression has been parsed before" duration="0"/>
     <testCase name="LaTeX Parser should return cached expressions" duration="0"/>
     <testCase name="LaTeX Parser should cache expression-html-pairs" duration="0"/>
-    <testCase name="LaTeX Parser should throw out cached expressions when limit reached" duration="2"/>
+    <testCase name="LaTeX Parser should throw out cached expressions when limit reached" duration="0"/>
+  </file>
+  <file path="D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js">
+    <testCase name="Test Header should set left text in header" duration="0"/>
+    <testCase name="Test Header should set middle text in header" duration="0"/>
+    <testCase name="Test Header should set right text in header" duration="0"/>
+    <testCase name="Test Footer should set left text in footer" duration="22">
+      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
+
+Expected value to equal:
+  " Semester "
+Received:
+  "  "
+    at Object.<anonymous> (D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:57:43)
+    at Object.asyncFn (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\jasmine_async.js:82:37)
+    at resolve (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:39:19)
+    at promise.then (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:73:82)
+    at <anonymous>]]></failure>
+    </testCase>
+    <testCase name="Test Footer should set middle text in footer" duration="0">
+      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
+
+Expected value to equal:
+  " 1 "
+Received:
+  "  "
+    at Object.<anonymous> (D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:63:45)
+    at Object.asyncFn (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\jasmine_async.js:82:37)
+    at resolve (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:39:19)
+    at promise.then (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:73:82)
+    at <anonymous>]]></failure>
+    </testCase>
+    <testCase name="Test Footer should set right text in footer" duration="0">
+      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
+
+Expected value to equal:
+  " Kürzel "
+Received:
+  "  "
+    at Object.<anonymous> (D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:69:44)
+    at Object.asyncFn (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\jasmine_async.js:82:37)
+    at resolve (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:39:19)
+    at promise.then (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:73:82)
+    at <anonymous>]]></failure>
+    </testCase>
+    <testCase name="Test Zoom begins with zoom set to 1.0" duration="0"/>
+    <testCase name="Test Zoom does not zoom the zoom buttons" duration="0"/>
+    <testCase name="Test Zoom can zoom in" duration="0">
+      <failure message="Error: expect(received).toBeCloseTo(expected)"><![CDATA[Error: expect(received).toBeCloseTo(expected)
+
+Expected value to be close to (with 2-digit precision):
+  1.1
+Received:
+  1
+    at D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:95:36
+    at Array.forEach (<anonymous>)
+    at Object.<anonymous> (D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:92:41)
+    at Object.asyncFn (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\jasmine_async.js:82:37)
+    at resolve (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:39:19)
+    at promise.then (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:73:82)
+    at <anonymous>]]></failure>
+    </testCase>
+    <testCase name="Test Zoom can zoom out" duration="0">
+      <failure message="Error: expect(received).toBeCloseTo(expected)"><![CDATA[Error: expect(received).toBeCloseTo(expected)
+
+Expected value to be close to (with 2-digit precision):
+  0.9
+Received:
+  1
+    at D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:106:36
+    at Array.forEach (<anonymous>)
+    at Object.<anonymous> (D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:103:31)
+    at Object.asyncFn (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\jasmine_async.js:82:37)
+    at resolve (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:39:19)
+    at promise.then (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:73:82)
+    at <anonymous>]]></failure>
+    </testCase>
+    <testCase name="Test Zoom doesn&apos;t go below minimum zoom" duration="0"/>
+    <testCase name="Test Zoom doesn&apos;t go above maximum zoom" duration="0"/>
+    <testCase name="Test Zoom invokes handleZoomIn on zoom-in button click" duration="16">
+      <failure message="Error: expect(received).toBeCloseTo(expected)"><![CDATA[Error: expect(received).toBeCloseTo(expected)
+
+Expected value to be close to (with 2-digit precision):
+  1.1
+Received:
+  1
+    at Object.<anonymous> (D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:133:34)
+    at Object.asyncFn (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\jasmine_async.js:82:37)
+    at resolve (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:39:19)
+    at promise.then (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:73:82)
+    at <anonymous>]]></failure>
+    </testCase>
+    <testCase name="Test Zoom invokes handleZoomOut on zoom-out button click" duration="0">
+      <failure message="Error: expect(received).toBeCloseTo(expected)"><![CDATA[Error: expect(received).toBeCloseTo(expected)
+
+Expected value to be close to (with 2-digit precision):
+  0.9
+Received:
+  1
+    at Object.<anonymous> (D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:142:34)
+    at Object.asyncFn (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\jasmine_async.js:82:37)
+    at resolve (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:39:19)
+    at promise.then (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:73:82)
+    at <anonymous>]]></failure>
+    </testCase>
+    <testCase name="Test sidebar opens and closes when clicked" duration="0">
+      <failure message="Error: expect(received).toBeFalsy()"><![CDATA[Error: expect(received).toBeFalsy()
+
+Expected value to be falsy, instead received
+  true
+    at Object.<anonymous> (D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\react.test.js:155:41)
+    at Object.asyncFn (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\jasmine_async.js:82:37)
+    at resolve (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:39:19)
+    at promise.then (D:\Users\Raphael\Dokumente\Git\markdoc\node_modules\jest-jasmine2\build\queue_runner.js:73:82)
+    at <anonymous>]]></failure>
+    </testCase>
+    <testCase name="Test sidebar tracks mouse hovering and leaving the sidebar area" duration="0"/>
+    <testCase name="Test sidebar updates state with info filled into fields" duration="16"/>
   </file>
   <file path="D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\wordcounter.test.js">
-    <testCase name="WordCounter should count words in the document" duration="1"/>
-    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="1"/>
+    <testCase name="WordCounter should count words in the document" duration="0"/>
+    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="0"/>
     <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="0"/>
-    <testCase name="CharacterCounter should count every single character in the document" duration="1"/>
+    <testCase name="CharacterCounter should count every single character in the document" duration="15"/>
     <testCase name="CharacterCounter should not count spaces" duration="0"/>
     <testCase name="CharacterCounter should count special character" duration="0"/>
     <testCase name="CharacterCounter should show zero, if no it has no text" duration="0"/>

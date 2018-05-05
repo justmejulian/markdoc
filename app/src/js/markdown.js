@@ -399,9 +399,7 @@ class Parser {
           out.push(this.parseList());
           break;
         case TokenTypes.CODEBLOCK:
-          for (const sub of this.parseCodeblock()) {
-            out.push(sub);
-          }
+          out.push(this.parseCodeblock());
           break;
         case TokenTypes.TOC:
           if (!this.dom.toc) {
@@ -426,9 +424,7 @@ class Parser {
           out.push(this.parseReference());
           break;
         case TokenTypes.LATEXBLOCK:
-          for (const sub of this.parseLatexblock()) {
-            out.push(this.parseLatexblock());
-          }
+          out.push(this.parseLatexblock());
           break;
         case TokenTypes.NEWLINE: // Ignore empty line
           this.tokenStream.read();
@@ -615,7 +611,7 @@ class Parser {
   /**
    * Parses a code block from the token stream.
    * @access private
-   * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
+   * @returns {MDComponent} A code block element or a substitute paragraph.
    */
   parseCodeblock() {
     var component = new MDCodeBlock(this.dom);
@@ -630,12 +626,10 @@ class Parser {
     token = this.tokenStream.read(); // {language|\n|null}
     cache.push(token);
     if (token.type == TokenTypes.CODEBLOCK) {
-      this.reinterpretAsText(cache);
-      return cache;
+      return this.reinterpretAsText(cache);
     }
     if (this.tokenStream.eof()) {
-      this.reinterpretAsText(cache);
-      return cache;
+      return this.reinterpretAsText(cache);
     }
     if (token.type == TokenTypes.TEXT) {
       // Language specified
@@ -654,7 +648,7 @@ class Parser {
           if (token && token.type == TokenTypes.NEWLINE) {
             this.tokenStream.read(); // Skip trailing newline
           }
-          return [component];
+          return component;
         default:
           token = this.tokenStream.read();
           cache.push(token);
@@ -663,7 +657,7 @@ class Parser {
       }
     }
     cache = cache.concat(component.children);
-    return [this.reinterpretAsText(cache)];
+    return this.reinterpretAsText(cache);
   }
 
   /**
@@ -743,7 +737,7 @@ class Parser {
   /**
    * Parses a LaTeX block from the token stream.
    * @access private
-   * @returns {MDComponent[]} A code block element or a list of substitute paragraphs.
+   * @returns {MDComponent} A code block element or a list of substitute paragraphs.
    */
   parseLatexblock() {
     var component = new MDLatexBlock(this.dom);
@@ -751,8 +745,7 @@ class Parser {
     var token = this.tokenStream.read(); // $$
     var cache = [token];
     if (this.tokenStream.eof()) {
-      this.reinterpretAsText(cache);
-      return cache;
+      return this.reinterpretAsText(cache);
     }
     component.from = token.from;
     while (!this.tokenStream.eof()) {
@@ -767,7 +760,7 @@ class Parser {
           if (token && token.type == TokenTypes.NEWLINE) {
             this.tokenStream.read(); // Skip trailing newline
           }
-          return [component];
+          return component;
         default:
           token = this.tokenStream.read();
           cache.push(token);
@@ -776,8 +769,7 @@ class Parser {
       }
     }
     cache = cache.concat(component.children);
-    this.reinterpretAsText(cache);
-    return cache;
+    return this.reinterpretAsText(cache);
   }
 
   /**
@@ -2819,3 +2811,16 @@ const markdown = {
 };
 
 module.exports = markdown;
+
+var dom = MDDOM.parse(
+  '# test\n' +
+    'Das ist ein test\n' +
+    '$$\n' +
+    'x = y\n' +
+    '$$\n' +
+    '```js\n' +
+    'var a = 42;\n' +
+    '```\n' +
+    'Das sollte alles funktionieren.'
+);
+var html = dom.toHtml();

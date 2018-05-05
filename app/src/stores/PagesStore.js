@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { MDDOM } from '../js/markdown.js';
+import { DOM } from '../js/markdown.js';
 
 import dispatcher from '../dispatcher';
 
@@ -16,7 +16,7 @@ class PagesStore extends EventEmitter {
   }
 
   setHTML(markdown) {
-    this.html = MDDOM.parse(markdown).toHtml();
+    this.html = DOM.parse(markdown).toHtml();
   }
 
   setZoom(newZoom) {

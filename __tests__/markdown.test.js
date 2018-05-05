@@ -1123,13 +1123,13 @@ describe('Parser', () => {
       )
     );
     var parser = new Parser(tokenStream);
-    var code = parser.parseCodeblock()[0];
+    var code = parser.parseCodeblock();
     expect(code.value).toEqual(
       '$ bash -c "$(curl -fsSL https://test.com/start.sh)"'
     );
-    code = parser.parseCodeblock()[0];
+    code = parser.parseCodeblock();
     expect(code.value).toEqual('var reason = 42;');
-    var substitutes = parser.parseCodeblock()[0];
+    var substitutes = parser.parseCodeblock();
     expect(substitutes.type).not.toEqual(ComponentTypes.CODEBLOCK);
     expect(tokenStream.eof()).toBeTruthy();
 
@@ -1220,18 +1220,18 @@ describe('Parser', () => {
       )
     );
     var parser = new Parser(tokenStream);
-    var latex = parser.parseLatexblock()[0];
+    var latex = parser.parseLatexblock();
     expect(latex.value).toEqual('\\mathcal L\\left(f\\cdot g\\right)');
     expect(
       parser.dom.latexParser.has('\\mathcal L\\left(f\\cdot g\\right)')
     ).toBeTruthy();
 
-    latex = parser.parseLatexblock()[0];
+    latex = parser.parseLatexblock();
     expect(latex.value).toEqual('\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx');
     expect(
       parser.dom.latexParser.has('\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx')
     ).toBeTruthy();
-    var substitutes = parser.parseLatexblock()[0];
+    var substitutes = parser.parseLatexblock();
     expect(substitutes.type).not.toEqual(ComponentTypes.LATEXBLOCK);
     expect(tokenStream.eof()).toBeTruthy();
   });
