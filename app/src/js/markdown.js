@@ -9,6 +9,7 @@
  */
 
 'use strict';
+const katex = require('katex');
 
 /**
  * Provides a character stream based on a string.
@@ -1170,8 +1171,8 @@ class Token {
    * @constructs TokenStream
    * @static
    * @access public
-   * @param {string} type The type of the token.
-   * @see TokenTypes
+   * @param {TokenType} type The type of the token.
+   * @see TokenTypes,TokenTypes
    * @param {string} pattern The regex pattern.
    * @returns {Token} An instance of a Token.
    */
@@ -1180,7 +1181,7 @@ class Token {
      * Type identifier of the Token.
      * @access public
      * @readonly
-     * @type {string}
+     * @type {TokenType}
      */
     this.type = type;
     /**
@@ -1232,29 +1233,52 @@ class Token {
 }
 
 /**
+ * A representation of the type of a token
+ */
+class TokenType {
+  /**
+   * Creates a new component type
+   * @constructs TokenType
+   * @static
+   * @access private
+   * @param {string} name Name of the type
+   * @returns {TokenType}
+   */
+  constructor(name) {
+    /**
+     * The string representation of the type. Has to be unique.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.name = name;
+  }
+}
+
+/**
  * Enum of all the available Token types.
  */
 const TokenTypes = Object.freeze({
-  HEADER: 'Header',
-  BLOCKQUOTE: 'Blockquote',
-  RULE: 'Rule',
-  LIST: 'List',
-  REFERENCE: 'Reference',
-  CODEBLOCK: 'Codeblock',
-  TOC: 'TOC',
-  TOF: 'TOF',
-  PAGEBREAK: 'Pagebreak',
-  LATEXBLOCK: 'LaTeXblock',
-  NEWLINE: 'Newline',
-  BOLD: 'Bold',
-  ITALICS: 'Italics',
-  STRIKETHROUGH: 'Strikethrough',
-  IMAGESTART: 'ImageStart',
-  LINKSTART: 'LinkStart',
-  IMGLINKEND: 'Image-/LinkEnd',
-  CODE: 'Code',
-  LATEX: 'LaTeX',
-  TEXT: 'Text'
+  HEADER: new TokenType('Header'),
+  BLOCKQUOTE: new TokenType('Blockquote'),
+  RULE: new TokenType('Rule'),
+  LIST: new TokenType('List'),
+  REFERENCE: new TokenType('Reference'),
+  CODEBLOCK: new TokenType('Codeblock'),
+  TOC: new TokenType('TOC'),
+  TOF: new TokenType('TOF'),
+  PAGEBREAK: new TokenType('Pagebreak'),
+  LATEXBLOCK: new TokenType('LaTeXblock'),
+  NEWLINE: new TokenType('Newline'),
+  BOLD: new TokenType('Bold'),
+  ITALICS: new TokenType('Italics'),
+  STRIKETHROUGH: new TokenType('Strikethrough'),
+  IMAGESTART: new TokenType('ImageStart'),
+  LINKSTART: new TokenType('LinkStart'),
+  IMGLINKEND: new TokenType('Image-/LinkEnd'),
+  CODE: new TokenType('Code'),
+  LATEX: new TokenType('LaTeX'),
+  TEXT: new TokenType('Text')
 });
 
 /**
@@ -1344,29 +1368,63 @@ const Tokens = Object.freeze({
   }
 });
 
+/**
+ * A representation of the type of a markdown component
+ */
+class ComponentType {
+  /**
+   * Creates a new component type
+   * @constructs ComponentType
+   * @static
+   * @access private
+   * @param {string} name Name of the type
+   * @param {boolean} inline Whether this type can only be found inline.
+   * @returns {ComponentType}
+   */
+  constructor(name, inline) {
+    /**
+     * The string representation of the type. Has to be unique.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.name = name;
+    /**
+     * Whether this type can only be found inline.
+     * @access public
+     * @readonly
+     * @type {boolean}
+     */
+    this.inline = inline;
+  }
+}
+
+/**
+ * Enum of available component types
+ */
 const ComponentTypes = Object.freeze({
-  DOM: 'DOM',
-  HEADER: 'Header',
-  BLOCKQUOTE: 'Block Quote',
-  NUMBEREDLIST: 'Numbered List',
-  UNNUMBEREDLIST: 'Unnumbered List',
-  LATEXBLOCK: 'LaTeX Block',
-  CODEBLOCK: 'Code Block',
-  REFERENCE: 'Reference',
-  TOC: 'Table Of Contents',
-  TOF: 'Table Of Figures',
-  PAGEBREAK: 'Page Break',
-  RULE: 'Rule',
-  PARAGRAPH: 'Paragraph',
-  SOFTBREAK: 'Soft Break',
-  TEXT: 'Text',
-  BOLD: 'Bold',
-  ITALICS: 'Italics',
-  STRIKETHROUGH: 'Strike Through',
-  IMAGE: 'Image',
-  LINK: 'Link',
-  INLINECODE: 'Inline Code',
-  INLINELATEX: 'Inline LaTeX'
+  DOM: new ComponentType('DOM', false),
+  HEADER: new ComponentType('Header', false),
+  BLOCKQUOTE: new ComponentType('Block Quote', false),
+  NUMBEREDLIST: new ComponentType('Numbered List', false),
+  UNNUMBEREDLIST: new ComponentType('Unnumbered List', false),
+  LATEXBLOCK: new ComponentType('LaTeX Block', false),
+  CODEBLOCK: new ComponentType('Code Block', false),
+  REFERENCE: new ComponentType('Reference', false),
+  TOC: new ComponentType('Table Of Contents', false),
+  TOF: new ComponentType('Table Of Figures', false),
+  PAGEBREAK: new ComponentType('Page Break', false),
+  RULE: new ComponentType('Rule', false),
+  PARAGRAPH: new ComponentType('Paragraph', false),
+  SOFTBREAK: new ComponentType('Soft Break', true),
+  TEXT: new ComponentType('Text', true),
+  BOLD: new ComponentType('Bold', true),
+  ITALICS: new ComponentType('Italics', true),
+  STRIKETHROUGH: new ComponentType('Strike Through', true),
+  IMAGE: new ComponentType('Image', true),
+  LINK: new ComponentType('Link', true),
+  INLINECODE: new ComponentType('Inline Code', true),
+  INLINELATEX: new ComponentType('Inline LaTeX', true)
 });
 
 /**
@@ -1453,61 +1511,122 @@ class LatexParser {
   }
 }
 
-class TokenFilter {
-  constructor() {}
-  oneOf(tokenArray) {}
-  nOf(number, tokenArray) {}
-  anyNOf(tokenArray) {}
-  noneOf(tokenArray) {}
-}
+// DOM Components:
 
-// old system:
-const commonmark = require('commonmark');
-const katex = require('katex');
-var toc_found = false;
-var tof_found = false;
-
+/**
+ * Object representation of a markdown element
+ */
 class MDComponent {
+  /**
+   * Creates a new component.
+   * @constructs MDComponent
+   * @static
+   * @access private
+   * @param {ComponentType} type The ComponentType.
+   * @returns {MDComponent}
+   */
   constructor(type) {
+    /**
+     * The type of the component.
+     * @access public
+     * @readonly
+     * @type {ComponentType}
+     */
     this.type = type;
+    /**
+     * The parent component.
+     * @access public
+     * @readonly
+     * @type {MDComponent}
+     */
     this.parent = null;
+    /**
+     * The children components.
+     * @access public
+     * @readonly
+     * @type {MDComponent[]}
+     */
     this.children = [];
   }
 
+  /**
+   * Adds a component as child to this component.
+   * @access public
+   * @param {MDComponent} component The component to add.
+   */
   add(component) {
     component.parent = this;
     this.children.push(component);
   }
 
+  /**
+   * Inserts a child component at the specified index.
+   * @access public
+   * @param {MDComponent} component The component to insert.
+   * @param {number} index The index on which to insert the component.
+   */
   insert(component, index) {
     component.parent = this;
     this.children.splice(index, 0, component);
   }
 
+  /**
+   * Removes a child component from the children list.
+   * @access public
+   * @param {MDComponent} component The component to remove.
+   */
   remove(component) {
     if (this.children.includes(component)) {
       this.removeAt(this.children.indexOf(component));
     }
   }
 
+  /**
+   * Removes the child component at the specified index.
+   * @access public
+   * @param {number} index The index of the child component.
+   */
   removeAt(index) {
     if (this.children[index]) {
       this.children[index].parent = null;
       this.children.splice(index);
     }
   }
+
+  /**
+   * Returns the first item of the children list.
+   * @access public
+   * @returns {MDComponent}
+   */
   first() {
     if (this.children.length == 0) return null;
     return this.children[0];
   }
+
+  /**
+   * Returns the last item of the children list.
+   * @access public
+   * @returns {MDComponent}
+   */
   last() {
     if (this.children.length == 0) return null;
     return this.children[this.children.length - 1];
   }
+
+  /**
+   * Returns whether the children list is empty or not.
+   * @access public
+   * @returns {boolean}
+   */
   isEmpty() {
     return this.children.length == 0;
   }
 
+  /**
+   * Converts the component into an HTML-string.
+   * @access public
+   * @returns {string}
+   */
   toHtml() {
     var tags = [];
     for (var component of this.children) {
@@ -1516,6 +1635,11 @@ class MDComponent {
     return tags.join('');
   }
 
+  /**
+   * Converts the component into a string.
+   * @access public
+   * @returns {string}
+   */
   toString() {
     var tags = [];
     for (var component of this.children) {
@@ -1524,6 +1648,11 @@ class MDComponent {
     return tags.join('');
   }
 
+  /**
+   * Converts the component into a markdown formatted string.
+   * @access public
+   * @returns {string}
+   */
   toMarkDown() {
     var tags = [];
     for (var component of this.children) {
@@ -1661,19 +1790,46 @@ class MDTextLaTeX extends MDText {
 class MDLink extends MDComponent {
   constructor() {
     super(ComponentTypes.LINK);
+    /**
+     * The tooltip text. Optional.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.alt = '';
+    /**
+     * The url to direct to.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.url = '';
+    /**
+     * The reference the component points to. Optional.
+     * @access public
+     * @readonly
+     * @type {string}
+     */
+    this.referenceId = '';
   }
   toHtml() {
-    if (this.title) {
-      return `<a href="${this.destination}" title="${
-        this.title
-      }">${super.toHtml()}</a>`;
+    if (this.referenceId) {
+      // TODO: Do some reference resolving
+      return `<span>[${super.toHtml()}][${this.referenceId}]</span>`;
     }
-    return `<a href="${this.destination}">${super.toHtml()}</a>`;
+    if (this.alt) {
+      return `<a href="${this.url}" title="${this.alt}">${super.toHtml()}</a>`;
+    }
+    return `<a href="${this.url}">${super.toHtml()}</a>`;
   }
   toMarkDown() {
-    if (this.title)
-      return `[${super.toMarkDown()}](${this.destination} "${this.title}")`;
-    return `[${super.toMarkDown()}](${this.destination})`;
+    if (this.referenceId) {
+      return `[${super.toMarkDown()}][${this.referenceId}]`;
+    }
+    if (this.alt) {
+      return `[${super.toMarkDown()}](${this.url} "${this.alt}")`;
+    }
+    return `[${super.toMarkDown()}](${this.url})`;
   }
 }
 
@@ -1683,14 +1839,12 @@ class MDImage extends MDComponent {
   }
   toHtml() {
     if (this.id) {
-      return `<img src="${this.destination}" id="${
-        this.id
-      }" alt="${super.toHtml()}"/>`;
+      return `<img src="${this.url}" id="${this.id}" alt="${super.toHtml()}"/>`;
     }
-    return `<img src="${this.destination}" alt="${super.toHtml()}"/>`;
+    return `<img src="${this.url}" alt="${super.toHtml()}"/>`;
   }
   toMarkDown() {
-    return `![${super.toMarkDown()}](${this.destination} "${this.title}")`;
+    return `![${super.toMarkDown()}](${this.url} "${this.title}")`;
   }
 }
 
@@ -1732,12 +1886,6 @@ class MDParagraph extends MDComponent {
   constructor() {
     super(ComponentTypes.PARAGRAPH);
   }
-  _parseReplace() {
-    var obj = this;
-    obj = MDTOC._test(this.toString()) ? MDTOC._parse(this) : obj;
-    obj = MDTOF._test(this.toString()) ? MDTOF._parse(this) : obj;
-    return obj;
-  }
   toHtml() {
     return `<p>${super.toHtml()}</p>`;
   }
@@ -1752,19 +1900,6 @@ class MDParagraph extends MDComponent {
 class MDListBase extends MDComponent {
   constructor(type) {
     super(type);
-  }
-  _aftermath(dom) {
-    this._scoutNestedLevels(0);
-  }
-  _scoutNestedLevels(level) {
-    this.level = level;
-    for (const child of this.children) {
-      for (const subItem of child.children) {
-        if (subItem instanceof MDListBase) {
-          subItem._scoutNestedLevels(this.level + 1);
-        }
-      }
-    }
   }
 }
 
@@ -1889,39 +2024,6 @@ class MDTOC extends MDComponent {
   constructor() {
     super(ComponentTypes.TOC);
   }
-  _aftermath(dom) {
-    this._compile(dom.children);
-  }
-  _compile(candidates) {
-    this.children = [];
-    var figurecount = 0;
-    var list = new MDOrderedList();
-    for (var component of candidates) {
-      if (component instanceof MDHeader) {
-        figurecount++;
-        component.id = 'header' + figurecount;
-        var item = new MDItem();
-        var text = new MDText();
-        text.value = component.toString();
-        var link = new MDLink();
-        link.title = text.value;
-        link.destination = `#${component.id}`;
-        link.add(text);
-        item.add(link);
-        list.add(item);
-      }
-    }
-    this.add(list);
-  }
-  static _test(string) {
-    return /^\[TOC\]$/gm.test(string) && !toc_found;
-  }
-  static _parse(daddy) {
-    var toc = new MDTOC();
-    toc.parent = daddy.parent;
-    toc_found = true;
-    return toc;
-  }
   toHtml() {
     //TODO: Decide on a proper HTML tag
     return `<div id="toc" class="toc">${super.toHtml()}</div>`;
@@ -1938,62 +2040,7 @@ class MDTOF extends MDComponent {
   constructor() {
     super(ComponentTypes.TOF);
   }
-  _aftermath(dom) {
-    this._compile(dom);
-  }
-  _compile(candidates) {
-    this.children = [];
-    var figurecount = 0;
-    var list = new MDOrderedList();
-    this._compile_recursive(candidates, 0, list);
-    this.add(list);
-  }
-  _compile_recursive(currentparent, figurecount, list) {
-    for (const child of currentparent.children) {
-      if (child instanceof MDImage) {
-        const image = child;
-        var title = image.toString();
-        if (/\*$/gm.test(title)) {
-          figurecount++;
-          image.id = 'figure' + figurecount;
-          var item = new MDItem();
-          var text = new MDText();
-          text.value = title.substring(0, title.length - 1);
-          var link = new MDLink();
-          link.title = image.name;
-          link.destination = `#${image.id}`;
-          link.add(text);
-          item.add(link);
-          list.add(item);
-        }
-      } else {
-        if (
-          child instanceof MDText ||
-          child instanceof MDBlockQuote ||
-          child instanceof MDCodeBlock ||
-          child instanceof MDPageBreak ||
-          child instanceof MDSoftBreak ||
-          child instanceof MDThematicBreak ||
-          child instanceof MDTOC ||
-          child instanceof MDTOF
-        )
-          continue;
-        this._compile_recursive(child, figurecount, list);
-      }
-    }
-  }
-
-  static _test(string) {
-    return /^\[TOF\]$/gm.test(string) && !tof_found;
-  }
-  static _parse(daddy) {
-    var tof = new MDTOF();
-    tof.parent = daddy.parent;
-    tof_found = true;
-    return tof;
-  }
   toHtml() {
-    //TODO: Decide on a proper HTML tag
     return `<div id="tof" class="tof">${super.toHtml()}</div>`;
   }
   toString() {
@@ -2007,14 +2054,6 @@ class MDTOF extends MDComponent {
 class MDPageBreak extends MDComponent {
   constructor() {
     super(ComponentTypes.PAGEBREAK);
-  }
-  static _test(string) {
-    return /^\[PB\]$/gm.test(string);
-  }
-  static _parse(daddy) {
-    var pb = new MDPageBreak();
-    pb.parent = daddy.parent;
-    return pb;
   }
   toHtml() {
     return `<div class="pagebreak"/>`;
@@ -2082,125 +2121,7 @@ class MDDOM extends MDComponent {
     this.latexParser = new LatexParser();
   }
   static parse(source) {
-    var dom = new MDDOM();
-
-    // Parse LaTeX
-    var match;
-    while ((match = /\$\$.+?\$\$/gm.exec(source))) {
-      var math = match[0].substring(2, match[0].length - 2);
-      var rendered = katex.renderToString(math);
-      source = source.replace(match[0], rendered);
-    }
-    while ((match = /\$.+?\$/gm.exec(source))) {
-      var math = match[0].substring(1, match[0].length - 1);
-      var rendered = katex.renderToString(math);
-      source = source.replace(match[0], rendered);
-    }
-
-    toc_found = false;
-    dom.toc = null;
-    tof_found = false;
-    dom.tof = null;
-    var reader = new commonmark.Parser();
-    var parsed = reader.parse(source);
-    var child = parsed.firstChild;
-    if (child) {
-      dom.add(dom._translateNode(child));
-      while ((child = child.next)) {
-        dom.add(dom._translateNode(child));
-      }
-    }
-    for (let index = 0; index < dom.children.length; index++) {
-      const component = dom.children[index]._parseReplace();
-      component._aftermath(dom);
-      if (component instanceof MDTOC) dom.toc = component;
-      if (component instanceof MDTOF) dom.tof = component;
-      dom.children[index] = component;
-    }
-    return dom;
-  }
-  _translateNode(node) {
-    var translated;
-    switch (node.type) {
-      case 'text':
-        translated = new MDText();
-        break;
-      case 'html_inline':
-        translated = new MDText();
-        break;
-      case 'strong':
-        translated = new MDTextBold();
-        break;
-      case 'emph':
-        translated = new MDTextItalics();
-        break;
-      case 'code':
-        translated = new MDTextCode();
-        break;
-      case 'link':
-        translated = new MDLink();
-        translated.destination = node.destination;
-        translated.title = node.title;
-        break;
-      case 'image':
-        translated = new MDImage();
-        translated.destination = node.destination;
-        translated.title = node.title;
-        break;
-      case 'softbreak':
-        translated = new MDSoftBreak();
-        break;
-      case 'thematic_break':
-        translated = new MDThematicBreak();
-        break;
-      case 'paragraph':
-        translated = new MDParagraph();
-        break;
-      case 'heading':
-        translated = new MDHeader();
-        translated.level = node.level;
-        break;
-      case 'block_quote':
-        translated = new MDBlockQuote();
-        break;
-      case 'code_block':
-        translated = new MDCodeBlock();
-        translated.language = node.info;
-        break;
-      case 'list':
-        switch (node.listType) {
-          case 'ordered':
-            translated = new MDOrderedList();
-            translated.start = node.listStart;
-            break;
-          case 'bullet':
-            translated = new MDBulletList();
-            break;
-          default:
-            throw new Error(`Unknown list sub type: ${node.listType}`);
-            return;
-        }
-        break;
-      case 'item':
-        translated = new MDItem();
-        break;
-      default:
-        throw new Error(`Unknown token type: ${node.type}`);
-        return;
-    }
-    if (node.literal) translated.value = node.literal;
-    if (node.sourcepos) {
-      translated.from = new SourcePosition(node.sourcepos[0]);
-      translated.to = new SourcePosition(node.sourcepos[1]);
-    }
-    var child = node.firstChild;
-    if (child) {
-      translated.add(this._translateNode(child));
-      while ((child = child.next)) {
-        translated.add(this._translateNode(child));
-      }
-    }
-    return translated;
+    return Parser.parseToDOM(source);
   }
   toHtml() {
     var lines = [];
@@ -2237,25 +2158,6 @@ class MDReference extends MDComponent {
   }
 }
 
-class SourcePosition {
-  constructor(array) {
-    this.row = array[0];
-    this.column = array[1];
-  }
-}
-
-// var dom = MDDOM.parse(
-//   '![alt text*](./img.png)\n\n' + '[TOF]\n' + '\n' + '[TOF]\n'
-// );
-// console.log(dom.toHtml());
-
-// var tokens = Lexer.tokenize('# **Header!**');
-// var input = new InputStream('\nHi there!\n\n# **Header!**');
-// var ast = Parser.parse('# **Header!**');
-// ast = Parser.parse(
-//   'Hi there!\nnext line\n\nand another one\n\n# **Header!**\nMath be like: $\\int_0^\\infty f(x)\\mathrm dx = F(\\infity)$\n> May the heavens smite me if I ever let go!\n> This Lasagne belongs to me!\n> Badumm tzz!'
-// );
-
 const markdown = {
   parser: {
     CharacterStream: CharacterStream,
@@ -2290,7 +2192,5 @@ const markdown = {
   InlineCode: MDTextCode,
   InlineLatex: MDTextLaTeX
 };
-
-// Test debug:
 
 module.exports = markdown;
