@@ -1539,6 +1539,7 @@ describe('Parser', () => {
     expect(image.children.length).toBe(1);
     expect(image.children[0].value).toEqual('linktext');
     expect(image.url).toEqual('https://duckduckgo.com/');
+    expect(parser.dom.images.includes(image)).toBeTruthy();
 
     tokenStream.skipToNextRow();
     image = parser.parseImage();
@@ -1548,6 +1549,7 @@ describe('Parser', () => {
     expect(image.children[0].value).toEqual('link text');
     expect(image.url).toEqual('https://duckduckgo.com/');
     expect(image.alt).toEqual('tooltip');
+    expect(parser.dom.images.includes(image)).toBeTruthy();
 
     tokenStream.skipToNextRow();
     image = parser.parseImage();
@@ -1556,6 +1558,7 @@ describe('Parser', () => {
     expect(image.children.length).toBe(2);
     expect(image.url).toEqual('https://duckduckgo.com/');
     expect(image.alt).toEqual('tooltip 2');
+    expect(parser.dom.images.includes(image)).toBeTruthy();
 
     tokenStream.skipToNextRow();
     image = parser.parseImage();
@@ -1564,6 +1567,7 @@ describe('Parser', () => {
     expect(image.children.length).toBe(1);
     expect(image.children[0].value).toEqual('link reference');
     expect(image.referenceId).toEqual('ref id');
+    expect(parser.dom.images.includes(image)).toBeTruthy();
 
     tokenStream.skipToNextRow();
     image = parser.parseImage();
@@ -1571,6 +1575,7 @@ describe('Parser', () => {
     expect(image.type).toEqual(ComponentTypes.IMAGE);
     expect(image.children.length).toBe(0);
     expect(image.referenceId).toEqual('single ref');
+    expect(parser.dom.images.includes(image)).toBeTruthy();
   });
   // it("Should parse a document correctly", () => {
   //   var tokenStream = new TokenStream(new CharacterStream(

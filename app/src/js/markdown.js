@@ -1072,6 +1072,9 @@ class Parser {
             component.alt = token.match[4];
           }
         }
+        if (component.type == ComponentTypes.IMAGE) {
+          this.dom.images.push(component);
+        }
         break;
       }
       cache.push(token);
@@ -2037,27 +2040,38 @@ class MDDOM extends MDComponent {
     /**
      * List of headers to be used by the TOC.
      * @access public
+     * @readonly
      * @type {MDHeader[]}
      */
     this.headers = [];
     /**
      * Table of contents of the parsed markdown document.
      * @access public
+     * @readonly
      * @type {MDTOC}
      */
     this.toc = null;
     /**
      * Table of figures of the parsed markdown document.
      * @access public
+     * @readonly
      * @type {MDTOF}
      */
     this.tof = null;
     /**
      * References within the document.
      * @access public
+     * @readonly
      * @type {MDReference[]}
      */
     this.references = [];
+    /**
+     * List of images in the document
+     * @access public
+     * @readonly
+     * @type {MDImage[]}
+     */
+    this.images = [];
     /**
      * A handler for latex parse requests.
      * @access public
