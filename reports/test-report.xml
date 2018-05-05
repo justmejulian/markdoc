@@ -1,44 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
+  <file path="D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\wordcounter.test.js">
+    <testCase name="WordCounter should count words in the document" duration="3"/>
+    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="0"/>
+    <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="1"/>
+    <testCase name="CharacterCounter should count every single character in the document" duration="0"/>
+    <testCase name="CharacterCounter should not count spaces" duration="1"/>
+    <testCase name="CharacterCounter should count special character" duration="0"/>
+    <testCase name="CharacterCounter should show zero, if no it has no text" duration="0"/>
+  </file>
   <file path="D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\markdown.test.js">
-    <testCase name="InputStream should read strings correctly" duration="3"/>
-    <testCase name="InputStream should peek characters correctly" duration="1"/>
-    <testCase name="InputStream should detect the end of the string correctly" duration="0"/>
-    <testCase name="InputStream should keep track of the string position" duration="1"/>
-    <testCase name="InputStream should keep track of the current line and column" duration="0"/>
-    <testCase name="InputStream should test regex" duration="1"/>
-    <testCase name="InputStream should match regex" duration="0"/>
+    <testCase name="InputStream should read strings correctly" duration="8"/>
+    <testCase name="InputStream should peek characters correctly" duration="3"/>
+    <testCase name="InputStream should detect the end of the string correctly" duration="6"/>
+    <testCase name="InputStream should keep track of the string position" duration="56"/>
+    <testCase name="InputStream should keep track of the current line and column" duration="1"/>
+    <testCase name="InputStream should test regex" duration="0"/>
+    <testCase name="InputStream should match regex" duration="1"/>
     <testCase name="InputStream should skip a certain amount of characters" duration="0"/>
     <testCase name="InputStream should skip to the next row(for testing purposes)" duration="1"/>
-    <testCase name="Token Regex should match headers appropriately" duration="0"/>
+    <testCase name="Token Regex should match headers appropriately" duration="1"/>
     <testCase name="Token Regex should match blockquotes appropriately" duration="0"/>
-    <testCase name="Token Regex should match rules appropriately" duration="4"/>
-    <testCase name="Token Regex should match lists appropriately" duration="1"/>
-    <testCase name="Token Regex should match code blocks appropriately" duration="0"/>
+    <testCase name="Token Regex should match rules appropriately" duration="1"/>
+    <testCase name="Token Regex should match lists appropriately" duration="0"/>
+    <testCase name="Token Regex should match code blocks appropriately" duration="1"/>
     <testCase name="Token Regex should match TOCs appropriately" duration="0"/>
     <testCase name="Token Regex should match TOFs appropriately" duration="0"/>
     <testCase name="Token Regex should match pagebreaks appropriately" duration="0"/>
-    <testCase name="Token Regex should match references appropriately" duration="1"/>
+    <testCase name="Token Regex should match references appropriately" duration="0"/>
     <testCase name="Token Regex should match latex blocks appropriately" duration="0"/>
-    <testCase name="Token Regex should match newlines appropriately" duration="0"/>
+    <testCase name="Token Regex should match newlines appropriately" duration="1"/>
     <testCase name="Token Regex should match bold text indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match italics text indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match strikethrough text indicators appropriately" duration="0"/>
-    <testCase name="Token Regex should match image start indicators appropriately" duration="1"/>
-    <testCase name="Token Regex should match link start indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match image start indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match link start indicators appropriately" duration="1"/>
     <testCase name="Token Regex should match image-/link-end indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match code indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match latex indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match latex indicators appropriately" duration="0"/>
-    <testCase name="TokenStream should find the correct amount of tokens" duration="0"/>
+    <testCase name="TokenStream should find the correct amount of tokens" duration="1"/>
     <testCase name="TokenStream should tokenize to the correct types" duration="1"/>
-    <testCase name="TokenStream should record the correct columns and rows" duration="1"/>
+    <testCase name="TokenStream should record the correct columns and rows" duration="0"/>
     <testCase name="TokenStream should find proper header tokens" duration="1"/>
     <testCase name="TokenStream should find proper blockquotes" duration="0"/>
     <testCase name="TokenStream should find proper rules" duration="0"/>
     <testCase name="TokenStream should find proper lists" duration="1"/>
     <testCase name="TokenStream should find proper code blocks" duration="0"/>
-    <testCase name="TokenStream should find proper TOCs" duration="1"/>
+    <testCase name="TokenStream should find proper TOCs" duration="0"/>
     <testCase name="TokenStream should find proper TOFs" duration="0"/>
     <testCase name="TokenStream should find proper pagebreaks" duration="0"/>
     <testCase name="TokenStream should find proper references" duration="1"/>
@@ -50,43 +59,39 @@
     <testCase name="TokenStream should find proper image start indicators" duration="0"/>
     <testCase name="TokenStream should find proper link start indicators" duration="1"/>
     <testCase name="TokenStream should find proper image-/link end indicators" duration="0"/>
-    <testCase name="TokenStream should find proper code indicators" duration="0"/>
+    <testCase name="TokenStream should find proper code indicators" duration="1"/>
+    <testCase name="TokenStream should find proper latex indicators" duration="0"/>
     <testCase name="TokenStream should find proper latex indicators" duration="1"/>
-    <testCase name="TokenStream should find proper latex indicators" duration="2"/>
     <testCase name="TokenStream should skip to the next row(for testing purposes)" duration="0"/>
-    <testCase name="Parser should parse the right amount of components" duration="2"/>
-    <testCase name="Parser should parse headers" duration="1"/>
-    <testCase name="Parser should parse block quotes" duration="1"/>
+    <testCase name="Parser should parse the right amount of components" duration="3"/>
+    <testCase name="Parser should parse headers" duration="0"/>
+    <testCase name="Parser should parse block quotes" duration="2"/>
     <testCase name="Parser should parse rules" duration="0"/>
     <testCase name="Parser should parse list heads" duration="2"/>
-    <testCase name="Parser should parse list items" duration="2"/>
+    <testCase name="Parser should parse list items" duration="1"/>
     <testCase name="Parser should parse lists" duration="1"/>
     <testCase name="Parser should parse Code blocks" duration="0"/>
     <testCase name="Parser should parse TOCs" duration="1"/>
     <testCase name="Parser should parse TOFs" duration="0"/>
     <testCase name="Parser should parse pagebreaks" duration="3"/>
     <testCase name="Parser should parse references" duration="1"/>
-    <testCase name="Parser should parse LaTeX blocks" duration="0"/>
-    <testCase name="Parser should parse softbreaks" duration="1"/>
-    <testCase name="Parser should parse paragraphs" duration="0"/>
+    <testCase name="Parser should parse LaTeX blocks" duration="9"/>
+    <testCase name="Parser should parse softbreaks" duration="0"/>
+    <testCase name="Parser should parse paragraphs" duration="1"/>
+    <testCase name="Parser should parse any string sequence" duration="3"/>
+    <testCase name="Parser should parse text rows" duration="0"/>
     <testCase name="Parser should parse a text token" duration="0"/>
-    <testCase name="Parser should reinterpret failed formatting as text" duration="0"/>
+    <testCase name="Parser should reinterpret failed formatting as text" duration="1"/>
     <testCase name="Parser should parse bold text" duration="0"/>
     <testCase name="Parser should parse italicized text" duration="1"/>
     <testCase name="Parser should parse strikethrough text" duration="1"/>
-    <testCase name="Parser should parse any string sequence" duration="2"/>
-    <testCase name="Parser should parse text rows" duration="0"/>
+    <testCase name="Parser should parse inline latex" duration="1"/>
     <testCase name="Parser should parse links" duration="1"/>
     <testCase name="Parser should parse images" duration="1"/>
-    <testCase name="LaTeX Parser should cache parse requests" duration="2"/>
-  </file>
-  <file path="D:\Users\Raphael\Dokumente\Git\markdoc\__tests__\wordcounter.test.js">
-    <testCase name="WordCounter should count words in the document" duration="1"/>
-    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="1"/>
-    <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="0"/>
-    <testCase name="CharacterCounter should count every single character in the document" duration="0"/>
-    <testCase name="CharacterCounter should not count spaces" duration="1"/>
-    <testCase name="CharacterCounter should count special character" duration="0"/>
-    <testCase name="CharacterCounter should show zero, if no it has no text" duration="0"/>
+    <testCase name="LaTeX Parser should parse latex" duration="0"/>
+    <testCase name="LaTeX Parser should know if an expression has been parsed before" duration="1"/>
+    <testCase name="LaTeX Parser should return cached expressions" duration="0"/>
+    <testCase name="LaTeX Parser should cache expression-html-pairs" duration="0"/>
+    <testCase name="LaTeX Parser should throw out cached expressions when limit reached" duration="3"/>
   </file>
 </testExecutions>

@@ -1222,10 +1222,15 @@ describe('Parser', () => {
     var parser = new Parser(tokenStream);
     var latex = parser.parseLatexblock()[0];
     expect(latex.value).toEqual('\\mathcal L\\left(f\\cdot g\\right)');
+    expect(
+      parser.dom.latexParser.has('\\mathcal L\\left(f\\cdot g\\right)')
+    ).toBeTruthy();
+
     latex = parser.parseLatexblock()[0];
-    expect(latex.value).toEqual(
-      '\n\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx\n'
-    );
+    expect(latex.value).toEqual('\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx');
+    expect(
+      parser.dom.latexParser.has('\\int_0^\\infty f(x)\\cdot g(x)\\mathrm dx')
+    ).toBeTruthy();
     var substitutes = parser.parseLatexblock()[0];
     expect(substitutes.type).not.toEqual(ComponentTypes.LATEXBLOCK);
     expect(tokenStream.eof()).toBeTruthy();
@@ -1263,6 +1268,92 @@ describe('Parser', () => {
     expect(paragraph.type).toEqual(ComponentTypes.PARAGRAPH);
     expect(paragraph.children.length).toBe(3);
     expect(tokenStream.eof()).toBeTruthy();
+  });
+  it('should parse any string sequence', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream(
+        'Lorem Ipsum.\n' +
+          '**bold text**\n' +
+          '_Italics_\n' +
+          '~~strikethrough~~\n' +
+          '$x = \\dot y$\n' +
+          '`var a = 42;`'
+      )
+    );
+    var parser = new Parser(tokenStream);
+    var element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.TEXT);
+    expect(element.value).toEqual('Lorem Ipsum.');
+    expect(element.from).toEqual([0, 0]);
+    expect(element.to).toEqual([0, 11]);
+
+    tokenStream.skipToNextRow();
+    element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.BOLD);
+    expect(element.from).toEqual([1, 0]);
+    expect(element.to).toEqual([1, 12]);
+    expect(element.children.length).toBe(1);
+    expect(element.first().type).toEqual(ComponentTypes.TEXT);
+    expect(element.first().value).toEqual('bold text');
+    expect(element.first().from).toEqual([1, 2]);
+    expect(element.first().to).toEqual([1, 10]);
+
+    tokenStream.skipToNextRow();
+    element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.ITALICS);
+    expect(element.from).toEqual([2, 0]);
+    expect(element.to).toEqual([2, 8]);
+    expect(element.children.length).toBe(1);
+    expect(element.first().type).toEqual(ComponentTypes.TEXT);
+    expect(element.first().value).toEqual('Italics');
+    expect(element.first().from).toEqual([2, 1]);
+    expect(element.first().to).toEqual([2, 7]);
+
+    tokenStream.skipToNextRow();
+    element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.STRIKETHROUGH);
+    expect(element.from).toEqual([3, 0]);
+    expect(element.to).toEqual([3, 16]);
+    expect(element.children.length).toBe(1);
+    expect(element.first().type).toEqual(ComponentTypes.TEXT);
+    expect(element.first().value).toEqual('strikethrough');
+    expect(element.first().from).toEqual([3, 2]);
+    expect(element.first().to).toEqual([3, 14]);
+
+    tokenStream.skipToNextRow();
+    element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.INLINELATEX);
+    expect(element.from).toEqual([4, 0]);
+    expect(element.to).toEqual([4, 11]);
+    expect(element.children.length).toBe(0);
+    expect(element.value).toEqual('x = \\dot y');
+
+    tokenStream.skipToNextRow();
+    element = parser.parseAnyString();
+    expect(element).not.toBeNull();
+    expect(element.type).toEqual(ComponentTypes.INLINECODE);
+    expect(element.from).toEqual([5, 0]);
+    expect(element.to).toEqual([5, 12]);
+    expect(element.children.length).toBe(0);
+    expect(element.value).toEqual('var a = 42;');
+  });
+  it('should parse text rows', () => {
+    var tokenStream = new TokenStream(
+      new CharacterStream('Lorem Ipsum.\n`inline code`')
+    );
+    var parser = new Parser(tokenStream);
+    var row = parser.parseRow();
+    expect(row.length).toBe(1);
+    expect(row[0].type).toEqual(ComponentTypes.TEXT);
+    tokenStream.skipToNextRow();
+    row = parser.parseRow();
+    expect(row.length).toBe(1);
+    expect(row[0].type).toEqual(ComponentTypes.INLINECODE);
   });
   it('should parse a text token', () => {
     var tokenStream = new TokenStream(new CharacterStream('Lorem Ipsum.'));
@@ -1374,91 +1465,12 @@ describe('Parser', () => {
     expect(strike.from).toEqual([2, 0]);
     expect(strike.to).toEqual([2, 9]);
   });
-  it('should parse any string sequence', () => {
-    var tokenStream = new TokenStream(
-      new CharacterStream(
-        'Lorem Ipsum.\n' +
-          '**bold text**\n' +
-          '_Italics_\n' +
-          '~~strikethrough~~\n' +
-          '$x = \\dot y$\n' +
-          '`var a = 42;`'
-      )
-    );
+  it('should parse inline latex', () => {
+    var tokenStream = new TokenStream(new CharacterStream('$z_n=z_{n-1}^2+c$'));
     var parser = new Parser(tokenStream);
-    var element = parser.parseAnyString();
-    expect(element).not.toBeNull();
-    expect(element.type).toEqual(ComponentTypes.TEXT);
-    expect(element.value).toEqual('Lorem Ipsum.');
-    expect(element.from).toEqual([0, 0]);
-    expect(element.to).toEqual([0, 11]);
-
-    tokenStream.skipToNextRow();
-    element = parser.parseAnyString();
-    expect(element).not.toBeNull();
-    expect(element.type).toEqual(ComponentTypes.BOLD);
-    expect(element.from).toEqual([1, 0]);
-    expect(element.to).toEqual([1, 12]);
-    expect(element.children.length).toBe(1);
-    expect(element.first().type).toEqual(ComponentTypes.TEXT);
-    expect(element.first().value).toEqual('bold text');
-    expect(element.first().from).toEqual([1, 2]);
-    expect(element.first().to).toEqual([1, 10]);
-
-    tokenStream.skipToNextRow();
-    element = parser.parseAnyString();
-    expect(element).not.toBeNull();
-    expect(element.type).toEqual(ComponentTypes.ITALICS);
-    expect(element.from).toEqual([2, 0]);
-    expect(element.to).toEqual([2, 8]);
-    expect(element.children.length).toBe(1);
-    expect(element.first().type).toEqual(ComponentTypes.TEXT);
-    expect(element.first().value).toEqual('Italics');
-    expect(element.first().from).toEqual([2, 1]);
-    expect(element.first().to).toEqual([2, 7]);
-
-    tokenStream.skipToNextRow();
-    element = parser.parseAnyString();
-    expect(element).not.toBeNull();
-    expect(element.type).toEqual(ComponentTypes.STRIKETHROUGH);
-    expect(element.from).toEqual([3, 0]);
-    expect(element.to).toEqual([3, 16]);
-    expect(element.children.length).toBe(1);
-    expect(element.first().type).toEqual(ComponentTypes.TEXT);
-    expect(element.first().value).toEqual('strikethrough');
-    expect(element.first().from).toEqual([3, 2]);
-    expect(element.first().to).toEqual([3, 14]);
-
-    tokenStream.skipToNextRow();
-    element = parser.parseAnyString();
-    expect(element).not.toBeNull();
-    expect(element.type).toEqual(ComponentTypes.INLINELATEX);
-    expect(element.from).toEqual([4, 0]);
-    expect(element.to).toEqual([4, 11]);
-    expect(element.children.length).toBe(0);
-    expect(element.value).toEqual('x = \\dot y');
-
-    tokenStream.skipToNextRow();
-    element = parser.parseAnyString();
-    expect(element).not.toBeNull();
-    expect(element.type).toEqual(ComponentTypes.INLINECODE);
-    expect(element.from).toEqual([5, 0]);
-    expect(element.to).toEqual([5, 12]);
-    expect(element.children.length).toBe(0);
-    expect(element.value).toEqual('var a = 42;');
-  });
-  it('should parse text rows', () => {
-    var tokenStream = new TokenStream(
-      new CharacterStream('Lorem Ipsum.\n`inline code`')
-    );
-    var parser = new Parser(tokenStream);
-    var row = parser.parseRow();
-    expect(row.length).toBe(1);
-    expect(row[0].type).toEqual(ComponentTypes.TEXT);
-    tokenStream.skipToNextRow();
-    row = parser.parseRow();
-    expect(row.length).toBe(1);
-    expect(row[0].type).toEqual(ComponentTypes.INLINECODE);
+    var latex = parser.parseLatex();
+    expect(latex.value).toEqual('z_n=z_{n-1}^2+c');
+    expect(parser.dom.latexParser.has('z_n=z_{n-1}^2+c')).toBeTruthy();
   });
   it('should parse links', () => {
     var tokenStream = new TokenStream(
@@ -1568,7 +1580,32 @@ describe('Parser', () => {
 });
 
 describe('LaTeX Parser', () => {
-  it('should cache parse requests', () => {
+  it('should parse latex', () => {
+    var latexParser = new LatexParser();
+    expect(latexParser.parse('x = \\dot x')).toMatch(/^<.+>$/);
+  });
+  it('should know if an expression has been parsed before', () => {
+    var latexParser = new LatexParser();
+    var math = 'x = \\dot x';
+    expect(latexParser.has(math)).toBeFalsy();
+    var result = latexParser.parse(math);
+    expect(latexParser.has(math)).toBeTruthy();
+  });
+  it('should return cached expressions', () => {
+    var latexParser = new LatexParser();
+    var math = 'x = \\dot x';
+    var result = latexParser.parse(math);
+    expect(latexParser.get(math)).toEqual(result);
+  });
+  it('should cache expression-html-pairs', () => {
+    var latexParser = new LatexParser();
+    var math = 'x = \\dot x';
+    var result = '<makeshifthtml/>';
+    expect(latexParser.has(math)).toBeFalsy();
+    latexParser.add(math, result);
+    expect(latexParser.has(math)).toBeTruthy();
+  });
+  it('should throw out cached expressions when limit reached', () => {
     var cacheSize = 2;
     var latexParser = new LatexParser(cacheSize);
     var math = 'x = \\dot x';

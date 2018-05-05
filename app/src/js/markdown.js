@@ -757,8 +757,10 @@ class Parser {
       token = this.tokenStream.peek();
       switch (token.type) {
         case TokenTypes.LATEXBLOCK:
-          cache.push(this.tokenStream.read()); // $$
+          this.tokenStream.read(); // $$
           component.to = token.to;
+          component.value = component.value.replace(/^\n+|\n+$/g, '');
+          component.html = this.dom.latexParser.parse(component.value);
           token = this.tokenStream.peek();
           if (token && token.type == TokenTypes.NEWLINE) {
             this.tokenStream.read(); // Skip trailing newline
@@ -968,8 +970,8 @@ class Parser {
   /**
    * Parses the token stream for inline LaTeX.
    * @access private
-   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
-   *                          text reinterpreted elements.
+   * @returns {MDComponent} Either a inline latex element or a as text
+   *                        reinterpreted element.
    */
   parseLatex() {
     if (this.tokenStream.eof())
@@ -988,6 +990,7 @@ class Parser {
       if (token.type == TokenTypes.LATEX) {
         this.tokenStream.read(); // delimiter
         component.to = token.to;
+        component.html = this.dom.latexParser.parse(component.value);
         return component;
       } else if (token.type == TokenTypes.NEWLINE) {
         return this.reinterpretAsText(cache);
@@ -1003,8 +1006,8 @@ class Parser {
   /**
    * Parses the token stream for inline code.
    * @access private
-   * @returns {MDComponent[]} Either a one-element-array or a sequence of as
-   *                          text reinterpreted elements.
+   * @returns {MDComponent} Either a code latex element or a as text
+   *                        reinterpreted element.
    */
   parseCode() {
     if (this.tokenStream.eof())
@@ -1035,6 +1038,12 @@ class Parser {
     return this.reinterpretAsText(cache);
   }
 
+  /**
+   * Parses the second half or a link/image.
+   * @access private
+   * @param {MDComponent} component The image or link component to use as base.
+   * @returns {MDComponent}
+   */
   parseImageOrLinkEnd(component) {
     var token = this.tokenStream.read(); // [|![
     var cache = [token];
@@ -1360,11 +1369,44 @@ const ComponentTypes = Object.freeze({
  * Parser for LaTeX code
  */
 class LatexParser {
+  /**
+   * Creates a handle for the katex parser.
+   * @constructs LatexParser
+   * @static
+   * @access public
+   * @param {number} [cacheSize=100] Size for the queue to cache the parsed
+   *                                 expressions. Defaults to 100.
+   * @returns {LatexParser}
+   */
   constructor(cacheSize) {
+    /**
+     * List of the expressions that have been parsed.
+     * @access private
+     * @type {string[]}
+     */
     this.keys = [];
+    /**
+     * List of the parsed expressions.
+     * @access private
+     * @type {string[]}
+     */
     this.values = [];
-    this.cacheSize = cacheSize;
+    /**
+     * Size of the cache.
+     * @access public
+     * @readonly
+     * @type {number}
+     */
+    this.cacheSize = cacheSize ? cacheSize : 100;
   }
+  /**
+   * Checks if this expression has been parsed before. If so, it returns the
+   * cached result. Otherwise it parses the expression, caches it and returns
+   * result.
+   * @access public
+   * @param {string} latex The latex expression to parse.
+   * @returns {string} Html expression.
+   */
   parse(latex) {
     if (this.has(latex)) {
       return this.get(latex);
@@ -1373,12 +1415,30 @@ class LatexParser {
     this.add(latex, html);
     return html;
   }
+  /**
+   * Checks if the expression is already cached or not.
+   * @access private
+   * @param {string} latex The latex expression to check for.
+   * @returns {boolean}
+   */
   has(latex) {
     return this.keys.includes(latex);
   }
+  /**
+   * Gets the cached result of the provided latex expression.
+   * @access private
+   * @param {string} latex The latex expression.
+   * @returns {string}
+   */
   get(latex) {
     return this.values[this.keys.indexOf(latex)];
   }
+  /**
+   * Caches an expression-html-pair. If the maximum cache size has been reached,
+   * it throws out the oldest parsed pair.
+   * @param {string} latex The latex expression.
+   * @param {string} html The parsed result.
+   */
   add(latex, html) {
     while (this.keys.length >= this.cacheSize) {
       this.keys.shift();
@@ -1965,6 +2025,13 @@ class MDPageBreak extends MDComponent {
 
 // Central class
 class MDDOM extends MDComponent {
+  /**
+   * Creates a new instance of a DOM.
+   * @constructs MDDOM
+   * @static
+   * @access public
+   * @returns {MDDOM}
+   */
   constructor() {
     super(ComponentTypes.DOM);
     /**
@@ -1991,6 +2058,13 @@ class MDDOM extends MDComponent {
      * @type {MDReference[]}
      */
     this.references = [];
+    /**
+     * A handler for latex parse requests.
+     * @access public
+     * @readonly
+     * @type {LatexParser}
+     */
+    this.latexParser = new LatexParser();
   }
   static parse(source) {
     var dom = new MDDOM();
@@ -2203,10 +2277,5 @@ const markdown = {
 };
 
 // Test debug:
-var cacheSize = 2;
-var latexParser = new LatexParser(cacheSize);
-latexParser.parse('x = \\dot x');
-latexParser.parse('\\int_0^\\infty');
-latexParser.parse('x = \\dot x');
 
 module.exports = markdown;
