@@ -68,7 +68,7 @@ class App extends React.Component {
         SidebarActions.setAuthor(val);
       }),
       new MetaDataHelper('date', value => {
-        return; //SidebarActions.setDate(value);
+        SidebarActions.setDate(moment(this._prepareDate(value)));
       }),
       new MetaDataHelper('headerLeft', val => {
         SidebarActions.setHeaderLeft(val);
@@ -148,7 +148,6 @@ class App extends React.Component {
       );
     }
 
-    console.log('Test: ' + pagesAsString);
     ipcRenderer.send(GET_PDF_CONTENT, {
       currentWindow,
       currentFilePath,
@@ -240,6 +239,11 @@ class App extends React.Component {
     }
   }
 
+  _prepareDate(strDate) {
+    var splitDate = strDate.split('/');
+    return splitDate[2] + '-' + splitDate[1] + '-' + splitDate[0];
+  }
+
   render() {
     return (
       <div>
@@ -307,7 +311,13 @@ class MetaDataHelper {
     var match = regex.exec(string);
     if (match == null) return false;
     var value = match[1];
-    this.setter(value);
+    if (value == 'true') {
+      this.setter(true);
+    } else if (value == 'false') {
+      this.setter(false);
+    } else {
+      this.setter(value);
+    }
     return true;
   }
   setDefault() {
