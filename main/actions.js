@@ -54,15 +54,7 @@ function saveFile(fileType, currentFilePath, currentContent, currentWindow) {
     fileType.extensions[0]
   );
   switch (fileType) {
-    case FILETYPE_PDF:
-      openSaveDialog(
-        fileType,
-        defaultFilePathTitle,
-        currentContent,
-        currentWindow
-      );
-      break;
-    case FILETYPE_HTML:
+    case (FILETYPE_PDF, FILETYPE_HTML):
       openSaveDialog(
         fileType,
         defaultFilePathTitle,

@@ -378,7 +378,6 @@ class Parser {
    */
   parse() {
     var out = [];
-    var comp = null;
     this.dom.headers = [];
     this.dom.toc = null;
     this.dom.tof = null;
@@ -916,7 +915,7 @@ class Parser {
     var cache = [token];
     component.from = token.from;
     while (!this.tokenStream.eof()) {
-      var token = this.tokenStream.peek();
+      token = this.tokenStream.peek();
       if (token.type == delimiter) {
         this.tokenStream.read(); // delimiter
         component.to = token.to;
@@ -980,7 +979,7 @@ class Parser {
     component.value = '';
     component.from = token.from;
     while (!this.tokenStream.eof()) {
-      var token = this.tokenStream.peek();
+      token = this.tokenStream.peek();
       if (token.type == TokenTypes.LATEX) {
         this.tokenStream.read(); // delimiter
         component.to = token.to;
@@ -1016,7 +1015,7 @@ class Parser {
     component.value = '';
     component.from = token.from;
     while (!this.tokenStream.eof()) {
-      var token = this.tokenStream.peek();
+      token = this.tokenStream.peek();
       if (token.type == TokenTypes.CODE) {
         this.tokenStream.read(); // delimiter
         component.to = token.to;
