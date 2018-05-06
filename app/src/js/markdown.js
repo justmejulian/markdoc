@@ -2811,16 +2811,3 @@ const markdown = {
 };
 
 module.exports = markdown;
-
-var dom = MDDOM.parse(
-  '# test\n' +
-    'Das ist ein test\n' +
-    '$$\n' +
-    'x = y\n' +
-    '$$\n' +
-    '```js\n' +
-    'var a = 42;\n' +
-    '```\n' +
-    'Das sollte alles funktionieren.'
-);
-var html = dom.toHtml();
