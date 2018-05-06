@@ -1,5 +1,6 @@
 {
   "name": "markdoc",
+  "productName": "Markdoc",
   "version": "1.0.0",
   "description": "Beautiful markdown editor for academic papers.",
   "main": "main.js",
@@ -12,11 +13,11 @@
     "clean": "rm -rf node_modules",
     "reinstall": "npm run clean && npm install",
     "package-mac":
-      "webpack && electron-packager ./ Markdoc --out ./bin --platform darwin --arch x64  --overwrite --ignore=\"ignore|bin|node_modules\"",
+      "webpack && electron-packager . Markdoc --overwrite --asar --platform=darwin --arch=x64 --prune=true --out=./release-builds --ignore=\"ignore|bin|node_modules\" --icon=app/src/icons/mac/markdoc.icns",
     "package-win":
-      "webpack && electron-packager . Markdoc --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --ignore=\"ignore|bin|node_modules\"",
+      "webpack && electron-packager . Markdoc --overwrite --asar --platform=win32 --arch=ia32 --prune=true --out=./release-builds --ignore=\"ignore|bin|node_modules\" --icon=app/src/icons/win/markdoc.ico --version-string.CompanyName=Markdoc --version-string.FileDescription=Markdoc --version-string.ProductName=\"Markdoc\"",
     "package-linux":
-      "webpack && electron-packager . Markdoc --overwrite --asar=true --platform=linux --arch=x64  --prune=true --out=release-builds --ignore=\"ignore|bin|node_modules\""
+      "webpack && electron-packager . Markdoc --overwrite --asar --platform=linux --arch=x64 --prune=true --out=./release-builds --ignore=\"ignore|bin|node_modules\" --icon=app/src/icons/png/markdoc_256x256.png"
   },
   "author": "PSIT Gruppe ",
   "repository": "https://github.engineering.zhaw.ch/vissejul/markdoc.git",
