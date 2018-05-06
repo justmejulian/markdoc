@@ -49,12 +49,6 @@ class Header extends React.Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      pageNumber: nextProps.pageNumber + 1
-    });
-  }
-
   handleExpandOrCollapse() {
     SidebarActions.setIsCollapsed();
   }

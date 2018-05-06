@@ -367,7 +367,7 @@ class Parser {
   static parseToArray(string, dom) {
     var tokenStream = new TokenStream(new CharacterStream(string));
     var parser = new Parser(tokenStream, dom);
-    return parser.parse(dom);
+    return parser.parse();
   }
 
   /**
