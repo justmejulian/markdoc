@@ -54,15 +54,7 @@ function saveFile(fileType, currentFilePath, currentContent, currentWindow) {
     fileType.extensions[0]
   );
   switch (fileType) {
-    case (FILETYPE_PDF, FILETYPE_HTML):
-      openSaveDialog(
-        fileType,
-        defaultFilePathTitle,
-        currentContent,
-        currentWindow
-      );
-      break;
-    default:
+    case FILETYPE_MDOC:
       if (currentFilePath === null || currentFilePath === '') {
         openSaveDialog(
           fileType,
@@ -73,6 +65,14 @@ function saveFile(fileType, currentFilePath, currentContent, currentWindow) {
       } else {
         writeFileToPath(currentContent, currentFilePath);
       }
+      break;
+    default:
+      openSaveDialog(
+        fileType,
+        defaultFilePathTitle,
+        currentContent,
+        currentWindow
+      );
   }
 }
 
