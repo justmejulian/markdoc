@@ -15,7 +15,9 @@ import {
   GET_HTML_CONTENT,
   GET_PDF_CONTENT,
   OPEN_FILE_FROM_PATH,
-  SET_FILE_PATH
+  SET_FILE_PATH,
+  HANDLE_PREVIEW_ZOOM,
+  TRIGGER_SIDEBAR
 } from '../utils/constants';
 
 import Sidebar from './components/Sidebar.jsx';
@@ -45,6 +47,9 @@ class App extends React.Component {
     this.setFilePath = (event, data) => this._setFilePath(event, data);
     this.getHTMLContent = (event, data) => this._getHTMLContent(event, data);
     this.getPDFContent = (event, data) => this._getPDFContent(event, data);
+    this.handlePreviewZoom = (event, data) =>
+      this._handlePreviewZoom(event, data);
+    this.triggerSidebar = (event, data) => this._triggerSidebar(event, data);
 
     // prepare metadata helpers
     this.metaDataHelpers = [
@@ -64,7 +69,7 @@ class App extends React.Component {
         SidebarActions.setAuthor(val);
       }),
       new MetaDataHelper('date', value => {
-        return; //SidebarActions.setDate(value);
+        SidebarActions.setDate(moment(this._prepareDate(value)));
       }),
       new MetaDataHelper('headerLeft', val => {
         SidebarActions.setHeaderLeft(val);
@@ -94,6 +99,8 @@ class App extends React.Component {
     ipcRenderer.on(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.on(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.on(SET_FILE_PATH, this.setFilePath);
+    ipcRenderer.on(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
+    ipcRenderer.on(TRIGGER_SIDEBAR, this.triggerSidebar);
   }
 
   componentWillUnmount() {
@@ -102,6 +109,8 @@ class App extends React.Component {
     ipcRenderer.removeListener(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.removeListener(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.removeListener(SET_FILE_PATH, this.setFilePath);
+    ipcRenderer.removeListener(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
+    ipcRenderer.removeListener(TRIGGER_SIDEBAR, this.triggerSidebar);
   }
 
   _getDocumentContent(event, data) {
@@ -140,7 +149,6 @@ class App extends React.Component {
       );
     }
 
-    console.log('Test: ' + pagesAsString);
     ipcRenderer.send(GET_PDF_CONTENT, {
       currentWindow,
       currentFilePath,
@@ -206,6 +214,20 @@ class App extends React.Component {
     });
   }
 
+  _handlePreviewZoom(event, data) {
+    if (data == 'zoom-in') {
+      Actions.zoomIn();
+    } else if (data == 'zoom-out') {
+      Actions.zoomOut();
+    } else {
+      Actions.zoomReset();
+    }
+  }
+
+  _triggerSidebar(event, data) {
+    SidebarActions.setIsCollapsed();
+  }
+
   _isMdoc(currentFilePath) {
     var fileExtension = currentFilePath.slice(
       currentFilePath.indexOf('.'),
@@ -216,6 +238,11 @@ class App extends React.Component {
     } else {
       return false;
     }
+  }
+
+  _prepareDate(strDate) {
+    var splitDate = strDate.split('/');
+    return splitDate[2] + '-' + splitDate[1] + '-' + splitDate[0];
   }
 
   render() {
@@ -285,7 +312,13 @@ class MetaDataHelper {
     var match = regex.exec(string);
     if (match == null) return false;
     var value = match[1];
-    this.setter(value);
+    if (value == 'true') {
+      this.setter(true);
+    } else if (value == 'false') {
+      this.setter(false);
+    } else {
+      this.setter(value);
+    }
     return true;
   }
   setDefault() {

@@ -3,8 +3,6 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 var BUILD_DIR = path.resolve(__dirname, 'app/build');
 
 module.exports = {
-  watch: true,
-
   target: 'electron',
 
   entry: './app/src/entry.js',

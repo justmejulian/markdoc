@@ -27,21 +27,22 @@ export default class Sidebar extends Component {
     this.setHeaderInfo = this._setHeaderInfo.bind(this);
     this.setFooterInfo = this._setFooterInfo.bind(this);
     this.setDate = this._setDate.bind(this);
+    this.setIsCollapsed = this._setIsCollapsed.bind(this);
 
     this.state = {
       isCollapsed: true,
       hasTitlepage: SidebarStore.getHasTitlepage(),
       hasHeader: SidebarStore.getHasHeader(),
       hasFooter: SidebarStore.getHasFooter(),
-      title: '',
-      author: '',
-      date: moment(),
-      headerLeft: '',
-      headerMiddle: '',
-      headerRight: '',
-      footerLeft: '',
+      title: SidebarStore.getTitle(),
+      author: SidebarStore.getAuthor(),
+      date: moment(this._prepareDate(SidebarStore.getDate())),
+      headerLeft: SidebarStore.getHeaderLeft(),
+      headerMiddle: SidebarStore.getHeaderMiddle(),
+      headerRight: SidebarStore.getHeaderRight(),
+      footerLeft: SidebarStore.getFooterLeft(),
       footerMiddle: '',
-      footerRight: '',
+      footerRight: SidebarStore.getFooterRight(),
       isHovering: false
     };
   }
@@ -55,6 +56,7 @@ export default class Sidebar extends Component {
     SidebarStore.on('Title_changed', this.setTitle);
     SidebarStore.on('Author_changed', this.setAuthor);
     SidebarStore.on('Date_changed', this.setDate);
+    SidebarStore.on('isCollapsed_changed', this.setIsCollapsed);
   }
 
   // Unbind change listener
@@ -67,6 +69,7 @@ export default class Sidebar extends Component {
     SidebarStore.removeListener('Title_changed', this.setTitle);
     SidebarStore.removeListener('Author_changed', this.setAuthor);
     SidebarStore.removeListener('Date_changed', this.setDate);
+    SidebarStore.removeListener('isCollapsed_changed', this.setIsCollapsed);
   }
 
   _setTitle() {
@@ -115,10 +118,19 @@ export default class Sidebar extends Component {
     });
   }
 
+  _setIsCollapsed() {
+    this.setState({ isCollapsed: SidebarStore.isCollapsed });
+  }
+
   _setDate() {
     this.setState({
-      date: SidebarStore.getDate()
+      date: moment(this._prepareDate(SidebarStore.getDate()))
     });
+  }
+
+  _prepareDate(strDate) {
+    var splitDate = strDate.split('/');
+    return splitDate[2] + '-' + splitDate[1] + '-' + splitDate[0];
   }
 
   _handleDateChange(date) {
@@ -127,7 +139,7 @@ export default class Sidebar extends Component {
   }
 
   _handleExpandOrCollapse() {
-    this.setState({ isCollapsed: !this.state.isCollapsed });
+    SidebarActions.setIsCollapsed();
   }
 
   _handleFieldChange(target) {
