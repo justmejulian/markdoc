@@ -18,6 +18,8 @@ class SidebarStore extends EventEmitter {
     this.footerLeft = '';
     this.footerMiddle = '';
     this.footerRight = '';
+
+    this.isCollapsed = true;
   }
 
   setHasTitlepage(status) {
@@ -66,6 +68,14 @@ class SidebarStore extends EventEmitter {
 
   setFooterRight(text) {
     this.footerRight = text;
+  }
+
+  setIsCollapsed(text) {
+    this.isCollapsed = !this.isCollapsed;
+  }
+
+  getIsCollapsed() {
+    return this.isCollapsed;
   }
 
   getHasTitlepage() {
@@ -139,7 +149,7 @@ class SidebarStore extends EventEmitter {
         this.emit('Author_changed');
         break;
       case 'SET_DATE':
-        this.setDate(action.text);
+        this.setDate(moment(action.text));
         this.emit('Date_changed');
         break;
       case 'SET_HEADER_LEFT':
@@ -165,6 +175,10 @@ class SidebarStore extends EventEmitter {
       case 'SET_FOOTER_RIGHT':
         this.setFooterRight(action.text);
         this.emit('Footer_changed');
+        break;
+      case 'SET_IS_COLLAPSED':
+        this.setIsCollapsed();
+        this.emit('isCollapsed_changed');
         break;
     }
   }

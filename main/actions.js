@@ -54,23 +54,7 @@ function saveFile(fileType, currentFilePath, currentContent, currentWindow) {
     fileType.extensions[0]
   );
   switch (fileType) {
-    case FILETYPE_PDF:
-      openSaveDialog(
-        fileType,
-        defaultFilePathTitle,
-        currentContent,
-        currentWindow
-      );
-      break;
-    case FILETYPE_HTML:
-      openSaveDialog(
-        fileType,
-        defaultFilePathTitle,
-        currentContent,
-        currentWindow
-      );
-      break;
-    default:
+    case FILETYPE_MDOC:
       if (currentFilePath === null || currentFilePath === '') {
         openSaveDialog(
           fileType,
@@ -81,6 +65,14 @@ function saveFile(fileType, currentFilePath, currentContent, currentWindow) {
       } else {
         writeFileToPath(currentContent, currentFilePath);
       }
+      break;
+    default:
+      openSaveDialog(
+        fileType,
+        defaultFilePathTitle,
+        currentContent,
+        currentWindow
+      );
   }
 }
 
@@ -136,7 +128,7 @@ function setFilePath(filePath, currentWindow) {
 
 // returns the filename without extension
 function getFilename(filePath) {
-  return path.basename(filePath, path.extname(filePath));
+  return path.posix.basename(filePath, path.extname(filePath));
 }
 
 // returns the user homedir if filePath is not defined

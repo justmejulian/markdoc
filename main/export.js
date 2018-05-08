@@ -24,7 +24,6 @@ function exportAsHtml(currentFilePath, currentHTMLContent, currentWindow) {
     showSaveFirstMessage(currentWindow);
     return;
   }
-  var directoryPath = path.dirname(currentFilePath);
   saveFile(FILETYPE_HTML, currentFilePath, currentHTMLContent, currentWindow);
 }
 

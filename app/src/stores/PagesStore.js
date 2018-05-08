@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { MDDOM } from '../js/markdown.js';
+import { DOM } from '../js/markdown.js';
 
 import dispatcher from '../dispatcher';
 
@@ -16,7 +16,7 @@ class PagesStore extends EventEmitter {
   }
 
   setHTML(markdown) {
-    this.html = MDDOM.parse(markdown).toHtml();
+    this.html = DOM.parse(markdown).toHtml();
   }
 
   setZoom(newZoom) {
@@ -53,6 +53,10 @@ class PagesStore extends EventEmitter {
     }
   }
 
+  handleZoomReset() {
+    this.setZoom(1.0);
+  }
+
   handleActions(action) {
     switch (action.type) {
       case 'SET_HTML':
@@ -71,6 +75,9 @@ class PagesStore extends EventEmitter {
         this.handleZoomOut();
         this.emit('Zoom_changed');
         break;
+      case 'ZOOM_RESET':
+        this.handleZoomReset();
+        this.emit('Zoom_changed');
     }
   }
 }

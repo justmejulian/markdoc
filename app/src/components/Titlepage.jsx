@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import SidebarStore from '../stores/SidebarStore.js';
+import * as SidebarActions from '../actions/SidebarActions';
 
 class Titlepage extends React.Component {
   constructor() {
@@ -38,9 +39,18 @@ class Titlepage extends React.Component {
     };
   }
 
+  handleExpandOrCollapse() {
+    SidebarActions.setIsCollapsed();
+  }
+
   render() {
     return (
-      <div id="titlepage" className="page" style={this.getStyle()}>
+      <div
+        id="titlepage"
+        className="page"
+        onClick={this.handleExpandOrCollapse}
+        style={this.getStyle()}
+      >
         <div id="titlepageContens">
           <h1>{this.state.title}</h1>
           <p>{this.state.author}</p>

@@ -6,7 +6,8 @@ const {
   GET_DOCUMENT_CONTENT,
   GET_HTML_CONTENT,
   GET_PDF_CONTENT,
-  DEFAULT_URL
+  DEFAULT_URL,
+  TRIGGER_SIDEBAR
 } = require('../../app/utils/constants');
 
 // import window manager
@@ -60,6 +61,18 @@ module.exports = {
           }
         }
       ]
+    },
+    { type: 'separator' },
+    {
+      label: 'File Settings',
+      accelerator: process.platform === 'darwin' ? 'Command+,' : 'Ctrl+,',
+      click() {
+        // Get File Content to save from renderer process
+        BrowserWindow.getFocusedWindow().send(
+          TRIGGER_SIDEBAR,
+          'trigger-sidebar'
+        );
+      }
     }
   ]
 };
