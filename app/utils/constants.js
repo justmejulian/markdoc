@@ -10,6 +10,7 @@ module.exports = {
   SET_FILE_PATH: 'set-file-path',
   HANDLE_PREVIEW_ZOOM: 'handle-preview-zoom',
   TRIGGER_SIDEBAR: 'trigger-sidebar',
+  TRIGGER_TABLEMAKER: 'trigger-tablemaker',
   DEFAULT_URL: `file://${__dirname}/../index.html`,
   PRINT_URL: `file://${__dirname}/../../main/print.html`,
   FILETYPE_MDOC: {

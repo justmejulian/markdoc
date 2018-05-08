@@ -17,7 +17,8 @@ import {
   OPEN_FILE_FROM_PATH,
   SET_FILE_PATH,
   HANDLE_PREVIEW_ZOOM,
-  TRIGGER_SIDEBAR
+  TRIGGER_SIDEBAR,
+  TRIGGER_TABLEMAKER
 } from '../utils/constants';
 
 import Sidebar from './components/Sidebar.jsx';
@@ -50,6 +51,8 @@ class App extends React.Component {
     this.handlePreviewZoom = (event, data) =>
       this._handlePreviewZoom(event, data);
     this.triggerSidebar = (event, data) => this._triggerSidebar(event, data);
+    this.triggerTableMaker = (event, data) =>
+      this._triggerTableMaker(event, data);
 
     // prepare metadata helpers
     this.metaDataHelpers = [
@@ -101,6 +104,7 @@ class App extends React.Component {
     ipcRenderer.on(SET_FILE_PATH, this.setFilePath);
     ipcRenderer.on(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
     ipcRenderer.on(TRIGGER_SIDEBAR, this.triggerSidebar);
+    ipcRenderer.on(TRIGGER_TABLEMAKER, this.triggerTableMaker);
   }
 
   componentWillUnmount() {
@@ -111,6 +115,7 @@ class App extends React.Component {
     ipcRenderer.removeListener(SET_FILE_PATH, this.setFilePath);
     ipcRenderer.removeListener(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
     ipcRenderer.removeListener(TRIGGER_SIDEBAR, this.triggerSidebar);
+    ipcRenderer.removeListener(TRIGGER_TABLEMAKER, this.triggerTableMaker);
   }
 
   _getDocumentContent(event, data) {
@@ -226,6 +231,10 @@ class App extends React.Component {
 
   _triggerSidebar(event, data) {
     SidebarActions.setIsCollapsed();
+  }
+
+  _triggerTableMaker(event, data) {
+    SidebarActions.setPopupClosed();
   }
 
   _isMdoc(currentFilePath) {
