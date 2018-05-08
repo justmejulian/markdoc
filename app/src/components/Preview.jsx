@@ -45,12 +45,10 @@ class Preview extends React.Component {
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
     var html = PagesStore.getHTML();
-    var words = html
-      .replace(' <br/> ', '<br/> ')
-      .replace(/\n/g, '<br/> ')
-      .split(' ');
+    console.log(html);
+    var words = html.split(' ');
 
-    copyArray[0].html = words[0].replace('<br/> ', ' <br/> ');
+    copyArray[0].html = words[0];
 
     console.log(words);
 
@@ -90,12 +88,8 @@ class Preview extends React.Component {
         //console.log('Current Word: ' + currentWord);
         console.log('The word: ' + this.state.words[currentWord]);
         if (
-          this.state.words[currentWord] == '[newpage]' ||
-          this.state.words[currentWord] == '<p>[newpage]' ||
-          this.state.words[currentWord] == '[newpage]</p>' ||
-          this.state.words[currentWord] == '<p>[newpage]</p>' ||
-          this.state.words[currentWord] == '[newpage]</p><br/>' ||
-          this.state.words[currentWord] == '<p>[newpage]</p><br/>'
+          this.state.words[currentWord] == '[newpage]<br/>' ||
+          this.state.words[currentWord] == '[newpage]</p><br/>'
         ) {
           console.log('new page found');
           currentPage = currentPage + 1;
@@ -112,7 +106,7 @@ class Preview extends React.Component {
           copyArray[currentPage].html =
             copyArray[currentPage].html +
             ' ' +
-            this.state.words[currentWord].replace('<br/> ', ' <br/> ');
+            this.state.words[currentWord].replace('><br/> ', '> ');
           this.setState(
             {
               pages: copyArray,
