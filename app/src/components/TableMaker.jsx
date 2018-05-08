@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Popup from 'reactjs-popup';
 import PagesStore from '../stores/PagesStore.js';
+import SidebarStore from '../stores/SidebarStore.js';
 import * as Actions from '../actions/Actions';
 
 export default class TableMaker extends Component {
@@ -15,7 +16,7 @@ export default class TableMaker extends Component {
       rows: 3,
       columns: 3,
       topRowIsHeader: false,
-      popupClosed: true,
+      popupClosed: SidebarStore.getPopupClosed(),
       tableHTML: '' //This is a huge waste of space, but required for testing. Also, we live in 2018 and the space this wastes is negligible.
     };
     if (!(undefined === props.popupClosed)) {

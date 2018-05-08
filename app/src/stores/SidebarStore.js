@@ -18,7 +18,7 @@ class SidebarStore extends EventEmitter {
     this.footerLeft = '';
     this.footerMiddle = '';
     this.footerRight = '';
-
+    this.popupClosed = true;
     this.isCollapsed = true;
   }
 
@@ -72,6 +72,14 @@ class SidebarStore extends EventEmitter {
 
   setIsCollapsed(text) {
     this.isCollapsed = !this.isCollapsed;
+  }
+
+  setPopupClosed(text) {
+    this.popupClosed = !this.popupClosed;
+  }
+
+  getPopupClosed() {
+    return this.popupClosed;
   }
 
   getIsCollapsed() {
@@ -179,6 +187,10 @@ class SidebarStore extends EventEmitter {
       case 'SET_IS_COLLAPSED':
         this.setIsCollapsed();
         this.emit('isCollapsed_changed');
+        break;
+      case 'SET_POPUP_CLOSED':
+        this.setPopupClosed();
+        this.emit('popupClosed_changed');
         break;
     }
   }
