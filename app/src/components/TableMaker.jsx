@@ -11,7 +11,8 @@ export default class TableMaker extends Component {
     this.handleCheckboxChange = target => this._handleCheckboxChange(target);
     this.createTable = () => this._createTable();
     this.resetState = () => this._resetState();
-    this.handlePopupClose = () => this._handlePopupClose();
+    this.handlePopupClosing = () => this._handlePopupClosing();
+    this.setPopupClosed = () => this._setPopupClosed();
     this.state = {
       rows: 3,
       columns: 3,
@@ -24,6 +25,20 @@ export default class TableMaker extends Component {
     }
   }
 
+  componentWillMount() {
+    SidebarStore.on('popupClosed_changed', this.setPopupClosed);
+  }
+
+  componentWillUnmount() {
+    SidebarStore.removeListener('popUpClosed_changed', this.setPopupClosed);
+  }
+
+  _setPopupClosed() {
+    this.setState({
+      popupClosed: SidebarStore.getPopupClosed()
+    });
+  }
+
   _handleFieldChange(target) {
     this.setState({ [target.name]: [target.value] });
   }
@@ -32,16 +47,15 @@ export default class TableMaker extends Component {
     this.setState({ [target.name]: [target.checked] });
   }
 
-  _handlePopupClose() {
+  _handlePopupClosing() {
     this.createTable();
     this.resetState();
-    this.state.popupClosed = true;
   }
 
   _handleKeyPress(e) {
     if (e.key === 'Enter') {
       close();
-      this.handlePopupClose();
+      this.handlePopupClosing();
     }
   }
 
@@ -77,7 +91,6 @@ export default class TableMaker extends Component {
   render() {
     return (
       <Popup
-        trigger={<button className="button"> Insert table </button>}
         modal
         closeOnDocumentClick
         id="tableMaker"
@@ -104,7 +117,7 @@ export default class TableMaker extends Component {
                   onKeyPress={evt => {
                     if (evt.key === 'Enter') {
                       close();
-                      this.handlePopupClose();
+                      this.handlePopupClosing();
                     }
                   }}
                 />
@@ -120,7 +133,7 @@ export default class TableMaker extends Component {
                   onKeyPress={evt => {
                     if (evt.key === 'Enter') {
                       close();
-                      this.handlePopupClose();
+                      this.handlePopupClosing();
                     }
                   }}
                 />
@@ -138,7 +151,7 @@ export default class TableMaker extends Component {
                 className="button"
                 onClick={() => {
                   close();
-                  this.handlePopupClose();
+                  this.handlePopupClosing();
                 }}
               >
                 Confirm
