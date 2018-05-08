@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
+import TableMaker from './TableMaker.jsx';
 
 import SidebarStore from '../stores/SidebarStore.js';
 import * as SidebarActions from '../actions/SidebarActions';
@@ -336,6 +337,7 @@ export default class Sidebar extends Component {
                 selected={this.state.date}
               />
             </div>
+            <TableMaker />
           </div>
           <button
             onClick={this.handleExpandOrCollapse}
