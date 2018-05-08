@@ -12,12 +12,11 @@ export default class TableMaker extends Component {
     this.createTable = () => this._createTable();
     this.resetState = () => this._resetState();
     this.handlePopupClosing = () => this._handlePopupClosing();
-    this.setPopupClosed = () => this._setPopupClosed();
+    this.refreshComponent = () => this._refreshComponent();
     this.state = {
       rows: 3,
       columns: 3,
       topRowIsHeader: false,
-      popupClosed: SidebarStore.getPopupClosed(),
       tableHTML: '' //This is a huge waste of space, but required for testing. Also, we live in 2018 and the space this wastes is negligible.
     };
     if (!(undefined === props.popupClosed)) {
@@ -26,17 +25,15 @@ export default class TableMaker extends Component {
   }
 
   componentWillMount() {
-    SidebarStore.on('popupClosed_changed', this.setPopupClosed);
+    SidebarStore.on('popupClosed_changed', this.refreshComponent);
   }
 
   componentWillUnmount() {
-    SidebarStore.removeListener('popUpClosed_changed', this.setPopupClosed);
+    SidebarStore.removeListener('popupClosed_changed', this.refreshComponent);
   }
 
-  _setPopupClosed() {
-    this.setState({
-      popupClosed: SidebarStore.getPopupClosed()
-    });
+  _refreshComponent() {
+    this.setState({});
   }
 
   _handleFieldChange(target) {
@@ -52,19 +49,13 @@ export default class TableMaker extends Component {
     this.resetState();
   }
 
-  _handleKeyPress(e) {
-    if (e.key === 'Enter') {
-      close();
-      this.handlePopupClosing();
-    }
-  }
-
   _resetState() {
     this.setState({
       rows: 3,
       columns: 3,
       topRowIsHeader: false
     });
+    SidebarStore.setPopupClosed();
   }
 
   _createTable() {
@@ -94,7 +85,8 @@ export default class TableMaker extends Component {
         modal
         closeOnDocumentClick
         id="tableMaker"
-        open={!this.state.popupClosed}
+        open={!SidebarStore.getPopupClosed()}
+        onClose={() => this.resetState()}
       >
         {close => (
           <div className="modal">
@@ -112,7 +104,6 @@ export default class TableMaker extends Component {
                   onChange={evt => this.handleFieldChange(evt.target)}
                   ref={input => {
                     this.state.popupClosed && input && input.focus();
-                    this.state.popUpClosed = false;
                   }}
                   onKeyPress={evt => {
                     if (evt.key === 'Enter') {
