@@ -1284,7 +1284,7 @@ const Tokens = Object.freeze({
   CODEBLOCK: new Token(TokenTypes.CODEBLOCK, /```/),
   TOC: new Token(TokenTypes.TOC, /\[TOC\]$/m),
   TOF: new Token(TokenTypes.TOF, /\[TOF\]$/m),
-  PAGEBREAK: new Token(TokenTypes.PAGEBREAK, /\[PB\]$/m),
+  PAGEBREAK: new Token(TokenTypes.PAGEBREAK, /\[newpage\]$/m),
   REFERENCE: new Token(
     TokenTypes.REFERENCE,
     /\[([^\[\]]+?)\]\:[\ \t]+([^\s]+)([\ \t]+\"([^\"]+)\"|)$/m
@@ -2616,7 +2616,7 @@ class MDPageBreak extends MDComponent {
    * @returns {string}
    */
   toHtml() {
-    return `<div class="pagebreak"/>`;
+    return `[newpage]`;
   }
 
   /**
@@ -2733,6 +2733,12 @@ class MDDOM extends MDComponent {
      */
     this.latexParser = new LatexParser();
   }
+  /**
+   * Parses a string to a DOM representation.
+   * @access public
+   * @param {string} source Source to parse.
+   * @returns {MDDOM}
+   */
   static parse(source) {
     return Parser.parseToDOM(source);
   }
