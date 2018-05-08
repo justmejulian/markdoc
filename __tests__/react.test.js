@@ -7,6 +7,7 @@ import Preview from '../app/src/components/Preview.jsx';
 import Sidebar from '../app/src/components/Sidebar.jsx';
 import Header from '../app/src/components/Header.jsx';
 import Footer from '../app/src/components/Footer.jsx';
+import TableMaker from '../app/src/components/TableMaker.jsx';
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -186,5 +187,35 @@ describe('Test sidebar', () => {
       expect(sidebar.state(field)).toEqual(['Changed']);
       i++;
     });
+  });
+});
+
+describe('Test tableMaker', () => {
+  var tableMaker;
+
+  beforeEach(() => {
+    tableMaker = shallow(<TableMaker popupClosed={false} />);
+  });
+
+  it('has default values 3, 3, no header', () => {
+    expect(tableMaker.state().rows).toBe(3);
+    expect(tableMaker.state().columns).toBe(3);
+    expect(tableMaker.state().topRowIsHeader).toBeFalsy();
+  });
+
+  it('properly generates a 3x3 table', () => {
+    expect(tableMaker.state().tableHTML).toBe('');
+    tableMaker.instance().createTable();
+    expect(tableMaker.state().tableHTML).toBe(
+      '<table><tr><td>1:1</td><td>1:2</td><td>1:3</td></tr><tr><td>2:1</td><td>2:2</td><td>2:3</td></tr><tr><td>3:1</td><td>3:2</td><td>3:3</td></tr></table>'
+    );
+  });
+
+  it('does nothing if rows or columns field is 0', () => {
+    expect(tableMaker.state().tableHTML).toBe('');
+    tableMaker.setState({ rows: 0 });
+    expect(tableMaker.state().tableHTML).toBe('');
+    tableMaker.setState({ rows: 3, columns: 0 });
+    expect(tableMaker.state().tableHTML).toBe('');
   });
 });
