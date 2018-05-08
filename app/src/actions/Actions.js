@@ -30,9 +30,3 @@ export function zoomReset() {
     type: 'ZOOM_RESET'
   });
 }
-
-export function setPopupClosed() {
-  dispatcher.dispatch({
-    type: 'SET_POPUP_CLOSED'
-  });
-}
