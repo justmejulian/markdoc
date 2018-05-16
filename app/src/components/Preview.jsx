@@ -83,7 +83,7 @@ class Preview extends React.Component {
     //console.log("currentWord: " + currentWord + " and words.length: " +this.state.words.length);
     if (currentWord < this.state.words.length - 1) {
       console.log('Current height: ' + copyArray[currentPage].height);
-      if (copyArray[currentPage].height < 700) {
+      if (copyArray[currentPage].height < 950) {
         currentWord = currentWord + 1;
         //console.log('Current Word: ' + currentWord);
         console.log('The word: ' + this.state.words[currentWord]);

@@ -17,7 +17,7 @@ const {
 // import actions
 const { saveFile } = require('./actions');
 // import print window settings
-const printWindow = require('./printWindow');
+const printWindow = require('./print/printWindow');
 
 function exportAsHtml(currentFilePath, currentHTMLContent, currentWindow) {
   if (currentFilePath === '' || currentFilePath === null) {
@@ -46,12 +46,15 @@ function exportAsPdf(currentFilePath, currentWindow, currentPages) {
   });
 
   ipcMain.on(READY_TO_PRINT, (event, arg) => {
-    printToPDFWindow.webContents.printToPDF({}, function(printErr, data) {
-      if (printErr) {
-        return console.log(printErr.message);
+    printToPDFWindow.webContents.printToPDF(
+      { pageSize: 'A4', printBackground: true },
+      function(printErr, data) {
+        if (printErr) {
+          return console.log(printErr.message);
+        }
+        saveFile(FILETYPE_PDF, currentFilePath, data, currentWindow);
       }
-      saveFile(FILETYPE_PDF, currentFilePath, data, currentWindow);
-    });
+    );
   });
 }
 
