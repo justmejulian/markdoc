@@ -12,7 +12,7 @@ module.exports = {
   TRIGGER_SIDEBAR: 'trigger-sidebar',
   TRIGGER_TABLEMAKER: 'trigger-tablemaker',
   DEFAULT_URL: `file://${__dirname}/../index.html`,
-  PRINT_URL: `file://${__dirname}/../../main/print.html`,
+  PRINT_URL: `file://${__dirname}/../../main/print/print.html`,
   FILETYPE_MDOC: {
     name: 'Markdoc',
     extensions: ['mdoc']

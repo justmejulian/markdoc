@@ -1,10 +1,11 @@
 <head>
-  <link rel="stylesheet" href="../app/build/style.css">
+  <link rel="stylesheet" href="print.css">
+  <link rel"stylesheet" href="../../app/src/styles/katex.min.css">
 </head>
-<body>
-<div id="content">
+<body style="-webkit-print-color-adjust:exact;">
+<div id="preview">
   <script>
-    var preview = document.getElementById("content");
+    var preview = document.getElementById("preview");
     const ipcRenderer = require('electron').ipcRenderer;
     ipcRenderer.on('printPDF', (event, currentPages) => {
       preview.innerHTML = currentPages;
