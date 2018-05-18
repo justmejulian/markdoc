@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
   <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/Titlepage.test.js">
-    <testCase name="Test Titlepage should render without crashing" duration="5"/>
+    <testCase name="Test Titlepage should render without crashing" duration="4"/>
     <testCase name="Test Titlepage should get style on load" duration="3"/>
+    <testCase name="Test Titlepage should handleExpandOrCollapse on click in div" duration="4"/>
+    <testCase name="Test Titlepage should set new Info" duration="1"/>
   </file>
 </testExecutions>
