@@ -2632,7 +2632,7 @@ class MDPageBreak extends MDComponent {
    * @returns {string}
    */
   toMarkDown() {
-    return '[PB]\n';
+    return '[newpage]\n';
   }
 }
 

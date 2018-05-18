@@ -265,11 +265,11 @@ describe('Token Regex', () => {
   it('should match pagebreaks appropriately', () => {
     var pattern = Tokens.PAGEBREAK.pattern;
     // Matches:
-    expect(pattern.test('[PB]')).toBeTruthy();
-    expect(pattern.test('asd[PB]')).toBeTruthy();
+    expect(pattern.test('[newpage]')).toBeTruthy();
+    expect(pattern.test('asd[newpage]')).toBeTruthy();
     // Mismatches:
-    expect(pattern.test('[PBB]')).toBeFalsy();
-    expect(pattern.test('[PB]]')).toBeFalsy();
+    expect(pattern.test('[newpagee]')).toBeFalsy();
+    expect(pattern.test('[newpage]]')).toBeFalsy();
   });
   it('should match references appropriately', () => {
     var pattern = Tokens.REFERENCE.pattern;
@@ -635,7 +635,9 @@ describe('TokenStream', () => {
     expect(tokenStream.read()).toBeNull();
   });
   it('should find proper pagebreaks', () => {
-    var tokenStream = new TokenStream(new CharacterStream('[PB] \n[PB]'));
+    var tokenStream = new TokenStream(
+      new CharacterStream('[newpage] \n[newpage]')
+    );
     var token = tokenStream.read();
     while (token.type != TokenTypes.NEWLINE) {
       token = tokenStream.read();
@@ -645,7 +647,7 @@ describe('TokenStream', () => {
     token = tokenStream.read();
     expect(token.type).toEqual(TokenTypes.PAGEBREAK);
     expect(token.from).toEqual([1, 0]);
-    expect(token.to).toEqual([1, 3]);
+    expect(token.to).toEqual([1, 8]);
     expect(tokenStream.read()).toBeNull();
   });
   it('should find proper references', () => {
@@ -1172,7 +1174,7 @@ describe('Parser', () => {
   });
   it('should parse pagebreaks', () => {
     var tokenStream = new TokenStream(
-      new CharacterStream('# Header\n' + '[PB]\n' + '[PB]')
+      new CharacterStream('# Header\n' + '[newpage]\n' + '[newpage]')
     );
     var parser = new Parser(tokenStream);
     tokenStream.skipToNextRow();
