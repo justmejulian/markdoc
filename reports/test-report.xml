@@ -1,259 +1,235 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-  <file path="/home/alan/Dokumente/git/markdoc/__tests__/wordcounter.test.js">
-    <testCase name="WordCounter should count words in the document" duration="8"/>
-    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="2"/>
-    <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="1"/>
-    <testCase name="CharacterCounter should count every single character in the document" duration="1"/>
-    <testCase name="CharacterCounter should not count spaces" duration="1"/>
-    <testCase name="CharacterCounter should count special character" duration="1"/>
-    <testCase name="CharacterCounter should show zero, if no it has no text" duration="0"/>
-  </file>
-  <file path="/home/alan/Dokumente/git/markdoc/__tests__/markdown.test.js">
+  <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/markdown.test.js">
     <testCase name="InputStream should read strings correctly" duration="5"/>
-    <testCase name="InputStream should peek characters correctly" duration="1"/>
-    <testCase name="InputStream should detect the end of the string correctly" duration="1"/>
+    <testCase name="InputStream should peek characters correctly" duration="0"/>
+    <testCase name="InputStream should detect the end of the string correctly" duration="0"/>
     <testCase name="InputStream should keep track of the string position" duration="1"/>
     <testCase name="InputStream should keep track of the current line and column" duration="1"/>
-    <testCase name="InputStream should test regex" duration="1"/>
-    <testCase name="InputStream should match regex" duration="0"/>
-    <testCase name="InputStream should skip a certain amount of characters" duration="1"/>
-    <testCase name="InputStream should skip to the next row(for testing purposes)" duration="2"/>
+    <testCase name="InputStream should test regex" duration="0"/>
+    <testCase name="InputStream should match regex" duration="1"/>
+    <testCase name="InputStream should skip a certain amount of characters" duration="0"/>
+    <testCase name="InputStream should skip to the next row(for testing purposes)" duration="3"/>
     <testCase name="Token Regex should match headers appropriately" duration="1"/>
-    <testCase name="Token Regex should match blockquotes appropriately" duration="0"/>
-    <testCase name="Token Regex should match rules appropriately" duration="4"/>
+    <testCase name="Token Regex should match blockquotes appropriately" duration="1"/>
+    <testCase name="Token Regex should match rules appropriately" duration="1"/>
     <testCase name="Token Regex should match lists appropriately" duration="1"/>
     <testCase name="Token Regex should match code blocks appropriately" duration="0"/>
     <testCase name="Token Regex should match TOCs appropriately" duration="0"/>
-    <testCase name="Token Regex should match TOFs appropriately" duration="0"/>
-    <testCase name="Token Regex should match pagebreaks appropriately" duration="1"/>
-    <testCase name="Token Regex should match references appropriately" duration="0"/>
+    <testCase name="Token Regex should match TOFs appropriately" duration="1"/>
+    <testCase name="Token Regex should match pagebreaks appropriately" duration="58">
+      <failure message="Error: expect(received).toBeTruthy()"><![CDATA[Error: expect(received).toBeTruthy()
+
+Expected value to be truthy, instead received
+  false
+    at Object.<anonymous> (/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/markdown.test.js:268:34)
+    at Object.asyncFn (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
+    at resolve (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
+    at promise.then (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)]]></failure>
+    </testCase>
+    <testCase name="Token Regex should match references appropriately" duration="1"/>
     <testCase name="Token Regex should match latex blocks appropriately" duration="0"/>
-    <testCase name="Token Regex should match newlines appropriately" duration="0"/>
-    <testCase name="Token Regex should match bold text indicators appropriately" duration="1"/>
-    <testCase name="Token Regex should match italics text indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match newlines appropriately" duration="1"/>
+    <testCase name="Token Regex should match bold text indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match italics text indicators appropriately" duration="1"/>
     <testCase name="Token Regex should match strikethrough text indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match image start indicators appropriately" duration="1"/>
-    <testCase name="Token Regex should match link start indicators appropriately" duration="0"/>
-    <testCase name="Token Regex should match image-/link-end indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match link start indicators appropriately" duration="1"/>
+    <testCase name="Token Regex should match image-/link-end indicators appropriately" duration="1"/>
     <testCase name="Token Regex should match code indicators appropriately" duration="0"/>
     <testCase name="Token Regex should match latex indicators appropriately" duration="1"/>
     <testCase name="Token Regex should match latex indicators appropriately" duration="0"/>
-    <testCase name="TokenStream should find the correct amount of tokens" duration="1"/>
+    <testCase name="TokenStream should find the correct amount of tokens" duration="2"/>
     <testCase name="TokenStream should tokenize to the correct types" duration="0"/>
-    <testCase name="TokenStream should record the correct columns and rows" duration="2"/>
-    <testCase name="TokenStream should find proper header tokens" duration="3"/>
+    <testCase name="TokenStream should record the correct columns and rows" duration="3"/>
+    <testCase name="TokenStream should find proper header tokens" duration="4"/>
     <testCase name="TokenStream should find proper blockquotes" duration="1"/>
     <testCase name="TokenStream should find proper rules" duration="1"/>
-    <testCase name="TokenStream should find proper lists" duration="0"/>
+    <testCase name="TokenStream should find proper lists" duration="1"/>
     <testCase name="TokenStream should find proper code blocks" duration="1"/>
     <testCase name="TokenStream should find proper TOCs" duration="1"/>
-    <testCase name="TokenStream should find proper TOFs" duration="0"/>
-    <testCase name="TokenStream should find proper pagebreaks" duration="1"/>
-    <testCase name="TokenStream should find proper references" duration="0"/>
+    <testCase name="TokenStream should find proper TOFs" duration="1"/>
+    <testCase name="TokenStream should find proper pagebreaks" duration="6">
+      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
+
+Expected value to equal:
+  {"name": "Pagebreak"}
+Received:
+  {"name": "LinkStart"}
+
+Difference:
+
+- Expected
++ Received
+
+  TokenType {
+-   "name": "Pagebreak",
++   "name": "LinkStart",
+  }
+    at Object.<anonymous> (/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/markdown.test.js:646:24)
+    at Object.asyncFn (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
+    at resolve (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
+    at promise.then (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)]]></failure>
+    </testCase>
+    <testCase name="TokenStream should find proper references" duration="1"/>
     <testCase name="TokenStream should find proper LaTeX blocks" duration="1"/>
     <testCase name="TokenStream should find proper newlines" duration="1"/>
-    <testCase name="TokenStream should find proper bold indicators" duration="0"/>
+    <testCase name="TokenStream should find proper bold indicators" duration="1"/>
     <testCase name="TokenStream should find proper italics indicators" duration="1"/>
-    <testCase name="TokenStream should find proper strikethrough indicators" duration="0"/>
-    <testCase name="TokenStream should find proper image start indicators" duration="1"/>
-    <testCase name="TokenStream should find proper link start indicators" duration="0"/>
+    <testCase name="TokenStream should find proper strikethrough indicators" duration="1"/>
+    <testCase name="TokenStream should find proper image start indicators" duration="0"/>
+    <testCase name="TokenStream should find proper link start indicators" duration="1"/>
     <testCase name="TokenStream should find proper image-/link end indicators" duration="1"/>
-    <testCase name="TokenStream should find proper code indicators" duration="0"/>
+    <testCase name="TokenStream should find proper code indicators" duration="1"/>
+    <testCase name="TokenStream should find proper latex indicators" duration="7"/>
     <testCase name="TokenStream should find proper latex indicators" duration="1"/>
-    <testCase name="TokenStream should find proper latex indicators" duration="1"/>
-    <testCase name="TokenStream should skip to the next row(for testing purposes)" duration="0"/>
-    <testCase name="Parser should parse the right amount of components" duration="2"/>
-    <testCase name="Parser should parse headers" duration="1"/>
-    <testCase name="Parser should parse block quotes" duration="4"/>
-    <testCase name="Parser should parse rules" duration="0"/>
-    <testCase name="Parser should parse list heads" duration="4"/>
-    <testCase name="Parser should parse list items" duration="2"/>
+    <testCase name="TokenStream should skip to the next row(for testing purposes)" duration="2"/>
+    <testCase name="Parser should parse the right amount of components" duration="3"/>
+    <testCase name="Parser should parse headers" duration="2"/>
+    <testCase name="Parser should parse block quotes" duration="1"/>
+    <testCase name="Parser should parse rules" duration="1"/>
+    <testCase name="Parser should parse list heads" duration="7"/>
+    <testCase name="Parser should parse list items" duration="3"/>
     <testCase name="Parser should parse lists" duration="2"/>
     <testCase name="Parser should parse Code blocks" duration="1"/>
-    <testCase name="Parser should parse TOCs" duration="1"/>
+    <testCase name="Parser should parse TOCs" duration="2"/>
     <testCase name="Parser should parse TOFs" duration="1"/>
-    <testCase name="Parser should parse pagebreaks" duration="0"/>
+    <testCase name="Parser should parse pagebreaks" duration="9">
+      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
+
+Expected value to equal:
+  {"inline": false, "name": "Page Break"}
+Received:
+  {"inline": false, "name": "Paragraph"}
+
+Difference:
+
+- Expected
++ Received
+
+  ComponentType {
+    "inline": false,
+-   "name": "Page Break",
++   "name": "Paragraph",
+  }
+    at Object.<anonymous> (/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/markdown.test.js:1182:28)
+    at Object.asyncFn (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
+    at resolve (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
+    at promise.then (/Users/juianvisser/Documents/ZHAW/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)]]></failure>
+    </testCase>
     <testCase name="Parser should parse references" duration="1"/>
-    <testCase name="Parser should parse LaTeX blocks" duration="15"/>
-    <testCase name="Parser should parse softbreaks" duration="1"/>
-    <testCase name="Parser should parse paragraphs" duration="0"/>
-    <testCase name="Parser should parse any string sequence" duration="14"/>
+    <testCase name="Parser should parse LaTeX blocks" duration="14"/>
+    <testCase name="Parser should parse softbreaks" duration="0"/>
+    <testCase name="Parser should parse paragraphs" duration="1"/>
+    <testCase name="Parser should parse any string sequence" duration="4"/>
     <testCase name="Parser should parse text rows" duration="0"/>
     <testCase name="Parser should parse a text token" duration="1"/>
     <testCase name="Parser should reinterpret failed formatting as text" duration="0"/>
     <testCase name="Parser should parse bold text" duration="1"/>
-    <testCase name="Parser should parse italicized text" duration="2"/>
-    <testCase name="Parser should parse strikethrough text" duration="1"/>
+    <testCase name="Parser should parse italicized text" duration="1"/>
+    <testCase name="Parser should parse strikethrough text" duration="0"/>
     <testCase name="Parser should parse inline latex" duration="2"/>
-    <testCase name="Parser should parse links" duration="2"/>
-    <testCase name="Parser should parse images" duration="2"/>
-    <testCase name="Parser Should parse a document to an array" duration="3"/>
+    <testCase name="Parser should parse links" duration="1"/>
+    <testCase name="Parser should parse images" duration="1"/>
+    <testCase name="Parser Should parse a document to an array" duration="4"/>
     <testCase name="Parser Should parse a document to a DOM" duration="2"/>
-    <testCase name="Parser should parse headers correctly" duration="1"/>
+    <testCase name="Parser should parse headers correctly" duration="0"/>
     <testCase name="Parser should parse formatted paragraphs correctly" duration="1"/>
     <testCase name="Parser should parse an ordered list correctly" duration="1"/>
     <testCase name="Parser should parse an unordered list correctly" duration="0"/>
     <testCase name="Parser should parse nested lists correctly" duration="1"/>
     <testCase name="Parser should output Html code correctly" duration="1"/>
-    <testCase name="Parser should output the same source when calling toMarkDown() after parsing" duration="0"/>
-    <testCase name="Parser should correctly convert markdown to formatless string" duration="1"/>
-    <testCase name="Parser should parse the right source positions" duration="1"/>
+    <testCase name="Parser should output the same source when calling toMarkDown() after parsing" duration="1"/>
+    <testCase name="Parser should correctly convert markdown to formatless string" duration="0"/>
+    <testCase name="Parser should parse the right source positions" duration="0"/>
     <testCase name="Parser should parse one TOC and only one" duration="0"/>
-    <testCase name="Parser should parse one TOF and only one" duration="1"/>
+    <testCase name="Parser should parse one TOF and only one" duration="0"/>
     <testCase name="LaTeX Parser should parse latex" duration="1"/>
     <testCase name="LaTeX Parser should know if an expression has been parsed before" duration="1"/>
-    <testCase name="LaTeX Parser should return cached expressions" duration="1"/>
+    <testCase name="LaTeX Parser should return cached expressions" duration="0"/>
     <testCase name="LaTeX Parser should cache expression-html-pairs" duration="0"/>
-    <testCase name="LaTeX Parser should throw out cached expressions when limit reached" duration="2"/>
+    <testCase name="LaTeX Parser should throw out cached expressions when limit reached" duration="3"/>
   </file>
-  <file path="/home/alan/Dokumente/git/markdoc/__tests__/react.test.js">
-    <testCase name="Test Header should set left text in header" duration="12"/>
-    <testCase name="Test Header should set middle text in header" duration="2"/>
-    <testCase name="Test Header should set right text in header" duration="1"/>
-    <testCase name="Test Footer should set left text in footer" duration="17">
-      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
-
-Expected value to equal:
-  " Semester "
-Received:
-  "  "
-    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/react.test.js:57:43)
-    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
-    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
-    at new Promise (<anonymous>)
-    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
-    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
-    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
-    </testCase>
-    <testCase name="Test Footer should set middle text in footer" duration="2">
-      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
-
-Expected value to equal:
-  " 1 "
-Received:
-  "  "
-    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/react.test.js:63:45)
-    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
-    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
-    at new Promise (<anonymous>)
-    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
-    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
-    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
-    </testCase>
-    <testCase name="Test Footer should set right text in footer" duration="1">
-      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
-
-Expected value to equal:
-  " Kürzel "
-Received:
-  "  "
-    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/react.test.js:69:44)
-    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
-    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
-    at new Promise (<anonymous>)
-    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
-    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
-    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
-    </testCase>
-    <testCase name="Test Zoom begins with zoom set to 1.0" duration="10"/>
-    <testCase name="Test Zoom does not zoom the zoom buttons" duration="2"/>
-    <testCase name="Test Zoom can zoom in" duration="2">
-      <failure message="Error: expect(received).toBeCloseTo(expected)"><![CDATA[Error: expect(received).toBeCloseTo(expected)
-
-Expected value to be close to (with 2-digit precision):
-  1.1
-Received:
-  1
-    at /home/alan/Dokumente/git/markdoc/__tests__/react.test.js:95:36
-    at Array.forEach (<anonymous>)
-    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/react.test.js:92:41)
-    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
-    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
-    at new Promise (<anonymous>)
-    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
-    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
-    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
-    </testCase>
-    <testCase name="Test Zoom can zoom out" duration="1">
-      <failure message="Error: expect(received).toBeCloseTo(expected)"><![CDATA[Error: expect(received).toBeCloseTo(expected)
-
-Expected value to be close to (with 2-digit precision):
-  0.9
-Received:
-  1
-    at /home/alan/Dokumente/git/markdoc/__tests__/react.test.js:106:36
-    at Array.forEach (<anonymous>)
-    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/react.test.js:103:31)
-    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
-    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
-    at new Promise (<anonymous>)
-    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
-    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
-    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
-    </testCase>
-    <testCase name="Test Zoom doesn&apos;t go below minimum zoom" duration="3"/>
-    <testCase name="Test Zoom doesn&apos;t go above maximum zoom" duration="2"/>
-    <testCase name="Test Zoom invokes handleZoomIn on zoom-in button click" duration="2">
-      <failure message="Error: expect(received).toBeCloseTo(expected)"><![CDATA[Error: expect(received).toBeCloseTo(expected)
-
-Expected value to be close to (with 2-digit precision):
-  1.1
-Received:
-  1
-    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/react.test.js:133:34)
-    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
-    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
-    at new Promise (<anonymous>)
-    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
-    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
-    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
-    </testCase>
-    <testCase name="Test Zoom invokes handleZoomOut on zoom-out button click" duration="3">
-      <failure message="Error: expect(received).toBeCloseTo(expected)"><![CDATA[Error: expect(received).toBeCloseTo(expected)
-
-Expected value to be close to (with 2-digit precision):
-  0.9
-Received:
-  1
-    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/react.test.js:142:34)
-    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
-    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
-    at new Promise (<anonymous>)
-    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
-    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
-    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
-    </testCase>
-    <testCase name="Test sidebar opens and closes when clicked" duration="8">
-      <failure message="Error: expect(received).toBeFalsy()"><![CDATA[Error: expect(received).toBeFalsy()
-
-Expected value to be falsy, instead received
-  true
-    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/react.test.js:155:41)
-    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
-    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
-    at new Promise (<anonymous>)
-    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
-    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
-    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
-    </testCase>
-    <testCase name="Test sidebar tracks mouse hovering and leaving the sidebar area" duration="6"/>
-    <testCase name="Test sidebar updates state with info filled into fields" duration="2">
-      <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
-
-Expected value to equal:
-  ""
-Received:
-  "Title"
-    at /home/alan/Dokumente/git/markdoc/__tests__/react.test.js:181:36
-    at Array.forEach (<anonymous>)
-    at Object.<anonymous> (/home/alan/Dokumente/git/markdoc/__tests__/react.test.js:180:7)
-    at Object.asyncFn (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/jasmine_async.js:82:37)
-    at resolve (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:52:12)
-    at new Promise (<anonymous>)
-    at mapper (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:39:19)
-    at promise.then (/home/alan/Dokumente/git/markdoc/node_modules/jest-jasmine2/build/queue_runner.js:73:82)
-    at process._tickCallback (internal/process/next_tick.js:178:7)]]></failure>
-    </testCase>
+  <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/Titlebar.test.js">
+    <testCase name="Test TitleBar should set words" duration="4"/>
+  </file>
+  <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/PagesStore.test.js">
+    <testCase name="This test in PageStore tests the Action Handler and  should handle SET_MARKDOWN." duration="1"/>
+    <testCase name="This test in PageStore tests the Action Handler and  should handle SET_HTML." duration="1"/>
+    <testCase name="This test in PageStore tests the Action Handler and  should handle ZOOM_IN." duration="0"/>
+    <testCase name="This test in PageStore tests the Action Handler and  should handle ZOOM_OUT." duration="0"/>
+    <testCase name="This test in PageStore tests the Action Handler and  should handle ZOOM_RESET." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HTML." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return markdown." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HTML." duration="1"/>
+  </file>
+  <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/Footer.test.js">
+    <testCase name="Test Footer should render without crashing" duration="0"/>
+    <testCase name="Test Footer should change pagenumber on componentWillReceiveProps" duration="2"/>
+    <testCase name="Test Footer should change footer text" duration="1"/>
+  </file>
+  <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/SideBarStore.test.js">
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HASTITLEPAGE." duration="1"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HASHEADER." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HASFOOTER." duration="1"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_TITLE." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_AUTHOR." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_DATE." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HEADER_LEFT." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HEADER_RIGHT." duration="1"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HEADER_MIDDLE." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_FOOTER_LEFT." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_FOOTER_RIGHT." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_FOOTER_MIDDLE." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_IS_COLLAPSED." duration="1"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_POPUP_CLOSED." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HasTitlepage." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HasHeader." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HasFooter." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return Title." duration="1"/>
+    <testCase name="This test in SidebarActions should set and return Author." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return Date." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HeaderLeft." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HeaderRight." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HeaderMiddle." duration="1"/>
+    <testCase name="This test in SidebarActions should set and return FooterLeft." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return FooterRight." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return FooterMiddle." duration="0"/>
+    <testCase name="This test in SidebarActions should flip boolean and return IsCollapsed." duration="0"/>
+    <testCase name="This test in SidebarActions should flip boolean and return PopupClosed." duration="0"/>
+  </file>
+  <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/Header.test.js">
+    <testCase name="Test Header should render without crashing" duration="1"/>
+    <testCase name="Test Header should change pagenumber on componentWillReceiveProps" duration="1"/>
+    <testCase name="Test Header should change header text" duration="1"/>
+  </file>
+  <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/Page.test.js">
+    <testCase name="Test Page should render without crashing" duration="2"/>
+    <testCase name="Test Page should change id and __html on componentWillReceiveProps" duration="1"/>
+    <testCase name="Test Page should create __html out of html using createMarkup" duration="1"/>
+    <testCase name="Test Page should change the height value using callback" duration="0"/>
+    <testCase name="Test Page should set hasHeader" duration="1"/>
+    <testCase name="Test Page should set hasFooter" duration="0"/>
+  </file>
+  <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/wordcounter.test.js">
+    <testCase name="WordCounter should count words in the document" duration="1"/>
+    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="0"/>
+    <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="0"/>
+    <testCase name="CharacterCounter should count every single character in the document" duration="1"/>
+    <testCase name="CharacterCounter should not count spaces" duration="0"/>
+    <testCase name="CharacterCounter should count special character" duration="0"/>
+    <testCase name="CharacterCounter should show zero, if no it has no text" duration="0"/>
   </file>
 </testExecutions>

@@ -9,18 +9,11 @@ class PagesStore extends EventEmitter {
     this.markdown = '';
     this.html = '';
     this.zoom = 1;
-  }
-
-  setMarkdown(text) {
-    this.markdown = text;
+    this.handleZoomIn = this.handleZoomIn.bind(this);
   }
 
   setHTML(markdown) {
     this.html = DOM.parse(markdown).toHtml();
-  }
-
-  setZoom(newZoom) {
-    this.zoom = newZoom;
   }
 
   getHTML() {
@@ -38,23 +31,19 @@ class PagesStore extends EventEmitter {
   handleZoomIn() {
     if (this.zoom < 1.7) {
       //If not: Silently do nothing.
-      var newZoom = this.zoom;
-      newZoom += 0.1;
-      this.setZoom(newZoom);
+      this.zoom += 0.1;
     }
   }
 
   handleZoomOut() {
     if (this.zoom > 0.5) {
       //If not: Silently do nothing.
-      var newZoom = this.zoom;
-      newZoom -= 0.1;
-      this.setZoom(newZoom);
+      this.zoom -= 0.1;
     }
   }
 
   handleZoomReset() {
-    this.setZoom(1.0);
+    this.zoom = 1.0;
   }
 
   handleActions(action) {
@@ -64,7 +53,7 @@ class PagesStore extends EventEmitter {
         this.emit('HTML_changed');
         break;
       case 'SET_MARKDOWN':
-        this.setMarkdown(action.text);
+        this.markdown = action.text;
         this.emit('Markdown_changed');
         break;
       case 'ZOOM_IN':
