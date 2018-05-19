@@ -19,8 +19,11 @@ export default class TableMaker extends Component {
       topRowIsHeader: false,
       tableHTML: '' //This is a huge waste of space, but required for testing. Also, we live in 2018 and the space this wastes is negligible.
     };
-    if (!(undefined === props.popupClosed)) {
-      this.state.popupClosed = props.popupClosed;
+    if (
+      !(undefined === props.popupClosed) &&
+      props.popupClosed != SidebarStore.getPopupClosed()
+    ) {
+      SidebarStore.setPopupClosed();
     }
   }
 
