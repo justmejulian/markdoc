@@ -29,14 +29,14 @@ class PagesStore extends EventEmitter {
   }
 
   handleZoomIn() {
-    if (this.zoom < 1.7) {
+    if (this.zoom < 1.69) {
       //If not: Silently do nothing.
       this.zoom += 0.1;
     }
   }
 
   handleZoomOut() {
-    if (this.zoom > 0.5) {
+    if (this.zoom > 0.51) {
       //If not: Silently do nothing.
       this.zoom -= 0.1;
     }
