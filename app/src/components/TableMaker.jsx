@@ -64,7 +64,7 @@ export default class TableMaker extends Component {
       for (var i = 1; i <= this.state.rows; i++) {
         tableHTML = tableHTML + '<tr>';
         for (var j = 1; j <= this.state.columns; j++) {
-          if (this.state.topRowIsHeader && i == 0) {
+          if (this.state.topRowIsHeader && i == 1) {
             tableHTML = tableHTML + '<th>' + i + ':' + j + '</th>';
           } else {
             tableHTML = tableHTML + '<td>' + i + ':' + j + '</td>';
