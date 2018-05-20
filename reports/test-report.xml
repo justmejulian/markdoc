@@ -1,9 +1,194 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-  <file path="/Users/juianvisser/Documents/ZHAW/git/markdoc/__tests__/Titlepage.test.js">
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/markdown.test.js">
+    <testCase name="InputStream should read strings correctly" duration="5"/>
+    <testCase name="InputStream should peek characters correctly" duration="1"/>
+    <testCase name="InputStream should detect the end of the string correctly" duration="1"/>
+    <testCase name="InputStream should keep track of the string position" duration="0"/>
+    <testCase name="InputStream should keep track of the current line and column" duration="1"/>
+    <testCase name="InputStream should test regex" duration="0"/>
+    <testCase name="InputStream should match regex" duration="0"/>
+    <testCase name="InputStream should skip a certain amount of characters" duration="0"/>
+    <testCase name="InputStream should skip to the next row(for testing purposes)" duration="2"/>
+    <testCase name="Token Regex should match headers appropriately" duration="1"/>
+    <testCase name="Token Regex should match blockquotes appropriately" duration="0"/>
+    <testCase name="Token Regex should match rules appropriately" duration="1"/>
+    <testCase name="Token Regex should match lists appropriately" duration="1"/>
+    <testCase name="Token Regex should match code blocks appropriately" duration="1"/>
+    <testCase name="Token Regex should match TOCs appropriately" duration="0"/>
+    <testCase name="Token Regex should match TOFs appropriately" duration="0"/>
+    <testCase name="Token Regex should match pagebreaks appropriately" duration="0"/>
+    <testCase name="Token Regex should match references appropriately" duration="1"/>
+    <testCase name="Token Regex should match latex blocks appropriately" duration="0"/>
+    <testCase name="Token Regex should match newlines appropriately" duration="0"/>
+    <testCase name="Token Regex should match bold text indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match italics text indicators appropriately" duration="1"/>
+    <testCase name="Token Regex should match strikethrough text indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match image start indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match link start indicators appropriately" duration="1"/>
+    <testCase name="Token Regex should match image-/link-end indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match code indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match latex indicators appropriately" duration="0"/>
+    <testCase name="Token Regex should match latex indicators appropriately" duration="1"/>
+    <testCase name="TokenStream should find the correct amount of tokens" duration="1"/>
+    <testCase name="TokenStream should tokenize to the correct types" duration="0"/>
+    <testCase name="TokenStream should record the correct columns and rows" duration="2"/>
+    <testCase name="TokenStream should find proper header tokens" duration="2"/>
+    <testCase name="TokenStream should find proper blockquotes" duration="1"/>
+    <testCase name="TokenStream should find proper rules" duration="0"/>
+    <testCase name="TokenStream should find proper lists" duration="1"/>
+    <testCase name="TokenStream should find proper code blocks" duration="1"/>
+    <testCase name="TokenStream should find proper TOCs" duration="2"/>
+    <testCase name="TokenStream should find proper TOFs" duration="1"/>
+    <testCase name="TokenStream should find proper pagebreaks" duration="1"/>
+    <testCase name="TokenStream should find proper references" duration="1"/>
+    <testCase name="TokenStream should find proper LaTeX blocks" duration="1"/>
+    <testCase name="TokenStream should find proper newlines" duration="0"/>
+    <testCase name="TokenStream should find proper bold indicators" duration="1"/>
+    <testCase name="TokenStream should find proper italics indicators" duration="0"/>
+    <testCase name="TokenStream should find proper strikethrough indicators" duration="0"/>
+    <testCase name="TokenStream should find proper image start indicators" duration="0"/>
+    <testCase name="TokenStream should find proper link start indicators" duration="1"/>
+    <testCase name="TokenStream should find proper image-/link end indicators" duration="0"/>
+    <testCase name="TokenStream should find proper code indicators" duration="1"/>
+    <testCase name="TokenStream should find proper latex indicators" duration="0"/>
+    <testCase name="TokenStream should find proper latex indicators" duration="1"/>
+    <testCase name="TokenStream should skip to the next row(for testing purposes)" duration="1"/>
+    <testCase name="Parser should parse the right amount of components" duration="3"/>
+    <testCase name="Parser should parse headers" duration="1"/>
+    <testCase name="Parser should parse block quotes" duration="2"/>
+    <testCase name="Parser should parse rules" duration="0"/>
+    <testCase name="Parser should parse list heads" duration="4"/>
+    <testCase name="Parser should parse list items" duration="3"/>
+    <testCase name="Parser should parse lists" duration="1"/>
+    <testCase name="Parser should parse Code blocks" duration="1"/>
+    <testCase name="Parser should parse TOCs" duration="1"/>
+    <testCase name="Parser should parse TOFs" duration="1"/>
+    <testCase name="Parser should parse pagebreaks" duration="4"/>
+    <testCase name="Parser should parse references" duration="1"/>
+    <testCase name="Parser should parse LaTeX blocks" duration="13"/>
+    <testCase name="Parser should parse softbreaks" duration="1"/>
+    <testCase name="Parser should parse paragraphs" duration="1"/>
+    <testCase name="Parser should parse any string sequence" duration="6"/>
+    <testCase name="Parser should parse text rows" duration="0"/>
+    <testCase name="Parser should parse a text token" duration="0"/>
+    <testCase name="Parser should reinterpret failed formatting as text" duration="1"/>
+    <testCase name="Parser should parse bold text" duration="1"/>
+    <testCase name="Parser should parse italicized text" duration="1"/>
+    <testCase name="Parser should parse strikethrough text" duration="1"/>
+    <testCase name="Parser should parse inline latex" duration="1"/>
+    <testCase name="Parser should parse links" duration="3"/>
+    <testCase name="Parser should parse images" duration="2"/>
+    <testCase name="Parser Should parse a document to an array" duration="3"/>
+    <testCase name="Parser Should parse a document to a DOM" duration="5"/>
+    <testCase name="Parser should parse headers correctly" duration="1"/>
+    <testCase name="Parser should parse formatted paragraphs correctly" duration="1"/>
+    <testCase name="Parser should parse an ordered list correctly" duration="1"/>
+    <testCase name="Parser should parse an unordered list correctly" duration="1"/>
+    <testCase name="Parser should parse nested lists correctly" duration="0"/>
+    <testCase name="Parser should output Html code correctly" duration="2"/>
+    <testCase name="Parser should output the same source when calling toMarkDown() after parsing" duration="1"/>
+    <testCase name="Parser should correctly convert markdown to formatless string" duration="0"/>
+    <testCase name="Parser should parse the right source positions" duration="1"/>
+    <testCase name="Parser should parse one TOC and only one" duration="1"/>
+    <testCase name="Parser should parse one TOF and only one" duration="0"/>
+    <testCase name="Parser should create a table of figures" duration="2"/>
+    <testCase name="LaTeX Parser should parse latex" duration="1"/>
+    <testCase name="LaTeX Parser should know if an expression has been parsed before" duration="1"/>
+    <testCase name="LaTeX Parser should return cached expressions" duration="0"/>
+    <testCase name="LaTeX Parser should cache expression-html-pairs" duration="1"/>
+    <testCase name="LaTeX Parser should throw out cached expressions when limit reached" duration="2"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/PagesStore.test.js">
+    <testCase name="This test in PageStore tests the Action Handler and  should handle SET_MARKDOWN." duration="1"/>
+    <testCase name="This test in PageStore tests the Action Handler and  should handle SET_HTML." duration="1"/>
+    <testCase name="This test in PageStore tests the Action Handler and  should handle ZOOM_IN." duration="0"/>
+    <testCase name="This test in PageStore tests the Action Handler and  should handle ZOOM_OUT." duration="0"/>
+    <testCase name="This test in PageStore tests the Action Handler and  should handle ZOOM_RESET." duration="1"/>
+    <testCase name="This test in SidebarActions should set and return HTML." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return markdown." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HTML." duration="1"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/Titlepage.test.js">
     <testCase name="Test Titlepage should render without crashing" duration="4"/>
-    <testCase name="Test Titlepage should get style on load" duration="3"/>
+    <testCase name="Test Titlepage should get style on load" duration="2"/>
     <testCase name="Test Titlepage should handleExpandOrCollapse on click in div" duration="4"/>
-    <testCase name="Test Titlepage should set new Info" duration="1"/>
+    <testCase name="Test Titlepage should set new Info" duration="2"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/Titlebar.test.js">
+    <testCase name="Test TitleBar should set words" duration="2"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/SideBarStore.test.js">
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HASTITLEPAGE." duration="2"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HASHEADER." duration="1"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HASFOOTER." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_TITLE." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_AUTHOR." duration="1"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_DATE." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HEADER_LEFT." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HEADER_RIGHT." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_HEADER_MIDDLE." duration="1"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_FOOTER_LEFT." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_FOOTER_RIGHT." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_FOOTER_MIDDLE." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_IS_COLLAPSED." duration="1"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle SET_POPUP_CLOSED." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HasTitlepage." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HasHeader." duration="1"/>
+    <testCase name="This test in SidebarActions should set and return HasFooter." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return Title." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return Author." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return Date." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HeaderLeft." duration="1"/>
+    <testCase name="This test in SidebarActions should set and return HeaderRight." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return HeaderMiddle." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return FooterLeft." duration="0"/>
+    <testCase name="This test in SidebarActions should set and return FooterRight." duration="1"/>
+    <testCase name="This test in SidebarActions should set and return FooterMiddle." duration="0"/>
+    <testCase name="This test in SidebarActions should flip boolean and return IsCollapsed." duration="0"/>
+    <testCase name="This test in SidebarActions should flip boolean and return PopupClosed." duration="0"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/Zoom.test.js">
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle ZOOM_IN and ZOOM_RESET." duration="3"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should handle ZOOM_OUT and ZOOM_RESET." duration="1"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should not go below zoom 0.5." duration="0"/>
+    <testCase name="This test in SidebarActions tests the Action Handler and  should not go above zoom 1.7." duration="0"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/Page.test.js">
+    <testCase name="Test Page should render without crashing" duration="1"/>
+    <testCase name="Test Page should change id and __html on componentWillReceiveProps" duration="3"/>
+    <testCase name="Test Page should create __html out of html using createMarkup" duration="0"/>
+    <testCase name="Test Page should change the height value using callback" duration="1"/>
+    <testCase name="Test Page should set hasHeader" duration="1"/>
+    <testCase name="Test Page should set hasFooter" duration="1"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/Header.test.js">
+    <testCase name="Test Header should render without crashing" duration="1"/>
+    <testCase name="Test Header should change pagenumber on componentWillReceiveProps" duration="2"/>
+    <testCase name="Test Header should change header text" duration="2"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/Footer.test.js">
+    <testCase name="Test Footer should render without crashing" duration="1"/>
+    <testCase name="Test Footer should change pagenumber on componentWillReceiveProps" duration="2"/>
+    <testCase name="Test Footer should change footer text" duration="1"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/wordcounter.test.js">
+    <testCase name="WordCounter should count words in the document" duration="2"/>
+    <testCase name="WordCounter shouldn&apos;t count newlines, spaces or tabs" duration="1"/>
+    <testCase name="WordCounter shouldn&apos;t count punctuation or other symbols as words" duration="1"/>
+    <testCase name="CharacterCounter should count every single character in the document" duration="1"/>
+    <testCase name="CharacterCounter should not count spaces" duration="0"/>
+    <testCase name="CharacterCounter should count special character" duration="0"/>
+    <testCase name="CharacterCounter should show zero, if no it has no text" duration="0"/>
+  </file>
+  <file path="/home/alan/Dokumente/git/markdoc/__tests__/TableMaker.test.js">
+    <testCase name="Test tableMaker handles checkbox changes correctly" duration="4"/>
+    <testCase name="Test tableMaker handles field changes correctly" duration="1"/>
+    <testCase name="Test tableMaker sets popupClosed in store" duration="1"/>
+    <testCase name="Test tableMaker resets its state to 3, 3, false, and true with resetState()" duration="1"/>
+    <testCase name="Test tableMaker has default values 3, 3, no header, popup open" duration="1"/>
+    <testCase name="Test tableMaker properly generates a 3x3 table" duration="3"/>
+    <testCase name="Test tableMaker does nothing if rows or columns field is 0" duration="1"/>
+    <testCase name="Test tableMaker sets top row as header when that is selected" duration="2"/>
   </file>
 </testExecutions>

@@ -433,6 +433,8 @@ class Parser {
           break;
       }
     }
+    for (const link of this.dom.links) {
+    }
     return out;
   }
 
@@ -457,6 +459,7 @@ class Parser {
     }
     if (!this.tokenStream.eof()) this.tokenStream.read(); // Skip \n
     component.to = component.last().to;
+    component.id = 'Header ' + (this.dom.headers.length + 1);
     this.dom.headers.push(component);
     return component;
   }
@@ -1065,9 +1068,6 @@ class Parser {
             component.alt = token.match[4];
           }
         }
-        if (component.type == ComponentTypes.IMAGE) {
-          this.dom.images.push(component);
-        }
         this.tokenStream.read(); // end token
         break;
       }
@@ -1088,7 +1088,12 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseLink() {
-    return this.parseImageOrLinkEnd(new MDLink(this.dom));
+    var link = this.parseImageOrLinkEnd(new MDLink(this.dom));
+    if (link.type == ComponentTypes.IMAGE) {
+      link.id = 'Link ' + (this.dom.links.length + 1);
+      this.dom.links.push(link);
+    }
+    return link;
   }
 
   /**
@@ -1098,7 +1103,12 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseImage() {
-    return this.parseImageOrLinkEnd(new MDImage(this.dom));
+    var image = this.parseImageOrLinkEnd(new MDImage(this.dom));
+    if (image.type == ComponentTypes.IMAGE) {
+      image.id = 'Figure ' + (this.dom.images.length + 1);
+      this.dom.images.push(image);
+    }
+    return image;
   }
 
   // Helpers:
@@ -1939,9 +1949,6 @@ class MDLink extends MDComponent {
    * @returns {string}
    */
   toHtml() {
-    if (this.referenceId) {
-      // TODO: Do some reference resolving
-    }
     if (this.alt) {
       return `<a href="${this.url}" title="${this.alt}">${super.toHtml()}</a>`;
     }
@@ -2005,13 +2012,14 @@ class MDImage extends MDComponent {
    * @returns {string}
    */
   toHtml() {
-    if (this.referenceId) {
-      // TODO: Do some reference resolving
-    }
     if (this.id) {
-      return `<img src="${this.url}" id="${this.id}" alt="${super.toHtml()}"/>`;
+      return `<img src="${this.url}" id="${
+        this.id
+      }" alt="${super.toHtml()}" title="${this.alt}"/>`;
     }
-    return `<img src="${this.url}" alt="${super.toHtml()}"/>`;
+    return `<img src="${this.url}" alt="${super.toHtml()}" title="${
+      this.alt
+    }"/>`;
   }
 
   /**
@@ -2575,7 +2583,11 @@ class MDTOF extends MDComponent {
    * @returns {string}
    */
   toHtml() {
-    return `<div id="tof" class="tof">${super.toHtml()}</div>`;
+    var tags = [];
+    for (var image of this.children) {
+      tags.push(`<li>${image.id} - ${image.alt}</li>`);
+    }
+    return `<ol id="tof" class="tof">${tags.join('\n')}</ol>`;
   }
 
   /**
@@ -2726,6 +2738,13 @@ class MDDOM extends MDComponent {
      */
     this.images = [];
     /**
+     * List of links in the document
+     * @access public
+     * @readonly
+     * @type {MDLink[]}
+     */
+    this.links = [];
+    /**
      * A handler for latex parse requests.
      * @access public
      * @readonly
@@ -2740,7 +2759,42 @@ class MDDOM extends MDComponent {
    * @returns {MDDOM}
    */
   static parse(source) {
-    return Parser.parseToDOM(source);
+    var dom = Parser.parseToDOM(source);
+    // Resolve references for links and images
+    for (const link of dom.links) {
+      if (link.referenceId != '') {
+        var ref = dom.references.find((val, i, lst) => {
+          return val.referenceId == link.referenceId;
+        });
+        if (ref) {
+          link.url = ref.url;
+          link.alt = ref.alt;
+        }
+      }
+    }
+    for (const image of dom.images) {
+      if (image.referenceId != '') {
+        var ref = dom.references.find((val, i, lst) => {
+          return val.referenceId == image.referenceId;
+        });
+        if (ref) {
+          image.url = ref.url;
+          image.alt = ref.alt;
+        }
+      }
+    }
+    // Build the TOF and TOC
+    if (dom.tof) {
+      while (dom.images.length > 0) {
+        dom.tof.add(dom.images.shift());
+      }
+    }
+    if (dom.toc) {
+      while (dom.headers.length > 0) {
+        dom.toc.add(dom.headers.shift());
+      }
+    }
+    return dom;
   }
 
   /**

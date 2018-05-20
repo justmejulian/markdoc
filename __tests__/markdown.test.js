@@ -1746,6 +1746,44 @@ describe('Parser', () => {
     expect(count).toEqual(1);
     expect(dom.tof).toBeDefined();
   });
+  it('should create a table of figures', () => {
+    var dom = DOM.parse(
+      '![linktext](https://duckduckgo.com/img.jpg)\n' +
+        '![link text](https://duckduckgo.com/img.jpg "tooltip")\n' +
+        '![link **text**](https://duckduckgo.com/img.jpg "tooltip 2")\n' +
+        '![link reference][ref id]\n' +
+        '![single ref]\n' +
+        '\n' +
+        '[ref id]: https://duckduckgo.com/img.jpg\n' +
+        '[single ref]: https://duckduckgo.com/img.jpg "tooltip"\n' +
+        '\n' +
+        '[TOF]'
+    );
+    var tof = dom.tof;
+    expect(tof).not.toBeNull();
+    var children = tof.children;
+    expect(children.length).toEqual(5);
+    var image = children[0];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.alt).toEqual('');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+    image = children[1];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.alt).toEqual('tooltip');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+    image = children[2];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.alt).toEqual('tooltip 2');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+    image = children[3];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.alt).toEqual('');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+    image = children[4];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.alt).toEqual('tooltip');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+  });
 });
 
 describe('LaTeX Parser', () => {
