@@ -1698,9 +1698,9 @@ describe('Parser', () => {
         '2. second'
     );
     expect(dom.toHtml()).toEqual(
-      '<h1>Testheader 1</h1>\n' +
+      '<h1 id="Header 1">Testheader 1</h1>\n' +
         '<p>Bla<strong>blabla</strong>.</p>\n' +
-        '<h2>Second test header</h2>\n' +
+        '<h2 id="Header 2">Second test header</h2>\n' +
         '<ol><li>first</li><li>second</li></ol>'
     );
   });
@@ -1783,6 +1783,46 @@ describe('Parser', () => {
     expect(image.type).toEqual(ComponentTypes.IMAGE);
     expect(image.alt).toEqual('tooltip');
     expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+  });
+  it('should create a table of content', () => {
+    var dom = DOM.parse(
+      '# Main1\n' +
+        '## Sub1\n' +
+        '## Sub2\n' +
+        '### SubSub\n' +
+        '## Sub3\n' +
+        '# Main2\n' +
+        '\n' +
+        '[TOC]'
+    );
+    var toc = dom.toc;
+    expect(toc).not.toBeNull();
+    var children = toc.children;
+    expect(children.length).toEqual(6);
+    var header = children[0];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(1);
+    expect(header.toString()).toEqual('Main1');
+    header = children[1];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(2);
+    expect(header.toString()).toEqual('Sub1');
+    header = children[2];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(2);
+    expect(header.toString()).toEqual('Sub2');
+    header = children[3];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(3);
+    expect(header.toString()).toEqual('SubSub');
+    header = children[4];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(2);
+    expect(header.toString()).toEqual('Sub3');
+    header = children[5];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(1);
+    expect(header.toString()).toEqual('Main2');
   });
 });
 
