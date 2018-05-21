@@ -1905,7 +1905,7 @@ class MDTextLaTeX extends MDComponent {
    * @returns {string}
    */
   toMarkDown() {
-    return `\$${super.toMarkDown()}\$`;
+    return `$${this.value}$`;
   }
 }
 
