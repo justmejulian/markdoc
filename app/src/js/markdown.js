@@ -433,8 +433,6 @@ class Parser {
           break;
       }
     }
-    for (const link of this.dom.links) {
-    }
     return out;
   }
 
@@ -2771,10 +2769,11 @@ class MDDOM extends MDComponent {
    */
   static parse(source) {
     var dom = Parser.parseToDOM(source);
+    var ref;
     // Resolve references for links and images
     for (const link of dom.links) {
       if (link.referenceId != '') {
-        var ref = dom.references.find((val, i, lst) => {
+        ref = dom.references.find(val => {
           return val.referenceId == link.referenceId;
         });
         if (ref) {
@@ -2785,7 +2784,7 @@ class MDDOM extends MDComponent {
     }
     for (const image of dom.images) {
       if (image.referenceId != '') {
-        var ref = dom.references.find((val, i, lst) => {
+        ref = dom.references.find(val => {
           return val.referenceId == image.referenceId;
         });
         if (ref) {
