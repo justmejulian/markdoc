@@ -97,4 +97,38 @@ describe('Test tableMaker', () => {
       '<table><tr><th>1:1</th><th>1:2</th><th>1:3</th></tr><tr><td>2:1</td><td>2:2</td><td>2:3</td></tr><tr><td>3:1</td><td>3:2</td><td>3:3</td></tr></table>'
     );
   });
+
+  it("does absolutely nothing on refreshComponent and this test is pointless because it's part of another function that is being tested.", () => {
+    var state = tableMaker.state();
+    instance.refreshComponent();
+    expect(tableMaker.state()).toEqual(state);
+  });
+
+  it('sets up an event listener for popupClosed_changed on willMount', () => {
+    Store.on = jest.fn();
+    instance.componentWillMount();
+    expect(Store.on).toHaveBeenCalled();
+    expect(Store.on).toHaveBeenCalledWith(
+      'popupClosed_changed',
+      instance.refreshComponent
+    );
+  });
+
+  it('removes the event listener for popupClosed_changed on willUnmount', () => {
+    Store.removeListener = jest.fn();
+    instance.componentWillUnmount();
+    expect(Store.removeListener).toHaveBeenCalled();
+    expect(Store.removeListener).toHaveBeenCalledWith(
+      'popupClosed_changed',
+      instance.refreshComponent
+    );
+  });
+
+  it('handles the popup closing. This is the most useless test.', () => {
+    instance.createTable = jest.fn();
+    instance.resetState = jest.fn();
+    instance.handlePopupClosing();
+    expect(instance.createTable).toHaveBeenCalled();
+    expect(instance.resetState).toHaveBeenCalled();
+  });
 });
