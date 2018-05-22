@@ -46,7 +46,7 @@ class Preview extends React.Component {
     var copyArray = [{ key: 0, html: '', height: 0 }];
     var html = PagesStore.getHTML();
     console.log(html);
-    var words = html.split(' ');
+    var words = html.split(/\n| /g);
 
     copyArray[0].html = words[0];
 
@@ -87,10 +87,7 @@ class Preview extends React.Component {
         currentWord = currentWord + 1;
         //console.log('Current Word: ' + currentWord);
         console.log('The word: ' + this.state.words[currentWord]);
-        if (
-          this.state.words[currentWord] == '[newpage]<br/>' ||
-          this.state.words[currentWord] == '[newpage]</p><br/>'
-        ) {
+        if (this.state.words[currentWord] == '[newpage]') {
           console.log('new page found');
           currentPage = currentPage + 1;
           copyArray[currentPage] = { key: currentPage, html: '', height: 0 };
