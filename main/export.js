@@ -11,20 +11,20 @@ const {
   GET_DOCUMENT_CONTENT,
   PRINT_URL,
   READY_TO_PRINT,
-  FILETYPE_HTML,
+  FILETYPE_MD,
   FILETYPE_PDF
 } = require('../app/utils/constants');
 // import actions
 const { saveFile } = require('./actions');
 // import print window settings
-const printWindow = require('./printWindow');
+const printWindow = require('./print/printWindow');
 
-function exportAsHtml(currentFilePath, currentHTMLContent, currentWindow) {
+function exportAsMarkdown(currentFilePath, currentHTMLContent, currentWindow) {
   if (currentFilePath === '' || currentFilePath === null) {
     showSaveFirstMessage(currentWindow);
     return;
   }
-  saveFile(FILETYPE_HTML, currentFilePath, currentHTMLContent, currentWindow);
+  saveFile(FILETYPE_MD, currentFilePath, currentHTMLContent, currentWindow);
 }
 
 function exportAsPdf(currentFilePath, currentWindow, currentPages) {
@@ -46,12 +46,15 @@ function exportAsPdf(currentFilePath, currentWindow, currentPages) {
   });
 
   ipcMain.on(READY_TO_PRINT, (event, arg) => {
-    printToPDFWindow.webContents.printToPDF({}, function(printErr, data) {
-      if (printErr) {
-        return console.log(printErr.message);
+    printToPDFWindow.webContents.printToPDF(
+      { pageSize: 'A4', printBackground: true },
+      function(printErr, data) {
+        if (printErr) {
+          return console.log(printErr.message);
+        }
+        saveFile(FILETYPE_PDF, currentFilePath, data, currentWindow);
       }
-      saveFile(FILETYPE_PDF, currentFilePath, data, currentWindow);
-    });
+    );
   });
 }
 
@@ -68,6 +71,6 @@ function showSaveFirstMessage(currentWindow) {
 }
 
 module.exports = {
-  exportAsHtml: exportAsHtml,
+  exportAsMarkdown: exportAsMarkdown,
   exportAsPdf: exportAsPdf
 };

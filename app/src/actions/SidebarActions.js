@@ -86,3 +86,9 @@ export function setIsCollapsed() {
     type: 'SET_IS_COLLAPSED'
   });
 }
+
+export function setPopupClosed() {
+  dispatcher.dispatch({
+    type: 'SET_POPUP_CLOSED'
+  });
+}

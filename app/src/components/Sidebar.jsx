@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
+import TableMaker from './TableMaker.jsx';
 
 import SidebarStore from '../stores/SidebarStore.js';
 import * as SidebarActions from '../actions/SidebarActions';
@@ -118,7 +119,7 @@ export default class Sidebar extends Component {
   }
 
   _setIsCollapsed() {
-    this.setState({ isCollapsed: SidebarStore.isCollapsed });
+    this.setState({ isCollapsed: SidebarStore.getIsCollapsed() });
   }
 
   _setDate() {
@@ -283,6 +284,7 @@ export default class Sidebar extends Component {
                   name="headerLeft"
                   value={this.state.headerLeft}
                   placeholder="Left"
+                  maxLength={38}
                 />
                 <input
                   type="text"
@@ -290,6 +292,7 @@ export default class Sidebar extends Component {
                   name="headerMiddle"
                   value={this.state.headerMiddle}
                   placeholder="Middle"
+                  maxLength={38}
                 />
                 <input
                   type="text"
@@ -297,6 +300,7 @@ export default class Sidebar extends Component {
                   name="headerRight"
                   value={this.state.headerRight}
                   placeholder="Right"
+                  maxLength={38}
                 />
               </div>
             </div>
@@ -310,13 +314,18 @@ export default class Sidebar extends Component {
                   name="footerLeft"
                   value={this.state.footerLeft}
                   placeholder="Left"
+                  maxLength={38}
                 />
+                {/* A Is hidden because we want it to be page number */}
+
                 <input
+                  style={{ visibility: 'hidden' }}
                   type="text"
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="footerMiddle"
                   value={this.state.footerMiddle}
-                  placeholder="Isch im mom. page zahl"
+                  maxLength={38}
+                  placeholder="PageNumber"
                 />
                 <input
                   type="text"
@@ -324,6 +333,7 @@ export default class Sidebar extends Component {
                   name="footerRight"
                   value={this.state.footerRight}
                   placeholder="Right"
+                  maxLength={38}
                 />
               </div>
             </div>
@@ -336,6 +346,7 @@ export default class Sidebar extends Component {
                 selected={this.state.date}
               />
             </div>
+            <TableMaker />
           </div>
           <button
             onClick={this.handleExpandOrCollapse}

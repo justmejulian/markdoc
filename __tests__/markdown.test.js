@@ -265,11 +265,11 @@ describe('Token Regex', () => {
   it('should match pagebreaks appropriately', () => {
     var pattern = Tokens.PAGEBREAK.pattern;
     // Matches:
-    expect(pattern.test('[PB]')).toBeTruthy();
-    expect(pattern.test('asd[PB]')).toBeTruthy();
+    expect(pattern.test('[newpage]')).toBeTruthy();
+    expect(pattern.test('asd[newpage]')).toBeTruthy();
     // Mismatches:
-    expect(pattern.test('[PBB]')).toBeFalsy();
-    expect(pattern.test('[PB]]')).toBeFalsy();
+    expect(pattern.test('[newpagee]')).toBeFalsy();
+    expect(pattern.test('[newpage]]')).toBeFalsy();
   });
   it('should match references appropriately', () => {
     var pattern = Tokens.REFERENCE.pattern;
@@ -635,7 +635,9 @@ describe('TokenStream', () => {
     expect(tokenStream.read()).toBeNull();
   });
   it('should find proper pagebreaks', () => {
-    var tokenStream = new TokenStream(new CharacterStream('[PB] \n[PB]'));
+    var tokenStream = new TokenStream(
+      new CharacterStream('[newpage] \n[newpage]')
+    );
     var token = tokenStream.read();
     while (token.type != TokenTypes.NEWLINE) {
       token = tokenStream.read();
@@ -645,7 +647,7 @@ describe('TokenStream', () => {
     token = tokenStream.read();
     expect(token.type).toEqual(TokenTypes.PAGEBREAK);
     expect(token.from).toEqual([1, 0]);
-    expect(token.to).toEqual([1, 3]);
+    expect(token.to).toEqual([1, 8]);
     expect(tokenStream.read()).toBeNull();
   });
   it('should find proper references', () => {
@@ -1172,7 +1174,7 @@ describe('Parser', () => {
   });
   it('should parse pagebreaks', () => {
     var tokenStream = new TokenStream(
-      new CharacterStream('# Header\n' + '[PB]\n' + '[PB]')
+      new CharacterStream('# Header\n' + '[newpage]\n' + '[newpage]')
     );
     var parser = new Parser(tokenStream);
     tokenStream.skipToNextRow();
@@ -1497,7 +1499,7 @@ describe('Parser', () => {
     expect(link.children.length).toBe(1);
     expect(link.children[0].value).toEqual('link text');
     expect(link.url).toEqual('https://duckduckgo.com/');
-    expect(link.alt).toEqual('tooltip');
+    expect(link.title).toEqual('tooltip');
 
     tokenStream.skipToNextRow();
     link = parser.parseLink();
@@ -1505,7 +1507,7 @@ describe('Parser', () => {
     expect(link.type).toEqual(ComponentTypes.LINK);
     expect(link.children.length).toBe(2);
     expect(link.url).toEqual('https://duckduckgo.com/');
-    expect(link.alt).toEqual('tooltip 2');
+    expect(link.title).toEqual('tooltip 2');
 
     tokenStream.skipToNextRow();
     link = parser.parseLink();
@@ -1548,7 +1550,7 @@ describe('Parser', () => {
     expect(image.children.length).toBe(1);
     expect(image.children[0].value).toEqual('link text');
     expect(image.url).toEqual('https://duckduckgo.com/');
-    expect(image.alt).toEqual('tooltip');
+    expect(image.title).toEqual('tooltip');
     expect(parser.dom.images.includes(image)).toBeTruthy();
 
     tokenStream.skipToNextRow();
@@ -1557,7 +1559,7 @@ describe('Parser', () => {
     expect(image.type).toEqual(ComponentTypes.IMAGE);
     expect(image.children.length).toBe(2);
     expect(image.url).toEqual('https://duckduckgo.com/');
-    expect(image.alt).toEqual('tooltip 2');
+    expect(image.title).toEqual('tooltip 2');
     expect(parser.dom.images.includes(image)).toBeTruthy();
 
     tokenStream.skipToNextRow();
@@ -1696,9 +1698,9 @@ describe('Parser', () => {
         '2. second'
     );
     expect(dom.toHtml()).toEqual(
-      '<h1>Testheader 1</h1>\n' +
+      '<h1 id="Header 1">Testheader 1</h1>\n' +
         '<p>Bla<strong>blabla</strong>.</p>\n' +
-        '<h2>Second test header</h2>\n' +
+        '<h2 id="Header 2">Second test header</h2>\n' +
         '<ol><li>first</li><li>second</li></ol>'
     );
   });
@@ -1743,6 +1745,84 @@ describe('Parser', () => {
     }
     expect(count).toEqual(1);
     expect(dom.tof).toBeDefined();
+  });
+  it('should create a table of figures', () => {
+    var dom = DOM.parse(
+      '![linktext](https://duckduckgo.com/img.jpg)\n' +
+        '![link text](https://duckduckgo.com/img.jpg "tooltip")\n' +
+        '![link **text**](https://duckduckgo.com/img.jpg "tooltip 2")\n' +
+        '![link reference][ref id]\n' +
+        '![single ref]\n' +
+        '\n' +
+        '[ref id]: https://duckduckgo.com/img.jpg\n' +
+        '[single ref]: https://duckduckgo.com/img.jpg "tooltip"\n' +
+        '\n' +
+        '[TOF]'
+    );
+    var tof = dom.tof;
+    expect(tof).not.toBeNull();
+    var children = tof.children;
+    expect(children.length).toEqual(5);
+    var image = children[0];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.title).toEqual('');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+    image = children[1];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.title).toEqual('tooltip');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+    image = children[2];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.title).toEqual('tooltip 2');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+    image = children[3];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.title).toEqual('');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+    image = children[4];
+    expect(image.type).toEqual(ComponentTypes.IMAGE);
+    expect(image.title).toEqual('tooltip');
+    expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
+  });
+  it('should create a table of content', () => {
+    var dom = DOM.parse(
+      '# Main1\n' +
+        '## Sub1\n' +
+        '## Sub2\n' +
+        '### SubSub\n' +
+        '## Sub3\n' +
+        '# Main2\n' +
+        '\n' +
+        '[TOC]'
+    );
+    var toc = dom.toc;
+    expect(toc).not.toBeNull();
+    var children = toc.children;
+    expect(children.length).toEqual(6);
+    var header = children[0];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(1);
+    expect(header.toString()).toEqual('Main1');
+    header = children[1];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(2);
+    expect(header.toString()).toEqual('Sub1');
+    header = children[2];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(2);
+    expect(header.toString()).toEqual('Sub2');
+    header = children[3];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(3);
+    expect(header.toString()).toEqual('SubSub');
+    header = children[4];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(2);
+    expect(header.toString()).toEqual('Sub3');
+    header = children[5];
+    expect(header.type).toEqual(ComponentTypes.HEADER);
+    expect(header.level).toEqual(1);
+    expect(header.toString()).toEqual('Main2');
   });
 });
 

@@ -45,14 +45,9 @@ class Preview extends React.Component {
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
     var html = PagesStore.getHTML();
-    var words = html
-      .replace(' <br/> ', '<br/> ')
-      .replace(/\n/g, '<br/> ')
-      .split(' ');
+    var words = html.split(/\n| /g);
 
-    copyArray[0].html = words[0].replace('<br/> ', ' <br/> ');
-
-    console.log(words);
+    copyArray[0].html = words[0];
 
     this.setState(
       {
@@ -84,20 +79,12 @@ class Preview extends React.Component {
     var currentPage = this.state.currentPage;
     //console.log("currentWord: " + currentWord + " and words.length: " +this.state.words.length);
     if (currentWord < this.state.words.length - 1) {
-      console.log('Current height: ' + copyArray[currentPage].height);
-      if (copyArray[currentPage].height < 700) {
+      //console.log('Current height: ' + copyArray[currentPage].height);
+      if (copyArray[currentPage].height < 950) {
         currentWord = currentWord + 1;
         //console.log('Current Word: ' + currentWord);
-        console.log('The word: ' + this.state.words[currentWord]);
-        if (
-          this.state.words[currentWord] == '[newpage]' ||
-          this.state.words[currentWord] == '<p>[newpage]' ||
-          this.state.words[currentWord] == '[newpage]</p>' ||
-          this.state.words[currentWord] == '<p>[newpage]</p>' ||
-          this.state.words[currentWord] == '[newpage]</p><br/>' ||
-          this.state.words[currentWord] == '<p>[newpage]</p><br/>'
-        ) {
-          console.log('new page found');
+        if (this.state.words[currentWord] == '[newpage]') {
+          //console.log('new page found');
           currentPage = currentPage + 1;
           copyArray[currentPage] = { key: currentPage, html: '', height: 0 };
           this.setState(
@@ -112,7 +99,7 @@ class Preview extends React.Component {
           copyArray[currentPage].html =
             copyArray[currentPage].html +
             ' ' +
-            this.state.words[currentWord].replace('<br/> ', ' <br/> ');
+            this.state.words[currentWord].replace('><br/> ', '> ');
           this.setState(
             {
               pages: copyArray,
@@ -149,28 +136,6 @@ class Preview extends React.Component {
   render() {
     return (
       <div id="preview">
-        <div id="zoomButtonContainer">
-          <button className="zoomButton" onClick={this.handleZoomIn}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-            >
-              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zm2.5-4h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
-            </svg>
-          </button>
-          <button className="zoomButton" onClick={this.handleZoomOut}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-            >
-              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z" />
-            </svg>
-          </button>
-        </div>
         <div style={{ zoom: this.state.zoom }}>
           <Titlepage visibility={this.state.hasTitlepage} />
           {this.state.pages.map(page => (

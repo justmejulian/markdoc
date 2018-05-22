@@ -6,17 +6,19 @@ import './styles/App.sass';
 import './styles/Preview.scss';
 import './styles/reset.scss';
 import './styles/Sidebar.sass';
+import './styles/TableMaker.sass';
 import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 import './font/font.scss';
 
 import {
   GET_DOCUMENT_CONTENT,
-  GET_HTML_CONTENT,
+  GET_MD_CONTENT,
   GET_PDF_CONTENT,
   OPEN_FILE_FROM_PATH,
   SET_FILE_PATH,
   HANDLE_PREVIEW_ZOOM,
-  TRIGGER_SIDEBAR
+  TRIGGER_SIDEBAR,
+  TRIGGER_TABLEMAKER
 } from '../utils/constants';
 
 import Sidebar from './components/Sidebar.jsx';
@@ -44,11 +46,13 @@ class App extends React.Component {
     this.setDocumentContent = (event, data) =>
       this._setDocumentContent(event, data);
     this.setFilePath = (event, data) => this._setFilePath(event, data);
-    this.getHTMLContent = (event, data) => this._getHTMLContent(event, data);
+    this.getMDContent = (event, data) => this._getMDContent(event, data);
     this.getPDFContent = (event, data) => this._getPDFContent(event, data);
     this.handlePreviewZoom = (event, data) =>
       this._handlePreviewZoom(event, data);
     this.triggerSidebar = (event, data) => this._triggerSidebar(event, data);
+    this.triggerTableMaker = (event, data) =>
+      this._triggerTableMaker(event, data);
 
     // prepare metadata helpers
     this.metaDataHelpers = [
@@ -94,22 +98,24 @@ class App extends React.Component {
   // IPC event listeners
   componentDidMount() {
     ipcRenderer.on(GET_DOCUMENT_CONTENT, this.getDocumentContent);
-    ipcRenderer.on(GET_HTML_CONTENT, this.getHTMLContent);
+    ipcRenderer.on(GET_MD_CONTENT, this.getMDContent);
     ipcRenderer.on(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.on(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.on(SET_FILE_PATH, this.setFilePath);
     ipcRenderer.on(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
     ipcRenderer.on(TRIGGER_SIDEBAR, this.triggerSidebar);
+    ipcRenderer.on(TRIGGER_TABLEMAKER, this.triggerTableMaker);
   }
 
   componentWillUnmount() {
     ipcRenderer.removeListener(GET_DOCUMENT_CONTENT, this.getDocumentContent);
-    ipcRenderer.removeListener(GET_HTML_CONTENT, this.getHTMLContent);
+    ipcRenderer.removeListener(GET_MD_CONTENT, this.getMDContent);
     ipcRenderer.removeListener(GET_PDF_CONTENT, this.getPDFContent);
     ipcRenderer.removeListener(OPEN_FILE_FROM_PATH, this.setDocumentContent);
     ipcRenderer.removeListener(SET_FILE_PATH, this.setFilePath);
     ipcRenderer.removeListener(HANDLE_PREVIEW_ZOOM, this.handlePreviewZoom);
     ipcRenderer.removeListener(TRIGGER_SIDEBAR, this.triggerSidebar);
+    ipcRenderer.removeListener(TRIGGER_TABLEMAKER, this.triggerTableMaker);
   }
 
   _getDocumentContent(event, data) {
@@ -125,12 +131,12 @@ class App extends React.Component {
     });
   }
 
-  _getHTMLContent(event, data) {
+  _getMDContent(event, data) {
     var currentWindow = require('electron').remote.getCurrentWindow().id;
     var currentFilePath = this.state.filePath;
     //TODO: generate valid HTML and apply CSS from the preview
-    var currentContent = PageStore.getHTML();
-    ipcRenderer.send(GET_HTML_CONTENT, {
+    var currentContent = PageStore.getMarkdown();
+    ipcRenderer.send(GET_MD_CONTENT, {
       currentFilePath,
       currentContent,
       currentWindow
@@ -225,6 +231,10 @@ class App extends React.Component {
 
   _triggerSidebar(event, data) {
     SidebarActions.setIsCollapsed();
+  }
+
+  _triggerTableMaker(event, data) {
+    SidebarActions.setPopupClosed();
   }
 
   _isMdoc(currentFilePath) {
