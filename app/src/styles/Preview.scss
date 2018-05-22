@@ -389,13 +389,4 @@
       border: none;
     }
   }
-  #zoomButtonContainer {
-    position: absolute;
-    bottom: 18px;
-    right: 18px;
-    display: flex;
-    justify-content: space-evenly;
-    flex-wrap: nowrap;
-    z-index: 1;
-  }
 }
