@@ -284,6 +284,7 @@ export default class Sidebar extends Component {
                   name="headerLeft"
                   value={this.state.headerLeft}
                   placeholder="Left"
+                  maxLength={38}
                 />
                 <input
                   type="text"
@@ -291,6 +292,7 @@ export default class Sidebar extends Component {
                   name="headerMiddle"
                   value={this.state.headerMiddle}
                   placeholder="Middle"
+                  maxLength={38}
                 />
                 <input
                   type="text"
@@ -298,6 +300,7 @@ export default class Sidebar extends Component {
                   name="headerRight"
                   value={this.state.headerRight}
                   placeholder="Right"
+                  maxLength={38}
                 />
               </div>
             </div>
@@ -311,6 +314,7 @@ export default class Sidebar extends Component {
                   name="footerLeft"
                   value={this.state.footerLeft}
                   placeholder="Left"
+                  maxLength={38}
                 />
                 {/* A Is hidden because we want it to be page number */}
 
@@ -320,6 +324,7 @@ export default class Sidebar extends Component {
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="footerMiddle"
                   value={this.state.footerMiddle}
+                  maxLength={38}
                   placeholder="PageNumber"
                 />
                 <input
@@ -328,6 +333,7 @@ export default class Sidebar extends Component {
                   name="footerRight"
                   value={this.state.footerRight}
                   placeholder="Right"
+                  maxLength={38}
                 />
               </div>
             </div>
