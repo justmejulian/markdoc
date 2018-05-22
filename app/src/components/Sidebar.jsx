@@ -320,7 +320,7 @@ export default class Sidebar extends Component {
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="footerMiddle"
                   value={this.state.footerMiddle}
-                  placeholder="Isch im mom. page zahl"
+                  placeholder="PageNumber"
                 />
                 <input
                   type="text"
