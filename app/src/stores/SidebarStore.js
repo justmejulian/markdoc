@@ -109,7 +109,7 @@ class SidebarStore extends EventEmitter {
         this.emit('Author_changed');
         break;
       case 'SET_DATE':
-        this.date = action.text;
+        this.date = action.text.format('DD/MM/YYYY');
         this.emit('Date_changed');
         break;
       case 'SET_HEADER_LEFT':

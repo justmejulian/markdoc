@@ -6,16 +6,16 @@ const { app, dialog, ipcMain, BrowserWindow, Menu } = electron;
 // import constants
 const {
   GET_DOCUMENT_CONTENT,
-  GET_HTML_CONTENT,
+  GET_MD_CONTENT,
   GET_PDF_CONTENT,
   FILETYPE_MDOC,
-  FILETYPE_HTML,
+  FILETYPE_MD,
   DEFAULT_URL
 } = require('./app/utils/constants');
 // import actions
 const { saveFile } = require('./main/actions');
 // import export functions
-const { exportAsHtml, exportAsPdf } = require('./main/export');
+const { exportAsMarkdown, exportAsPdf } = require('./main/export');
 // import window manager
 const { markdocWindows, createWindow } = require('./main/windowManager');
 // import menu configurator
@@ -60,8 +60,8 @@ ipcMain.on(GET_DOCUMENT_CONTENT, (event, arg) => {
   );
 });
 
-ipcMain.on(GET_HTML_CONTENT, (event, arg) => {
-  exportAsHtml(arg.currentFilePath, arg.currentContent, arg.currentWindow);
+ipcMain.on(GET_MD_CONTENT, (event, arg) => {
+  exportAsMarkdown(arg.currentFilePath, arg.currentContent, arg.currentWindow);
 });
 
 ipcMain.on(GET_PDF_CONTENT, (event, arg) => {

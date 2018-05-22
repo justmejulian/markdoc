@@ -11,7 +11,7 @@ const {
   GET_DOCUMENT_CONTENT,
   PRINT_URL,
   READY_TO_PRINT,
-  FILETYPE_HTML,
+  FILETYPE_MD,
   FILETYPE_PDF
 } = require('../app/utils/constants');
 // import actions
@@ -19,12 +19,12 @@ const { saveFile } = require('./actions');
 // import print window settings
 const printWindow = require('./print/printWindow');
 
-function exportAsHtml(currentFilePath, currentHTMLContent, currentWindow) {
+function exportAsMarkdown(currentFilePath, currentHTMLContent, currentWindow) {
   if (currentFilePath === '' || currentFilePath === null) {
     showSaveFirstMessage(currentWindow);
     return;
   }
-  saveFile(FILETYPE_HTML, currentFilePath, currentHTMLContent, currentWindow);
+  saveFile(FILETYPE_MD, currentFilePath, currentHTMLContent, currentWindow);
 }
 
 function exportAsPdf(currentFilePath, currentWindow, currentPages) {
@@ -71,6 +71,6 @@ function showSaveFirstMessage(currentWindow) {
 }
 
 module.exports = {
-  exportAsHtml: exportAsHtml,
+  exportAsMarkdown: exportAsMarkdown,
   exportAsPdf: exportAsPdf
 };

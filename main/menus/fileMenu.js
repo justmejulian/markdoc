@@ -4,7 +4,7 @@ const { ipcMain, BrowserWindow } = electron;
 // import constants
 const {
   GET_DOCUMENT_CONTENT,
-  GET_HTML_CONTENT,
+  GET_MD_CONTENT,
   GET_PDF_CONTENT,
   DEFAULT_URL,
   TRIGGER_SIDEBAR
@@ -53,11 +53,11 @@ module.exports = {
           }
         },
         {
-          label: 'Export as HTML',
+          label: 'Export as Markdown',
           accelerator:
-            process.platform === 'darwin' ? 'Command+Shift+H' : 'Ctrl+Shift+H',
+            process.platform === 'darwin' ? 'Command+Shift+M' : 'Ctrl+Shift+M',
           click() {
-            BrowserWindow.getFocusedWindow().send(GET_HTML_CONTENT, 'html');
+            BrowserWindow.getFocusedWindow().send(GET_MD_CONTENT, 'md');
           }
         }
       ]

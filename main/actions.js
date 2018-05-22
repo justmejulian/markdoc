@@ -8,7 +8,7 @@ const {
   OPEN_FILE_FROM_PATH,
   SET_FILE_PATH,
   FILETYPE_MDOC,
-  FILETYPE_HTML,
+  FILETYPE_MD,
   FILETYPE_PDF,
   EXTENSIONS
 } = require('../app/utils/constants');

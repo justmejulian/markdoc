@@ -72,12 +72,12 @@ describe('This test in SidebarActions tests the Action Handler and ', () => {
     // Mock the action
     var action = {
       type: 'SET_DATE',
-      text: '17.07.1994'
+      text: moment('1994-07-17')
     };
 
     Store.handleActions(action);
 
-    expect(Store.date).toEqual('17.07.1994');
+    expect(Store.date).toEqual('17/07/1994');
   });
 
   it('should handle SET_HEADER_LEFT.', function() {
