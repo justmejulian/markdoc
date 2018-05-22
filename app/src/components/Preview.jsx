@@ -45,12 +45,9 @@ class Preview extends React.Component {
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
     var html = PagesStore.getHTML();
-    console.log(html);
     var words = html.split(/\n| /g);
 
     copyArray[0].html = words[0];
-
-    console.log(words);
 
     this.setState(
       {
@@ -82,13 +79,12 @@ class Preview extends React.Component {
     var currentPage = this.state.currentPage;
     //console.log("currentWord: " + currentWord + " and words.length: " +this.state.words.length);
     if (currentWord < this.state.words.length - 1) {
-      console.log('Current height: ' + copyArray[currentPage].height);
+      //console.log('Current height: ' + copyArray[currentPage].height);
       if (copyArray[currentPage].height < 950) {
         currentWord = currentWord + 1;
         //console.log('Current Word: ' + currentWord);
-        console.log('The word: ' + this.state.words[currentWord]);
         if (this.state.words[currentWord] == '[newpage]') {
-          console.log('new page found');
+          //console.log('new page found');
           currentPage = currentPage + 1;
           copyArray[currentPage] = { key: currentPage, html: '', height: 0 };
           this.setState(
