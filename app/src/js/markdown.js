@@ -2803,12 +2803,14 @@ class MDDOM extends MDComponent {
           image.title = image.title.substr(1);
           continue;
         }
-        dom.tof.add(image);
+        // add() would destroy the parent-backreference
+        dom.tof.children.push(image);
       }
     }
     if (dom.toc) {
       while (dom.headers.length > 0) {
-        dom.toc.add(dom.headers.shift());
+        // add() would destroy the parent-backreference
+        dom.toc.children.push(dom.headers.shift());
       }
     }
     return dom;
