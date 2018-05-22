@@ -312,7 +312,10 @@ export default class Sidebar extends Component {
                   value={this.state.footerLeft}
                   placeholder="Left"
                 />
+                {/* A Is hidden because we want it to be page number */}
+
                 <input
+                  style={{ visibility: 'hidden' }}
                   type="text"
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="footerMiddle"
