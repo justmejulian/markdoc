@@ -119,7 +119,7 @@ export default class Sidebar extends Component {
   }
 
   _setIsCollapsed() {
-    this.setState({ isCollapsed: SidebarStore.isCollapsed });
+    this.setState({ isCollapsed: SidebarStore.getIsCollapsed() });
   }
 
   _setDate() {
