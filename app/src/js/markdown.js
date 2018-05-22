@@ -2774,6 +2774,7 @@ class MDDOM extends MDComponent {
     for (const link of dom.links) {
       if (link.referenceId != '') {
         ref = dom.references.find(val => {
+          //NOSONAR
           return val.referenceId == link.referenceId;
         });
         if (ref) {
@@ -2785,6 +2786,7 @@ class MDDOM extends MDComponent {
     for (const image of dom.images) {
       if (image.referenceId != '') {
         ref = dom.references.find(val => {
+          //NOSONAR
           return val.referenceId == image.referenceId;
         });
         if (ref) {
