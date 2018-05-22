@@ -52,3 +52,4 @@ npm-debug.log*
 
 
 .vscode
+reports/test-report.xml

@@ -1499,7 +1499,7 @@ describe('Parser', () => {
     expect(link.children.length).toBe(1);
     expect(link.children[0].value).toEqual('link text');
     expect(link.url).toEqual('https://duckduckgo.com/');
-    expect(link.alt).toEqual('tooltip');
+    expect(link.title).toEqual('tooltip');
 
     tokenStream.skipToNextRow();
     link = parser.parseLink();
@@ -1507,7 +1507,7 @@ describe('Parser', () => {
     expect(link.type).toEqual(ComponentTypes.LINK);
     expect(link.children.length).toBe(2);
     expect(link.url).toEqual('https://duckduckgo.com/');
-    expect(link.alt).toEqual('tooltip 2');
+    expect(link.title).toEqual('tooltip 2');
 
     tokenStream.skipToNextRow();
     link = parser.parseLink();
@@ -1550,7 +1550,7 @@ describe('Parser', () => {
     expect(image.children.length).toBe(1);
     expect(image.children[0].value).toEqual('link text');
     expect(image.url).toEqual('https://duckduckgo.com/');
-    expect(image.alt).toEqual('tooltip');
+    expect(image.title).toEqual('tooltip');
     expect(parser.dom.images.includes(image)).toBeTruthy();
 
     tokenStream.skipToNextRow();
@@ -1559,7 +1559,7 @@ describe('Parser', () => {
     expect(image.type).toEqual(ComponentTypes.IMAGE);
     expect(image.children.length).toBe(2);
     expect(image.url).toEqual('https://duckduckgo.com/');
-    expect(image.alt).toEqual('tooltip 2');
+    expect(image.title).toEqual('tooltip 2');
     expect(parser.dom.images.includes(image)).toBeTruthy();
 
     tokenStream.skipToNextRow();
@@ -1765,23 +1765,23 @@ describe('Parser', () => {
     expect(children.length).toEqual(5);
     var image = children[0];
     expect(image.type).toEqual(ComponentTypes.IMAGE);
-    expect(image.alt).toEqual('');
+    expect(image.title).toEqual('');
     expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
     image = children[1];
     expect(image.type).toEqual(ComponentTypes.IMAGE);
-    expect(image.alt).toEqual('tooltip');
+    expect(image.title).toEqual('tooltip');
     expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
     image = children[2];
     expect(image.type).toEqual(ComponentTypes.IMAGE);
-    expect(image.alt).toEqual('tooltip 2');
+    expect(image.title).toEqual('tooltip 2');
     expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
     image = children[3];
     expect(image.type).toEqual(ComponentTypes.IMAGE);
-    expect(image.alt).toEqual('');
+    expect(image.title).toEqual('');
     expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
     image = children[4];
     expect(image.type).toEqual(ComponentTypes.IMAGE);
-    expect(image.alt).toEqual('tooltip');
+    expect(image.title).toEqual('tooltip');
     expect(image.url).toEqual('https://duckduckgo.com/img.jpg');
   });
   it('should create a table of content', () => {
