@@ -433,6 +433,8 @@ class Parser {
           break;
       }
     }
+    for (const link of this.dom.links) {
+    }
     return out;
   }
 
@@ -457,6 +459,7 @@ class Parser {
     }
     if (!this.tokenStream.eof()) this.tokenStream.read(); // Skip \n
     component.to = component.last().to;
+    component.id = 'Header ' + (this.dom.headers.length + 1);
     this.dom.headers.push(component);
     return component;
   }
@@ -1062,11 +1065,8 @@ class Parser {
           component.url = token.match[2];
           if (token.match[4]) {
             // Tooltip
-            component.alt = token.match[4];
+            component.title = token.match[4];
           }
-        }
-        if (component.type == ComponentTypes.IMAGE) {
-          this.dom.images.push(component);
         }
         this.tokenStream.read(); // end token
         break;
@@ -1088,7 +1088,12 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseLink() {
-    return this.parseImageOrLinkEnd(new MDLink(this.dom));
+    var link = this.parseImageOrLinkEnd(new MDLink(this.dom));
+    if (link.type == ComponentTypes.IMAGE) {
+      link.id = 'Link ' + (this.dom.links.length + 1);
+      this.dom.links.push(link);
+    }
+    return link;
   }
 
   /**
@@ -1098,7 +1103,12 @@ class Parser {
    *                          text reinterpreted elements.
    */
   parseImage() {
-    return this.parseImageOrLinkEnd(new MDImage(this.dom));
+    var image = this.parseImageOrLinkEnd(new MDImage(this.dom));
+    if (image.type == ComponentTypes.IMAGE) {
+      image.id = 'Figure ' + (this.dom.images.length + 1);
+      this.dom.images.push(image);
+    }
+    return image;
   }
 
   // Helpers:
@@ -1885,7 +1895,9 @@ class MDTextLaTeX extends MDComponent {
    * @returns {string}
    */
   toHtml() {
-    return `<span>${super.toHtml()}</span>`;
+    return `<span class="katex">${this.dom.latexParser.parse(
+      this.value
+    )}</span>`;
   }
 
   /**
@@ -1893,7 +1905,7 @@ class MDTextLaTeX extends MDComponent {
    * @returns {string}
    */
   toMarkDown() {
-    return `\$${super.toMarkDown()}\$`;
+    return `$${this.value}$`;
   }
 }
 
@@ -1917,7 +1929,7 @@ class MDLink extends MDComponent {
      * @readonly
      * @type {string}
      */
-    this.alt = '';
+    this.title = '';
     /**
      * The url to direct to.
      * @access public
@@ -1939,13 +1951,9 @@ class MDLink extends MDComponent {
    * @returns {string}
    */
   toHtml() {
-    if (this.referenceId) {
-      // TODO: Do some reference resolving
-    }
-    if (this.alt) {
-      return `<a href="${this.url}" title="${this.alt}">${super.toHtml()}</a>`;
-    }
-    return `<a href="${this.url}">${super.toHtml()}</a>`;
+    var hrefAttr = this.url ? ` href="${this.url}"` : '';
+    var titleAttr = this.title ? ` title="${this.title}"` : '';
+    return `<a${hrefAttr}${titleAttr}>${super.toHtml()}</a>`;
   }
 
   /**
@@ -1956,8 +1964,8 @@ class MDLink extends MDComponent {
     if (this.referenceId) {
       return `[${super.toMarkDown()}][${this.referenceId}]`;
     }
-    if (this.alt) {
-      return `[${super.toMarkDown()}](${this.url} "${this.alt}")`;
+    if (this.title) {
+      return `[${super.toMarkDown()}](${this.url} "${this.title}")`;
     }
     return `[${super.toMarkDown()}](${this.url})`;
   }
@@ -1983,7 +1991,7 @@ class MDImage extends MDComponent {
      * @readonly
      * @type {string}
      */
-    this.alt = '';
+    this.title = '';
     /**
      * The url to direct to.
      * @access public
@@ -2005,13 +2013,15 @@ class MDImage extends MDComponent {
    * @returns {string}
    */
   toHtml() {
-    if (this.referenceId) {
-      // TODO: Do some reference resolving
+    var srcAttr = this.url ? ` src="${this.url}"` : '';
+    var idAttr = this.id ? ` id="${this.id}"` : '';
+    var titleAttr = this.title ? ` title="${this.title}"` : '';
+    var altAttr = ` alt="${super.toHtml()}"`;
+    var out = `<img${srcAttr}${idAttr}${titleAttr}${altAttr}/>`;
+    if (titleAttr != '') {
+      out += `(${this.title})`;
     }
-    if (this.id) {
-      return `<img src="${this.url}" id="${this.id}" alt="${super.toHtml()}"/>`;
-    }
-    return `<img src="${this.url}" alt="${super.toHtml()}"/>`;
+    return out;
   }
 
   /**
@@ -2022,8 +2032,8 @@ class MDImage extends MDComponent {
     if (this.referenceId) {
       return `![${super.toMarkDown()}][${this.referenceId}]`;
     }
-    if (this.alt) {
-      return `![${super.toMarkDown()}](${this.url} "${this.alt}")`;
+    if (this.title) {
+      return `![${super.toMarkDown()}](${this.url} "${this.title}")`;
     }
     return `![${super.toMarkDown()}](${this.url})`;
   }
@@ -2105,7 +2115,7 @@ class MDHeader extends MDComponent {
         this.level
       }>`;
     }
-    return `<h${this.level}>${super.toHtml()}</h${this.level}>`;
+    return `<h${this.level} id="${this.id}">${super.toHtml()}</h${this.level}>`;
   }
 
   /**
@@ -2533,8 +2543,15 @@ class MDTOC extends MDComponent {
    * @returns {string}
    */
   toHtml() {
-    //TODO: resolve header list
-    return `<div id="toc" class="toc">${super.toHtml()}</div>`;
+    var tags = [];
+    for (var header of this.children) {
+      tags.push(
+        `<li>${'  '.repeat(header.level - 1)}<a href="#${
+          header.id
+        }">${header.toString()}</a></li>`
+      );
+    }
+    return `<ol id="toc" class="toc">${tags.join('\n')}</ol>`;
   }
 
   /**
@@ -2575,7 +2592,13 @@ class MDTOF extends MDComponent {
    * @returns {string}
    */
   toHtml() {
-    return `<div id="tof" class="tof">${super.toHtml()}</div>`;
+    var tags = [];
+    for (var image of this.children) {
+      var hrefAttr = image.id ? ` href="#${image.id}"` : '';
+      var title = image.title ? ` - ${image.title}` : '';
+      tags.push(`<li><a${hrefAttr}>${image.id}</a>${title}</li>`);
+    }
+    return `<ol id="tof" class="tof">${tags.join('\n')}</ol>`;
   }
 
   /**
@@ -2726,6 +2749,13 @@ class MDDOM extends MDComponent {
      */
     this.images = [];
     /**
+     * List of links in the document
+     * @access public
+     * @readonly
+     * @type {MDLink[]}
+     */
+    this.links = [];
+    /**
      * A handler for latex parse requests.
      * @access public
      * @readonly
@@ -2740,7 +2770,48 @@ class MDDOM extends MDComponent {
    * @returns {MDDOM}
    */
   static parse(source) {
-    return Parser.parseToDOM(source);
+    var dom = Parser.parseToDOM(source);
+    // Resolve references for links and images
+    for (const link of dom.links) {
+      if (link.referenceId != '') {
+        var ref = dom.references.find((val, i, lst) => {
+          return val.referenceId == link.referenceId;
+        });
+        if (ref) {
+          link.url = ref.url;
+          link.title = ref.alt;
+        }
+      }
+    }
+    for (const image of dom.images) {
+      if (image.referenceId != '') {
+        var ref = dom.references.find((val, i, lst) => {
+          return val.referenceId == image.referenceId;
+        });
+        if (ref) {
+          image.url = ref.url;
+          image.title = ref.alt;
+        }
+      }
+    }
+    // Build the TOF and TOC
+    if (dom.tof) {
+      while (dom.images.length > 0) {
+        var image = dom.images.shift();
+        if (image.title.startsWith('*')) {
+          // Don't list
+          image.title = image.title.substr(1);
+          continue;
+        }
+        dom.tof.add(image);
+      }
+    }
+    if (dom.toc) {
+      while (dom.headers.length > 0) {
+        dom.toc.add(dom.headers.shift());
+      }
+    }
+    return dom;
   }
 
   /**

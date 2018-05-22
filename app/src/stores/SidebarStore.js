@@ -22,59 +22,11 @@ class SidebarStore extends EventEmitter {
     this.isCollapsed = true;
   }
 
-  setHasTitlepage(status) {
-    this.hasTitlepage = status;
-  }
-
-  setHasHeader(status) {
-    this.hasHeader = status;
-  }
-
-  setHasFooter(status) {
-    this.hasFooter = status;
-  }
-
-  setTitle(title) {
-    this.title = title;
-  }
-
-  setAuthor(author) {
-    this.author = author;
-  }
-
-  setDate(date) {
-    this.date = date.format('DD/MM/YYYY');
-  }
-
-  setHeaderLeft(text) {
-    this.headerLeft = text;
-  }
-
-  setHeaderMiddle(text) {
-    this.headerMiddle = text;
-  }
-
-  setHeaderRight(text) {
-    this.headerRight = text;
-  }
-
-  setFooterLeft(tex) {
-    this.footerLeft = tex;
-  }
-
-  setFooterMiddle(text) {
-    this.footerMiddle = text;
-  }
-
-  setFooterRight(text) {
-    this.footerRight = text;
-  }
-
-  setIsCollapsed(text) {
+  setIsCollapsed() {
     this.isCollapsed = !this.isCollapsed;
   }
 
-  setPopupClosed(text) {
+  setPopupClosed() {
     this.popupClosed = !this.popupClosed;
   }
 
@@ -137,51 +89,51 @@ class SidebarStore extends EventEmitter {
   handleActions(action) {
     switch (action.type) {
       case 'SET_HASTITLEPAGE':
-        this.setHasTitlepage(action.text);
+        this.hasTitlepage = action.text;
         this.emit('hasTitlepage_changed');
         break;
       case 'SET_HASHEADER':
-        this.setHasHeader(action.text);
+        this.hasHeader = action.text;
         this.emit('hasHeader_changed');
         break;
       case 'SET_HASFOOTER':
-        this.setHasFooter(action.text);
+        this.hasFooter = action.text;
         this.emit('hasFooter_changed');
         break;
       case 'SET_TITLE':
-        this.setTitle(action.text);
+        this.title = action.text;
         this.emit('Title_changed');
         break;
       case 'SET_AUTHOR':
-        this.setAuthor(action.text);
+        this.author = action.text;
         this.emit('Author_changed');
         break;
       case 'SET_DATE':
-        this.setDate(moment(action.text));
+        this.date = action.text;
         this.emit('Date_changed');
         break;
       case 'SET_HEADER_LEFT':
-        this.setHeaderLeft(action.text);
+        this.headerLeft = action.text;
         this.emit('Header_changed');
         break;
       case 'SET_HEADER_MIDDLE':
-        this.setHeaderMiddle(action.text);
+        this.headerMiddle = action.text;
         this.emit('Header_changed');
         break;
       case 'SET_HEADER_RIGHT':
-        this.setHeaderRight(action.text);
+        this.headerRight = action.text;
         this.emit('Header_changed');
         break;
       case 'SET_FOOTER_LEFT':
-        this.setFooterLeft(action.text);
+        this.footerLeft = action.text;
         this.emit('Footer_changed');
         break;
       case 'SET_FOOTER_MIDDLE':
-        this.setFooterMiddle(action.text);
+        this.footerMiddle = action.text;
         this.emit('Footer_changed');
         break;
       case 'SET_FOOTER_RIGHT':
-        this.setFooterRight(action.text);
+        this.footerRight = action.text;
         this.emit('Footer_changed');
         break;
       case 'SET_IS_COLLAPSED':

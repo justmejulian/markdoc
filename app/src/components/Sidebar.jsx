@@ -119,7 +119,7 @@ export default class Sidebar extends Component {
   }
 
   _setIsCollapsed() {
-    this.setState({ isCollapsed: SidebarStore.isCollapsed });
+    this.setState({ isCollapsed: SidebarStore.getIsCollapsed() });
   }
 
   _setDate() {
@@ -134,7 +134,7 @@ export default class Sidebar extends Component {
   }
 
   _handleDateChange(date) {
-    SidebarActions.setDate(date);
+    SidebarActions.setDate(date.format('DD/MM/YYYY'));
     this.setState({ date: date });
   }
 
@@ -316,13 +316,16 @@ export default class Sidebar extends Component {
                   placeholder="Left"
                   maxLength={38}
                 />
+                {/* A Is hidden because we want it to be page number */}
+
                 <input
+                  style={{ visibility: 'hidden' }}
                   type="text"
                   onChange={evt => this.handleFieldChange(evt.target)}
                   name="footerMiddle"
                   value={this.state.footerMiddle}
-                  placeholder="Isch im mom. page zahl"
                   maxLength={38}
+                  placeholder="PageNumber"
                 />
                 <input
                   type="text"
