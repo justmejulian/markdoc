@@ -38,6 +38,19 @@ describe('Test Titlepage', () => {
     expect(SidebarActions.setIsCollapsed).toHaveBeenCalled();
   });
 
+  it('should add/remove listeners', () => {
+    const wrapper = shallow(<Titlepage visibility="none" />);
+    const instance = wrapper.instance();
+    SidebarStore.on = jest.fn(); // make mock/spy
+    SidebarStore.removeListener = jest.fn();
+
+    instance.componentWillMount();
+    expect(SidebarStore.on).toHaveBeenCalled();
+
+    instance.componentWillUnmount();
+    expect(SidebarStore.removeListener).toHaveBeenCalled();
+  });
+
   it('should set new Info', () => {
     SidebarStore.getTitle = jest.fn(() => {
       return 'Test';

@@ -44,4 +44,17 @@ describe('Test Header', () => {
       headerRight: 'Julian Visser'
     });
   });
+
+  it('should add/remove listeners', () => {
+    const wrapper = shallow(<Header pageNumber="1" />);
+    const instance = wrapper.instance();
+    SidebarStore.on = jest.fn(); // make mock/spy
+    SidebarStore.removeListener = jest.fn();
+
+    instance.componentWillMount();
+    expect(SidebarStore.on).toHaveBeenCalled();
+
+    instance.componentWillUnmount();
+    expect(SidebarStore.removeListener).toHaveBeenCalled();
+  });
 });

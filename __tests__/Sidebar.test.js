@@ -493,4 +493,17 @@ describe('Test Sidebar', () => {
       date: moment('1994-07-17')
     });
   });
+
+  it('should add/remove listeners', () => {
+    const wrapper = shallow(<Sidebar />);
+    const instance = wrapper.instance();
+    SidebarStore.on = jest.fn(); // make mock/spy
+    SidebarStore.removeListener = jest.fn();
+
+    instance.componentWillMount();
+    expect(SidebarStore.on).toHaveBeenCalled();
+
+    instance.componentWillUnmount();
+    expect(SidebarStore.removeListener).toHaveBeenCalled();
+  });
 });
