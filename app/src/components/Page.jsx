@@ -1,3 +1,4 @@
+import '../styles/Page.sass';
 import React, { Component } from 'react';
 import { ReactHeight } from 'react-height';
 import Header from './Header.jsx';
@@ -44,7 +45,6 @@ class Page extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    //console.log("Got the props in page " + nextProps.id);
     this.setState({
       __html: this.createMarkup(nextProps.html),
       id: nextProps.id

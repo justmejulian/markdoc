@@ -1,3 +1,5 @@
+import '../styles/Sidebar.sass';
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 import React, { Component } from 'react';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
@@ -7,9 +9,6 @@ import SidebarStore from '../stores/SidebarStore.js';
 import * as SidebarActions from '../actions/SidebarActions';
 
 export default class Sidebar extends Component {
-  //🐘
-  //TODO: Send field values to appropriate places, meaning header and footer and I imagine the other fields have to be queried somewhere.
-
   constructor(props) {
     super(props);
     this.handleDateChange = date => this._handleDateChange(date);
@@ -18,7 +17,6 @@ export default class Sidebar extends Component {
     this.handleExpandOrCollapse = () => this._handleExpandOrCollapse();
     this.handleMouseHover = () => this._handleMouseHover();
 
-    // Setter
     this.setHasTitlepage = this._setHasTitlepage.bind(this);
     this.setHasHeader = this._setHasHeader.bind(this);
     this.setHasFooter = this._setHasFooter.bind(this);
@@ -47,6 +45,7 @@ export default class Sidebar extends Component {
     };
   }
 
+  // Bind change listener
   componentWillMount() {
     SidebarStore.on('hasTitlepage_changed', this.setHasTitlepage);
     SidebarStore.on('hasHeader_changed', this.setHasHeader);

@@ -1,3 +1,7 @@
+/*
+Font used to stle KaTeX
+*/
+
 @font-face {
   font-family: KaTeX_AMS;
   src: url(fonts/KaTeX_AMS-Regular.woff2) format('woff2'),

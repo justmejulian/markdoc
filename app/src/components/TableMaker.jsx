@@ -1,3 +1,4 @@
+import '../styles/TableMaker.sass';
 import React, { Component } from 'react';
 import Popup from 'reactjs-popup';
 import PagesStore from '../stores/PagesStore.js';

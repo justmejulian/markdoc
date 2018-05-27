@@ -1,4 +1,16 @@
+// This is the default Markdown Styling from Github.
+// Used to Style the compiled Text in the Preview
+
 #preview {
+  // Our Setting
+  background-color: #fdfdfd;
+  overflow: auto;
+  margin: 0;
+  display: inline-block;
+  float: right;
+  width: 48vw;
+  height: 100vh;
+
   font-family: Helvetica, arial, sans-serif;
   font-size: 14px;
   line-height: 1.6;

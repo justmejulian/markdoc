@@ -1,3 +1,4 @@
+import '../styles/Preview.scss';
 import React, { Component } from 'react';
 import * as Actions from '../actions/Actions';
 import Page from './Page.jsx';
@@ -9,11 +10,14 @@ class Preview extends React.Component {
   constructor(props) {
     super(props);
     this.pageRef = React.createRef();
+
     this.setPreview = this.setPreview.bind(this);
     this.setHasTitlepage = this.setHasTitlepage.bind(this);
     this.handleZoomIn = this._handleZoomIn.bind(this);
     this.handleZoomOut = this._handleZoomOut.bind(this);
     this.setZoom = this._setZoom.bind(this);
+
+    // Default settings
     this.state = {
       pages: [{ key: 0, html: PagesStore.getMarkdown(), height: 0 }],
       words: [],
@@ -44,11 +48,13 @@ class Preview extends React.Component {
 
   setPreview() {
     var copyArray = [{ key: 0, html: '', height: 0 }];
+
+    // Build an Array of all the words enter in the editor
     var html = PagesStore.getHTML();
     var words = html.split(/\n| /g);
 
+    // Post first word to Preview
     copyArray[0].html = words[0];
-
     this.setState(
       {
         pages: copyArray,
@@ -60,31 +66,17 @@ class Preview extends React.Component {
     );
   }
 
-  _setZoom() {
-    this.setState({ zoom: PagesStore.getZoom() });
-  }
-
-  handleHeight(height, id) {
-    //console.log("Height changed new height :" + height + " of Page" + id);
-    var copyArray = this.state.pages.slice();
-    copyArray[id].height = height;
-    this.setState({ pages: copyArray });
-    //console.log("The pages height is now :" +this.state.pages[id].height);
-  }
-
+  // Post words to to Preview one at a time, always checking the height
+  // When a page is too "tall" create a new page and carry on there
   nextWord() {
-    //console.log("Change");
     var copyArray = this.state.pages;
     var currentWord = this.state.currentWord;
     var currentPage = this.state.currentPage;
-    //console.log("currentWord: " + currentWord + " and words.length: " +this.state.words.length);
+
     if (currentWord < this.state.words.length - 1) {
-      //console.log('Current height: ' + copyArray[currentPage].height);
       if (copyArray[currentPage].height < 950) {
         currentWord = currentWord + 1;
-        //console.log('Current Word: ' + currentWord);
         if (this.state.words[currentWord] == '[newpage]') {
-          //console.log('new page found');
           currentPage = currentPage + 1;
           copyArray[currentPage] = { key: currentPage, html: '', height: 0 };
           this.setState(
@@ -118,11 +110,18 @@ class Preview extends React.Component {
           },
           this.nextWord
         );
-        //console.log('Page to big');
-        //console.log(this.state.pages);
       }
     }
-    //console.log(this.state.pages);
+  }
+
+  _setZoom() {
+    this.setState({ zoom: PagesStore.getZoom() });
+  }
+
+  handleHeight(height, id) {
+    var copyArray = this.state.pages.slice();
+    copyArray[id].height = height;
+    this.setState({ pages: copyArray });
   }
 
   _handleZoomIn() {
