@@ -31,4 +31,6 @@ $ npm start
 
 ## Markdown Cheatsheet
 
-[Markdown Cheatsheet - Adam Pritchard](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#blockquotes)
+To learn how to get the most out of Markdoc, open the CheatSheet using the application.
+
+[Markdoc Cheatsheet](https://github.engineering.zhaw.ch/vissejul/markdoc/blob/master/docs/cheatsheet.mdoc)
