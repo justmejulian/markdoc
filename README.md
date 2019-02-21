@@ -1,15 +1,16 @@
 # Markdoc
 
-[![Build Status](http://client108.cloudlab.zhaw.ch:8080/buildStatus/icon?job=markdoc)](http://client108.cloudlab.zhaw.ch:8080/job/markdoc/)
-
 _A beautiful, extended Markdown editor built for academic papers._
 
+![Markdoc Screenshot](https://github.com/justmejulian/markdoc/blob/master/docs/img/Screenshot2.png)
+
 For more information about Markdoc, please visit our [Wiki](https://github.engineering.zhaw.ch/vissejul/markdoc/wiki).
+
+![Markdoc Screenshot](https://github.com/justmejulian/markdoc/blob/master/docs/img/Screenshot1.png)
 
 ## How to get started
 
 Using Markdoc is simple.
-
 
 **Step 1**
 
@@ -25,14 +26,13 @@ Unpack it.
 
 Start using Markdoc.
 
-No Installation! It is that easy! 
+No Installation! It is that easy!
 
 ## Markdown Cheatsheet
 
 To learn how to get the most out of Markdoc, open the CheatSheet using the application.
 
 [Markdoc Cheatsheet](https://github.engineering.zhaw.ch/vissejul/markdoc/blob/master/docs/cheatsheet.mdoc)
-
 
 ## How to Develop
 
@@ -56,4 +56,5 @@ $ npm install
 # Run
 $ npm start
 ```
+
 Don't forget that electron-reload is included to enable live reload for Electron.
